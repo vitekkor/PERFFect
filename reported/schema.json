@@ -1,0 +1,30 @@
+[
+    {
+        "date": "",
+        "language": "",
+        "compiler": "",
+        "version": "",
+        "bugid": "",
+        "title": "",
+        "links": {
+            "issuetracker": "",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "",
+        "severity": "",
+        "reporter": "",
+        "status": "",
+        "resolution": "",
+        "resolutiondate": "",
+        "symptom": "",
+        "bugtype": "",
+        "resolvedin": "",
+        "test": "",
+        "chars": {
+            "characteristics": []
+        },
+        "errormsg": "",
+        "comment": ""
+    }
+]
