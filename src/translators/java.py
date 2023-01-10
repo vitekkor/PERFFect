@@ -1228,7 +1228,7 @@ class JavaTranslator(BaseTranslator):
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
         self.ident = old_ident
-        self._children_res.append(res)
+        return res
 
     def _visit_loop_expr(self, node):
         children = node.children()
