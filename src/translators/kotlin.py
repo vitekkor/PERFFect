@@ -523,6 +523,18 @@ class KotlinTranslator(BaseTranslator):
         self._children_res.append(res)
 
     @append_to
+    def visit_inc_dec_expr(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = [node.children()[0]]
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "{}({}{})".format(" " * old_ident, children_res[0], node.operator)
+        self.ident = old_ident
+        self._children_res.append(res)
+
+    @append_to
     def visit_new(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -636,3 +648,37 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         self._cast_integers = prev
         self._children_res.append(res)
+
+    @append_to
+    def visit_loop(self, node: ast.Node):
+        old_ident = self.ident
+        self.ident += 2
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        if isinstance(node, ast.ForExpr):
+            res = "{}for ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+        elif isinstance(node, ast.WhileExpr):
+            res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+        elif isinstance(node, ast.DoWhileExpr):
+            res = "{}do\n{}\n{}while({})".format(" " * old_ident, children_res[0], " " * old_ident, children_res[1][self.ident:])
+        else:
+            raise Exception("{} not supported".format(str(node.__class__)))
+        self.ident = old_ident
+        self._children_res.append(res)
+
+    @append_to
+    def visit_loop_expr(self, node):
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        if isinstance(node, ast.ForExpr.IterableExpr):
+            res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
+        elif isinstance(node, ast.ForExpr.RangeExpr):
+            res = "{} in {}..{}".format(str(children_res[0]), str(children_res[1]), str(children_res[2]))
+        else:
+            raise Exception("{} not supported".format(str(node.__class__)))
+        self._children_res.append(res)
+

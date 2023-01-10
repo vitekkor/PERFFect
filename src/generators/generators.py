@@ -19,12 +19,12 @@ def gen_string_constant(expr_type=None) -> ast.StringConstant:
 
 
 # pylint: disable=unused-argument
-def gen_integer_constant(expr_type=None) -> ast.IntegerConstant:
+def gen_integer_constant(expr_type=None, left_bound=-100, right_bound=100) -> ast.IntegerConstant:
     """Generate an integer constant.
 
     The generated integers are between -100 and 100.
     """
-    return ast.IntegerConstant(utils.random.integer(-100, 100), expr_type)
+    return ast.IntegerConstant(utils.randomUtil.integer(left_bound, right_bound), expr_type)
 
 
 def gen_real_constant(expr_type=None) -> ast.RealConstant:
@@ -32,9 +32,9 @@ def gen_real_constant(expr_type=None) -> ast.RealConstant:
 
     The generated reals are between `-100.1000` and `100.1000`.
     """
-    prefix = str(utils.random.integer(0, 100))
-    suffix = str(utils.random.integer(0, 1000))
-    sign = utils.random.choice(['', '-'])
+    prefix = str(utils.randomUtil.integer(0, 100))
+    suffix = str(utils.randomUtil.integer(0, 1000))
+    sign = utils.randomUtil.choice(['', '-'])
     return ast.RealConstant(sign + prefix + "." + suffix, expr_type)
 
 
@@ -42,11 +42,11 @@ def gen_real_constant(expr_type=None) -> ast.RealConstant:
 def gen_bool_constant(expr_type=None) -> ast.BooleanConstant:
     """Generate a boolean constant.
     """
-    return ast.BooleanConstant(utils.random.choice(['true', 'false']))
+    return ast.BooleanConstant(utils.randomUtil.choice(['true', 'false']))
 
 
 # pylint: disable=unused-argument
 def gen_char_constant(expr_type=None) -> ast.CharConstant:
     """Generate a character constant.
     """
-    return ast.CharConstant(utils.random.char())
+    return ast.CharConstant(utils.randomUtil.char())

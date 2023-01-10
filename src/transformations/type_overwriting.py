@@ -23,7 +23,7 @@ class TypeOverwriting(Transformation):
         self._method_selection = False
         if not self._candidate_methods:
             return node
-        self._selected_method = utils.random.choice(self._candidate_methods)
+        self._selected_method = utils.randomUtil.choice(self._candidate_methods)
         return super().visit_program(node)
 
     @change_namespace
@@ -71,7 +71,7 @@ class TypeOverwriting(Transformation):
             return node
 
         # Generate a type that is irrelevant
-        n = utils.random.choice(candidate_nodes)
+        n = utils.randomUtil.choice(candidate_nodes)
         if isinstance(n, tda.TypeConstructorInstantiationCallNode):
             type_params = [
                 n.target for n in type_graph[n]
@@ -79,7 +79,7 @@ class TypeOverwriting(Transformation):
             ]
             if not type_params:
                 return node
-            type_param = utils.random.choice(type_params)
+            type_param = utils.randomUtil.choice(type_params)
             node_type = n.t.get_type_variable_assignments()[type_param.t]
             old_type = node_type
         else:

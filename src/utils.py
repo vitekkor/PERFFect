@@ -1,9 +1,13 @@
+import typing
 from collections import defaultdict
-import random
+import random as rnd
 import string
 import pickle
 import os
 import sys
+import inspect
+
+from ordered_set import OrderedSet
 
 
 class Singleton(type):
@@ -97,12 +101,12 @@ def save_text(path, text):
 def path2set(path):
     if os.path.isfile(path):
         with open(path, 'r') as f:
-            return {
+            return OrderedSet([
                 line.strip()
                 for line in f.readlines()
-            }
+            ])
     else:
-        return set()
+        return OrderedSet()
 
 
 def get_reserved_words(resource_path, language):
@@ -110,65 +114,137 @@ def get_reserved_words(resource_path, language):
     path = os.path.join(resource_path, filename)
     return path2set(path)
 
+# for debugging purposes
+def random_inspect(random_fun):
+    def inner(*args, **kwargs):
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        from_ = calframe[1][1]
+        line = calframe[1][2]
+        caller = calframe[1][3]
+        callings = calframe[1][4]
+        result = random_fun(*args, **kwargs)
+        str_ = "caller - {}:{}:{}; method - {}; args - {}, kwargs - {}, result - {}".format(from_, line, caller, callings, args[1:], kwargs, result)
+        print(str_)
+        return result
+
+    return inner
+
 
 class RandomUtils():
-
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
 
     WORD_POOL_LEN = 10000
     # Construct a random word pool of size 'WORD_POOL_LEN'.
-    WORDS = set(random.sample(
-        read_lines(os.path.join(resource_path, 'words')), WORD_POOL_LEN))
-    INITIAL_WORDS = set(WORDS)
+    WORDS: OrderedSet
+    INITIAL_WORDS: OrderedSet
 
-    def __init__(self, seed=None):
-        self.r = random.Random(seed)
+    previous_call: str
+    call: str = ''
+    previous_result: typing.Any
+    result: typing.Any = None
+
+    def __init__(self):
+        self.seed = 7768787821573447645  # rnd.randrange(sys.maxsize)
+        self.r = rnd.Random(self.seed)
+        self.WORDS = OrderedSet(self.sample(
+            read_lines(os.path.join(self.resource_path, 'words')), self.WORD_POOL_LEN))
+        self.INITIAL_WORDS = OrderedSet(self.WORDS)
+
+    def reset_random(self):
+        self.r = rnd.Random(self.seed)
 
     def reset_word_pool(self):
-        self.WORDS = set(self.INITIAL_WORDS)
+        self.WORDS = OrderedSet(self.INITIAL_WORDS)
 
+    @random_inspect
     def bool(self, prob=0.5):
-        return self.r.random() < prob
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.random() < prob
+        self.call = "bool"
+        return self.result
 
+    @random_inspect
     def word(self):
+        self.previous_result = self.result
+        self.previous_call = self.call
         word = self.r.choice(tuple(self.WORDS))
         self.WORDS.remove(word)
+        self.result = word
+        self.call = "word"
         return word
 
+    @random_inspect
     def remove_reserved_words(self, language):
         reserved_words = get_reserved_words(self.resource_path, language)
         self.INITIAL_WORDS = self.INITIAL_WORDS - reserved_words
         self.WORDS = self.WORDS - reserved_words
 
+    @random_inspect
     def integer(self, min_int=0, max_int=10):
-        return self.r.randint(min_int, max_int)
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.randint(min_int, max_int)
+        self.call = "integer {} {}".format(min_int, max_int)
+        return self.result
 
+    @random_inspect
     def char(self):
-        return self.r.choice(string.ascii_letters + string.digits)
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.choice(string.ascii_letters + string.digits)
+        self.call = "char"
+        return self.result
 
+    @random_inspect
     def choice(self, choices):
-        return self.r.choice(choices)
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.choice(choices)
+        self.call = "choice {}".format(str(choices))
+        return self.result
 
+    @random_inspect
     def sample(self, choices, k=None):
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.call = "sample {} k={}".format(str(choices), k)
         k = k or self.integer(0, len(choices))
-        return self.r.sample(choices, k)
+        self.result = self.r.sample(choices, k)
+        return self.result
 
+    @random_inspect
     def str(self, length=5):
-        return ''.join(self.r.sample(
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = ''.join(self.r.sample(
             string.ascii_letters + string.digits, length))
+        self.call = "str {}".format(length)
+        return self.result
 
+    @random_inspect
     def caps(self, length=1, blacklist=None):
+        self.previous_result = self.result
+        self.previous_call = self.call
         blacklist = blacklist if blacklist is not None else []
+        self.call = "caps {} {}".format(length, str(blacklist))
         while True:
             res = ''.join(self.r.sample(string.ascii_uppercase, length))
             if res not in blacklist:
+                self.result = res
                 return res
 
+    @random_inspect
     def range(self, from_value, to_value):
-        return range(0, self.integer(from_value, to_value))
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = range(0, self.integer(from_value, to_value))
+        self.call = "range {} {}".format(from_value, to_value)
+        return self.result
 
 
-random = RandomUtils()
+randomUtil = RandomUtils()
 
 
 class IdGen():
@@ -177,7 +253,6 @@ class IdGen():
 
     def get_node_id(self, node_id):
         if node_id not in self._cache:
-            self._cache[node_id]
             return node_id, None
         else:
             value = self._cache[node_id]

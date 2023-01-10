@@ -33,12 +33,18 @@ class ASTVisitor():
             ast.ArithExpr: self.visit_arith_expr,
             ast.Conditional: self.visit_conditional,
             ast.Is: self.visit_is,
+            ast.IncDecExpr: self.visit_inc_dec_expr,
             ast.New: self.visit_new,
             ast.FieldAccess: self.visit_field_access,
             ast.FunctionCall: self.visit_func_call,
             ast.Assignment: self.visit_assign,
             ast.Program: self.visit_program,
             ast.Block: self.visit_block,
+            ast.ForExpr: self.visit_loop,
+            ast.WhileExpr: self.visit_loop,
+            ast.DoWhileExpr: self.visit_loop,
+            ast.ForExpr.RangeExpr: self.visit_loop_expr,
+            ast.ForExpr.IterableExpr: self.visit_loop_expr
         }
         visitor = visitors.get(node.__class__)
         if visitor is None:
@@ -130,6 +136,9 @@ class ASTVisitor():
     def visit_is(self, node):
         raise NotImplementedError('visit_is() must be implemented')
 
+    def visit_inc_dec_expr(self, node):
+        raise NotImplementedError('visit_inc_dec_expr() must be implemented')
+
     def visit_new(self, node):
         raise NotImplementedError('visit_new() must be implemented')
 
@@ -140,6 +149,12 @@ class ASTVisitor():
         raise NotImplementedError('visit_func_call() must be implemented')
 
     def visit_assign(self, node):
+        raise NotImplementedError('visit_assign() must be implemented')
+
+    def visit_loop(self, node):
+        raise NotImplementedError('visit_assign() must be implemented')
+
+    def visit_loop_expr(self, node):
         raise NotImplementedError('visit_assign() must be implemented')
 
 
@@ -241,6 +256,12 @@ class DefaultVisitor(ASTVisitor):
         return self._visit_node(node)
 
     def visit_assign(self, node):
+        return self._visit_node(node)
+
+    def visit_loop(self, node):
+        return self._visit_node(node)
+
+    def visit_loop_expr(self, node):
         return self._visit_node(node)
 
 

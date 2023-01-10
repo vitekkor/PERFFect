@@ -1,12 +1,13 @@
 from collections import OrderedDict
 from typing import TypeVar, List, Tuple, Dict
 
+from ordered_set import OrderedSet
+
 import src.ir.types as tp
 import src.ir.context as ctx
 import src.ir.builtins as bt
 from src.ir import ast
 from src import utils
-
 
 TypeVarMap = TypeVar('TypeVarMap', bound=Dict[tp.TypeParameter, tp.Type])
 TypeVarMap.__doc__ = """
@@ -88,7 +89,6 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
                               get_subtypes,
                               type_var_map={},
                               ignore_variance=False):
-
     bound = None
     if t_param.bound:
         # If the bound of the current type parameter contains other type
@@ -160,16 +160,16 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
             type_arg_bound = type_var_map[t_param.bound]
             base_targ = etype.type_args[i]
             is_same_type_var = (
-                base_targ.is_wildcard() and
-                base_targ.bound.name == type_arg_bound.name
+                    base_targ.is_wildcard() and
+                    base_targ.bound.name == type_arg_bound.name
             )
             is_subtype = (
-                base_targ.is_wildcard() and
-                base_targ.bound.is_subtype(type_arg_bound)
+                    base_targ.is_wildcard() and
+                    base_targ.bound.is_subtype(type_arg_bound)
             )
             is_type_var = type_arg_bound.is_type_var()
             is_contravariant = (
-                base_targ.is_wildcard() and base_targ.is_contravariant()
+                    base_targ.is_wildcard() and base_targ.is_contravariant()
             )
             if is_type_var and not is_same_type_var:
                 # OK, if T2 is invariant, then the possible types that T1
@@ -194,7 +194,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
                 # Foo<B, in B> this is not subtype of Foo<A, in A>
                 # Therefore, here we replace B with the bound of in A.
                 if type_arg_bound.is_subtype(base_targ.bound) and (
-                      type_arg_bound.name != base_targ.bound.name):
+                        type_arg_bound.name != base_targ.bound.name):
                     type_var_map[t_param.bound] = base_targ.bound
             type_var_map[t_param] = type_var_map[t_param.bound]
         else:
@@ -209,7 +209,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
                 return etype
             # Type argument should not be primitives.
             t_args = [t for t in t_args if not t.is_primitive()]
-            t_arg = utils.random.choice(t_args)
+            t_arg = utils.randomUtil.choice(t_args)
             type_var_map[t_param] = t_arg
     return etype.t_constructor.new(list(type_var_map.values()))
 
@@ -222,7 +222,6 @@ def to_type(stype, types):
 
 def _find_types(etype, types, get_subtypes, include_self, bound=None,
                 concrete_only=False, ignore_variance=False):
-
     # Otherwise, if we want to find the supertypes of a given type, `bound`
     # is interpreted a greatest bound.
     if not get_subtypes:
@@ -230,7 +229,7 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
         t_set = etype.get_supertypes()
     else:
         # Find subtypes
-        t_set = set()
+        t_set = OrderedSet()
         for c in types:
             selected_type = c.get_type() if hasattr(c, 'get_type') else c
             if etype == selected_type:
@@ -286,7 +285,7 @@ def get_irrelevant_parameterized_type(etype, types, type_args_map,
             type_list = [to_type(t, types)
                          for t in types
                          if t != type_args[i]]
-            new_type_args[i] = utils.random.choice(type_list)
+            new_type_args[i] = utils.randomUtil.choice(type_list)
         else:
             t = find_irrelevant_type(type_args[i], types, factory)
             if t is None:
@@ -337,14 +336,14 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type],
     available_types = [t for t in types if t not in relevant_types]
     if not available_types:
         return None
-    t = utils.random.choice(available_types)
+    t = utils.randomUtil.choice(available_types)
     if t.is_type_constructor():
         # Must instantiate the given type constrcutor. Also pass the map of
         # type arguments in order to pass type arguments that are irrelevant
         # with any parameterized type created by this type constructor.
         type_list = [t for t in types if t != etype]
         return get_irrelevant_parameterized_type(
-                t, type_list, type_args_map, factory)
+            t, type_list, type_args_map, factory)
     return t
 
 
@@ -378,9 +377,9 @@ class TypeUpdater():
     def _update_type(self, etype, new_type,
                      test_pred=lambda x, y: x.name == y.name):
         if isinstance(etype, tp.TypeParameter) or (
-            isinstance(etype, tp.WildCardType)) or (
+                isinstance(etype, tp.WildCardType)) or (
                 isinstance(etype, tp.ParameterizedType)) or (
-                    isinstance(etype, tp.TypeConstructor)):
+                isinstance(etype, tp.TypeConstructor)):
             # We must re-compute parameterized types, as they may involve
             # different type arguments or type constructors.
             return self.update_type(etype, new_type, test_pred)
@@ -493,7 +492,7 @@ def _get_type_arg_variance(t_param, variance_choices):
         variances = [tp.Invariant] + covariance
     else:
         variances = [tp.Invariant] + contravariance
-    return utils.random.choice(variances)
+    return utils.randomUtil.choice(variances)
 
 
 def update_type_var_bound_rec(t_param: tp.TypeParameter,
@@ -611,8 +610,8 @@ def _compute_type_variable_assignments(
                                 if k.name == t_param.bound.name:
                                     t_bound = v
                             assert t_bound is not None, (
-                                "Cannot find assignment for the bound of "
-                                "type parameter " + str(t_param)
+                                    "Cannot find assignment for the bound of "
+                                    "type parameter " + str(t_param)
                             )
 
                         if t_bound.is_wildcard() and t_bound.is_contravariant():
@@ -626,7 +625,7 @@ def _compute_type_variable_assignments(
                             if variance_choices is not None:
                                 variance_choices[t_param] = (False, False)
                         is_covariant = (
-                            t_bound.is_wildcard() and t_bound.is_covariant())
+                                t_bound.is_wildcard() and t_bound.is_covariant())
                         # Here the variance of the type argument clashes with
                         # the variance of the corresponding parameter. So
                         # we assign the bound of the wildcard.
@@ -646,7 +645,7 @@ def _compute_type_variable_assignments(
                         a_types = [t_bound]
                 else:
                     a_types = types
-        c = utils.random.choice(a_types)
+        c = utils.randomUtil.choice(a_types)
         if isinstance(c, ast.ClassDeclaration):
             cls_type = c.get_type()
         else:
@@ -706,17 +705,17 @@ def instantiate_type_constructor(
         # Parameters can only be contravariant and return can only be covariant
         # Set parameters
         variance_choices = {
-                tparam: (False, True)
-                for tparam in type_constructor.type_parameters[:-1]
+            tparam: (False, True)
+            for tparam in type_constructor.type_parameters[:-1]
         }
         # Set return
         variance_choices[type_constructor.type_parameters[-1]] = (True, False)
 
     if disable_variance or (disable_variance_functions and
-            type_constructor.name.startswith('Function')):
+                            type_constructor.name.startswith('Function')):
         variance_choices = {
-                tparam: (False, False)
-                for tparam in type_constructor.type_parameters
+            tparam: (False, False)
+            for tparam in type_constructor.type_parameters
         }
 
     types = _get_available_types(type_constructor,
@@ -745,7 +744,7 @@ def instantiate_parameterized_function(
 def choose_type(types: List[tp.Type], only_regular=True):
     # Randomly choose a type from the list of available types.
     types = _get_available_types(None, types, only_regular)
-    c = utils.random.choice(types)
+    c = utils.randomUtil.choice(types)
     if isinstance(c, ast.ClassDeclaration):
         cls_type = c.get_type()
     else:
@@ -869,7 +868,7 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             else:
                 type_param_map = {}
             if isinstance(decl, ast.FunctionDeclaration) and (
-                  decl.is_parameterized()):
+                    decl.is_parameterized()):
                 type_param_map.update({
                     t_param: type_args[i]
                     for i, t_param in enumerate(decl.type_parameters)
@@ -1003,7 +1002,7 @@ def node_in_expr(node, expr):
 
 def is_builtin(t, builtin_factory):
     return isinstance(t, tp.Builtin) or (
-        t.name == builtin_factory.get_array_type().name
+            t.name == builtin_factory.get_array_type().name
     )
 
 
@@ -1118,7 +1117,7 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
                 if not _update_type_var_map(type_var_map, t_var, t_arg1):
                     return {}
             elif isinstance(t_arg2, tp.ParameterizedType) and (
-                  isinstance(t_arg1, tp.ParameterizedType)):
+                    isinstance(t_arg1, tp.ParameterizedType)):
                 res = unify_types(t_arg1, t_arg2, factory)
                 if not res or any(
                         not _update_type_var_map(type_var_map, k, v)
@@ -1153,11 +1152,11 @@ def is_sam(context, etype=None, cls_decl=None):
                 len(abstract_funcs) != 1 or
                 (abstract_funcs and
                  any(p.default for p in next(iter(abstract_funcs)).params)) or
-                 # We can't use a lambda expression for a functional interface,
-                 # if the method in the functional interface has type parameters
-                 # https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.27.3
-                 # TODO: check if this is the case for Kotlin.
-                 next(iter(abstract_funcs)).is_parameterized() or
+                # We can't use a lambda expression for a functional interface,
+                # if the method in the functional interface has type parameters
+                # https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.27.3
+                # TODO: check if this is the case for Kotlin.
+                next(iter(abstract_funcs)).is_parameterized() or
                 not all(is_sam(context, etype=s) for s in cls_decl.supertypes)):
             return False
         return True
@@ -1241,7 +1240,7 @@ def get_type_var_map_from_ptype(ptype, type_var_map=None):
     return type_var_map
 
 
-def get_func_decl(context, name: str, receiver: tp.Type=None):
+def get_func_decl(context, name: str, receiver: tp.Type = None):
     """Get the correct function declaration.
 
     We should take into consideration any given receiver due to override and
@@ -1306,6 +1305,7 @@ def build_type_variable_dependencies(t1: tp.Type, t2: tp.Type):
     So, `build_type_variable_dependencies(A<T>, B<T>)` == {}, as A<T>
     is not a subtype of B<T>.
     """
+
     def _get_supertypes(t):
         if t.is_parameterized():
             return t.t_constructor.supertypes

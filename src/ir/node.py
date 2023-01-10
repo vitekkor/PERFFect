@@ -13,3 +13,6 @@ class Node():
 
     def is_bottom(self):
         return False
+
+    def is_equal(self, other):
+        pass

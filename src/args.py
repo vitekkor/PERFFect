@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from src.utils import random, mkdir
+from src.utils import randomUtil, mkdir
 from src.modules.processor import ProgramProcessor
 from src.generators.config import cfg
 
@@ -38,7 +38,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "-n", "--name",
-    default=random.str(),
+    default=randomUtil.str(),
     help="Set name of this testing instance (default: random string)"
 )
 parser.add_argument(
@@ -189,7 +189,7 @@ args.options = {
         "timeout": args.timeout
     }
 }
-random.remove_reserved_words(args.language)
+randomUtil.remove_reserved_words(args.language)
 
 
 # Set configurations
@@ -209,8 +209,8 @@ def validate_args(args):
     if args.seconds and args.iterations:
         sys.exit("Error: you should only set --seconds or --iterations")
 
-    if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
-        sys.exit("Error: --name {} already exists".format(args.name))
+    # if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
+    #    sys.exit("Error: --name {} already exists".format(args.name))
 
     if args.transformation_schedule and args.transformations:
         sys.exit("Options --transformation-schedule and --transfromations"

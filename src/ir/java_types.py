@@ -1,7 +1,8 @@
 # pylint: disable=abstract-method, useless-super-delegation,too-many-ancestors
 # pylint: disable=too-few-public-methods
-from src.ir.types import Builtin
+from ordered_set import OrderedSet
 
+from src.ir.types import Builtin
 
 import src.ir.builtins as bt
 import src.ir.types as tp
@@ -56,29 +57,20 @@ class JavaBuiltinFactory(bt.BuiltinFactory):
     def get_array_type(self):
         return ArrayType()
 
+    def get_iterator_type(self):
+        return IteratorType()
+
     def get_big_integer_type(self):
         return IntegerType(primitive=False)
 
     def get_function_type(self, nr_parameters=0):
         return FunctionType(nr_parameters)
 
-    def get_primitive_types(self):
-        return [
-            ByteType(primitive=True),
-            ShortType(primitive=True),
-            IntegerType(primitive=True),
-            LongType(primitive=True),
-            FloatType(primitive=True),
-            DoubleType(primitive=True),
-            CharType(primitive=True),
-            BooleanType(primitive=True)
-        ]
-
     def get_non_nothing_types(self):
-        return super().get_non_nothing_types() + self.get_primitive_types()
+        return super().get_non_nothing_types()
 
     def get_number_types(self):
-        return super().get_number_types() + self.get_primitive_types()[:-1]
+        return super().get_number_types()
 
 
 class JavaBuiltin(Builtin):
@@ -92,7 +84,7 @@ class JavaBuiltin(Builtin):
         return str(self.name).lower() + "(java-primitive)"
 
     def is_primitive(self):
-        return self.primitive
+        return False
 
     def box_type(self):
         raise NotImplementedError('box_type() must be implemented')
@@ -115,7 +107,7 @@ class VoidType(JavaBuiltin):
         if not self.primitive:
             self.supertypes.append(ObjectType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Void
@@ -143,7 +135,7 @@ class IntegerType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Integer
@@ -168,7 +160,7 @@ class ShortType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Short
@@ -193,7 +185,7 @@ class LongType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Long
@@ -218,7 +210,7 @@ class ByteType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Byte
@@ -243,7 +235,7 @@ class FloatType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Float
@@ -268,7 +260,7 @@ class DoubleType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Double
@@ -293,7 +285,7 @@ class CharType(ObjectType):
         if not self.primitive:
             self.supertypes.append(ObjectType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Char
@@ -348,15 +340,22 @@ class ArrayType(tp.TypeConstructor, ObjectType):
         self.supertypes.append(ObjectType())
 
 
-class FunctionType(tp.TypeConstructor):
+class IteratorType(tp.TypeConstructor, ObjectType):
+    def __init__(self, name="java.util.Iterator"):
+        super().__init__(name, [tp.TypeParameter("T")])
+        self.supertypes.append(ObjectType())
+
+
+class FunctionType(tp.TypeConstructor, ObjectType):
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
         type_parameters = [
-            tp.TypeParameter("A" + str(i))
-            for i in range(1, nr_type_parameters + 1)
-        ] + [tp.TypeParameter("R")]
+                              tp.TypeParameter("A" + str(i))
+                              for i in range(1, nr_type_parameters + 1)
+                          ] + [tp.TypeParameter("R")]
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
+        self.supertypes.append(ObjectType())
 
 
 ### WARNING: use them only for testing ###
