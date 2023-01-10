@@ -1,4 +1,5 @@
 # pylint: disable=dangerous-default-value
+from abc import ABC
 from typing import List, Set, Union
 from copy import deepcopy
 
@@ -8,7 +9,6 @@ from src import utils
 from src.ir import BUILTIN_FACTORIES
 from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
-
 
 GLOBAL_NAMESPACE = ('global',)
 
@@ -445,7 +445,7 @@ class FunctionDeclaration(Declaration):
             str(self.ret_type), str(self.body))
 
     def is_equal(self, other):
-        if isinstance(other,  FunctionDeclaration):
+        if isinstance(other, FunctionDeclaration):
             return (self.name == other.name and
                     self.ret_type == other.ret_type and
                     (
@@ -472,6 +472,7 @@ def _instantiate_type_param_rec(t_param: types.TypeParameter,
         new_t_param.bound = _instantiate_type_param_rec(new_bound,
                                                         type_var_map)
     return new_t_param
+
 
 class Lambda(Expr):
     # body can be Block or Expr
@@ -517,7 +518,7 @@ class Lambda(Expr):
             str(self.body))
 
     def is_equal(self, other):
-        if isinstance(other,  Lambda):
+        if isinstance(other, Lambda):
             return (self.ret_type == other.ret_type and
                     (
                         self.body == other.body
@@ -555,7 +556,7 @@ class ClassDeclaration(Declaration):
 
     def children(self):
         return self.fields + self.superclasses + self.functions + \
-            self.type_parameters
+               self.type_parameters
 
     def update_children(self, children):
         def get_lst(start, end):
@@ -1034,7 +1035,7 @@ class BinaryOp(Expr):
             # @theosotr should we keep this check? If we ant to keep it we may
             # want to check if the operator is valid for a given language
             assert operator in self.ALL_OPERATORS, (
-                'Binary operator ' + operator + ' is not valid')
+                    'Binary operator ' + operator + ' is not valid')
         self.lexpr = lexpr
         self.rexpr = rexpr
         self.operator = operator
@@ -1201,7 +1202,7 @@ class New(Expr):
             )
 
         return "new " + self.class_type.name + "(" + \
-            ", ".join(map(str, self.args)) + ")"
+               ", ".join(map(str, self.args)) + ")"
 
     def is_equal(self, other):
         if isinstance(other, New):
@@ -1362,3 +1363,69 @@ class Assignment(Expr):
                     self.expr.is_equal(other.expr) and
                     check_default_eq(self.receiver, other.receiver))
         return False
+
+
+class LoopExpr(Expr, ABC):
+
+    def __init__(self, body: Node):
+        self.body = body
+
+
+class ForExpr(LoopExpr):
+    class IterableExpr(Expr):
+        def __int__(self, array: ArrayExpr, variable: Variable):
+            self.arrayExpr = array
+            self.parameter = variable
+
+        def __str__(self):
+            return "{} in {}".format(str(self.parameter), str(self.arrayExpr))
+
+        def children(self):
+            return [self.parameter, self.arrayExpr]
+
+    class RangeExpr(Expr):
+        def __int__(self, variable: Variable, left_bound: Node, right_bound: Node):
+            self.parameter = variable
+            self.left_bound = left_bound
+            self.right_bound = right_bound
+
+        def __str__(self):
+            return "{} in {}..{}".format(str(self.parameter), str(self.left_bound), str(self.right_bound))
+
+        def children(self):
+            return [self.parameter, self.left_bound, self.right_bound]
+
+    def __int__(self, body: Node, loop_expr: IterableExpr | RangeExpr):
+        super(ForExpr, self).__init__(body)
+        self.loop_expr = loop_expr
+
+    def children(self):
+        children: list[Node] = [self.loop_expr]
+        if self.body is None:
+            return children
+        return children + [self.body]
+
+
+class WhileExprBase(LoopExpr, ABC):
+
+    def __init__(self, body: Node, condition: Expr):
+        super(WhileExprBase, self).__init__(body)
+        self.condition = condition
+
+
+class WhileExpr(WhileExprBase):
+
+    def __str__(self):
+        return "while ({}) { {} }".format(str(self.condition), str(self.body))
+
+    def children(self):
+        return [self.condition, self.body]
+
+
+class DoWhileExpr(WhileExprBase):
+
+    def __str__(self):
+        return "do { {} } while ({})".format(str(self.condition), str(self.body))
+
+    def children(self):
+        return [self.body, self.condition]
