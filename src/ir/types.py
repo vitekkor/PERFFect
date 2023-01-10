@@ -2,7 +2,7 @@
 from __future__ import annotations
 from copy import deepcopy, copy
 from collections import defaultdict
-from typing import List, Dict, Set
+from typing import List, Dict
 
 from ordered_set import OrderedSet
 
@@ -41,8 +41,8 @@ class Variance(object):
 
     def __eq__(self, other):
         return (
-            self.__class__ == other.__class__ and
-            self.value == other.value
+                self.__class__ == other.__class__ and
+                self.value == other.value
         )
 
 
@@ -51,6 +51,7 @@ Covariant = Variance(Variance.COVARIANT)
 Contravariant = Variance(Variance.CONTRAVARIANT)
 
 
+# noinspection PyAbstractClass
 class Type(Node):
     def __init__(self, name):
         self.name = name
@@ -110,12 +111,13 @@ class Type(Node):
         return visited
 
     def not_related(self, other: Type):
-        return not(self.is_subtype(other) or other.is_subtype(self))
+        return not (self.is_subtype(other) or other.is_subtype(self))
 
     def get_name(self):
         return str(self.name)
 
 
+# noinspection PyAbstractClass
 class AbstractType(Type):
     def is_subtype(self, other):
         raise TypeError("You cannot call 'is_subtype()' in an AbstractType")
@@ -133,6 +135,7 @@ class AbstractType(Type):
         return False
 
 
+# noinspection PyAbstractClass
 class Builtin(Type):
     """https://kotlinlang.org/spec/type-system.html#built-in-types
     """
@@ -162,17 +165,20 @@ class Builtin(Type):
         raise NotImplementedError("You have to implement get_builtin_type")
 
 
+# noinspection PyAbstractClass
 class Classifier(Type):
     def is_primitive(self):
         return False
 
 
+# noinspection PyAbstractClass
 class Object(Classifier):
 
     def __str__(self):
         return "object " + self.name
 
 
+# noinspection PyAbstractClass
 class SimpleClassifier(Classifier):
     """https://kotlinlang.org/spec/type-system.html#simple-classifier-types
     """
@@ -190,7 +196,7 @@ class SimpleClassifier(Classifier):
         return "{}{}".format(
             self.name,
             '' if not self.supertypes else " <: (" +
-            ', '.join(map(str, self.supertypes)) + ")"
+                                           ', '.join(map(str, self.supertypes)) + ")"
         )
 
     def __eq__(self, other: Type):
@@ -257,6 +263,7 @@ class TypeParameter(AbstractType):
     def is_type_var(self):
         return True
 
+    # noinspection PyUnresolvedReferences
     def get_bound_rec(self, factory):
         """
         This function recursively gets the bound of the type parameter.
@@ -298,6 +305,7 @@ class TypeParameter(AbstractType):
         )
 
 
+# noinspection PyAbstractClass
 class WildCardType(Type):
     def __init__(self, bound=None, variance=Invariant):
         super().__init__("*")
@@ -404,7 +412,7 @@ def substitute_type_args(etype, type_map,
 
 
 def substitute_type(t, type_map):
-    return _get_type_substitution(t, type_map, lambda t: False)
+    return _get_type_substitution(t, type_map, lambda t_: False)
 
 
 def perform_type_substitution(etype, type_map,
@@ -446,6 +454,7 @@ def perform_type_substitution(etype, type_map,
     return etype
 
 
+# noinspection PyAbstractClass
 class TypeConstructor(AbstractType):
     def __init__(self, name: str, type_parameters: List[TypeParameter],
                  supertypes: List[Type] = None):
@@ -461,6 +470,7 @@ class TypeConstructor(AbstractType):
             ' <:' if self.supertypes else '',
             ', '.join(map(str, self.supertypes)))
 
+    # noinspection PyUnresolvedReferences
     def __eq__(self, other: AbstractType):
         return (self.__class__ == other.__class__ and
                 self.name == other.name and
@@ -473,6 +483,7 @@ class TypeConstructor(AbstractType):
     def is_type_constructor(self):
         return True
 
+    # noinspection PyUnresolvedReferences
     def is_subtype(self, other: Type):
         supertypes = self.get_supertypes()
         matched_supertype = None
@@ -510,6 +521,7 @@ class TypeConstructor(AbstractType):
         return etype
 
 
+# noinspection PyUnresolvedReferences
 def _to_type_variable_free(t: Type, t_param, factory) -> Type:
     if t.is_type_var():
         bound = t.get_bound_rec(factory)
@@ -534,6 +546,7 @@ def _to_type_variable_free(t: Type, t_param, factory) -> Type:
         return t
 
 
+# noinspection PyUnresolvedReferences
 def _is_type_arg_contained(t: Type, other: Type,
                            type_param: TypeParameter) -> bool:
     # We implement this function based on the containment rules described
@@ -569,6 +582,7 @@ def _is_type_arg_contained(t: Type, other: Type,
     return False
 
 
+# noinspection PyUnresolvedReferences,PyAbstractClass
 class ParameterizedType(SimpleClassifier):
     def __init__(self, t_constructor: TypeConstructor,
                  type_args: List[Type],
@@ -602,7 +616,7 @@ class ParameterizedType(SimpleClassifier):
     def has_wildcards(self):
         return any(
             t_arg.is_wildcard() or (
-                t_arg.is_parameterized() and t_arg.has_wildcards()
+                    t_arg.is_parameterized() and t_arg.has_wildcards()
             )
             for t_arg in self.type_args
         )
@@ -649,11 +663,11 @@ class ParameterizedType(SimpleClassifier):
                                                         factory))
         return self.t_constructor.new(type_args)
 
-    def get_type_variables(self, factory) -> Dict[TypeParameter, Set[Type]]:
+    def get_type_variables(self, factory) -> Dict[TypeParameter, OrderedSet[Type]]:
         # This function actually returns a dict of the enclosing type variables
         # along with the set of their bounds.
         type_vars = defaultdict(OrderedSet)
-        for i, t_arg in enumerate(self.type_args):
+        for _, t_arg in enumerate(self.type_args):
             t_arg = t_arg
             if t_arg.is_type_var():
                 type_vars[t_arg].add(
@@ -710,8 +724,7 @@ class ParameterizedType(SimpleClassifier):
         return False
 
     def is_assignable(self, other: Type):
-        #TODO
-        # Import here to prevent circular dependency.
+        # TODO Import here to prevent circular dependency.
         from src.ir import java_types as jt
         # We should handle Java primitive arrays
         # In Java Byte[] is not assignable to byte[] and vice versa.
@@ -730,6 +743,7 @@ class ParameterizedType(SimpleClassifier):
         return self.is_subtype(other)
 
 
+# noinspection PyAbstractClass
 class Function(Classifier):
     # FIXME: Represent function as a parameterized type
     def __init__(self, name, param_types, ret_type):
@@ -738,13 +752,14 @@ class Function(Classifier):
         self.ret_type = ret_type
 
     def __str__(self):
-        return self.name + "(" + ','.join(map(str, self.param_types)) +\
+        return self.name + "(" + ','.join(map(str, self.param_types)) + \
             ") -> " + str(self.ret_type)
 
     def is_subtype(self, other: Type):
         return False
 
 
+# noinspection PyAbstractClass
 class ParameterizedFunction(Function):
     # FIXME: Represent function as a parameterized type
     def __init__(self, name, type_parameters, param_types, ret_type):
@@ -760,6 +775,7 @@ class ParameterizedFunction(Function):
         return False
 
 
+# noinspection PyAbstractClass
 class NothingType(Classifier):
     def __init__(self):
         super().__init__("Nothing")

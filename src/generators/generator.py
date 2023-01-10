@@ -36,15 +36,17 @@ from src.modules.logging import Logger, log
 from ordered_set import OrderedSet
 
 
-class Generator():
+# noinspection PyUnresolvedReferences,PyTypeChecker,PyArgumentList
+class Generator:
     # TODO document
     def __init__(self,
                  language=None,
-                 options={},
+                 options=None,
                  logger=None):
         assert language is not None, "You must specify the language"
         self.language = language
         self.logger: Logger = logger
+        # noinspection PyTypeChecker
         self.context: Context = None
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.depth = 1
@@ -56,6 +58,7 @@ class Generator():
 
         # This flag is used for Java lambdas where local variables references
         # must be final.
+        # FIXME: may affect
         self._inside_java_lambda = False
 
         self.function_type = type(self.bt_factory.get_function_type())
@@ -118,6 +121,7 @@ class Generator():
         gen_func = ut.randomUtil.choice(candidates)
         gen_func()
 
+    # noinspection PyTypeChecker
     def generate_main_func(self) -> ast.FunctionDeclaration:
         """Generate the main function.
         """
@@ -845,6 +849,7 @@ class Generator():
         Args:
             etype: Field type.
             class_is_final: Is the class final.
+            add_to_parent: add node to parent (default True)
         """
         name = gu.gen_identifier('lower')
         can_override = not class_is_final and ut.randomUtil.bool()
@@ -1100,7 +1105,7 @@ class Generator():
         """Generate a field access expression.
 
         Args:
-            expr_type: The value that the field access should return.
+            etype: The value that the field access should return.
             only_leaves: do not generate new leaves except from `expr`.
             subtype: The type of the generated expression could be a subtype
                 of `expr_type`.
@@ -1133,7 +1138,7 @@ class Generator():
         find any variable of etype, then it generates one.
 
         Args:
-            expr_type: The type that the variable should have.
+            etype: The type that the variable should have.
             only_leaves: do not generate new leaves except from `expr`.
             subtype: The type of the generated variable could be a subtype
                 of `expr_type`.
@@ -1490,7 +1495,6 @@ class Generator():
         Args:
             etype: return type of the lambda.
             not_void: the lambda should not return void.
-            shadow_name: give a specific shadow name.
             params: parameters for the lambda.
         """
         if self.declaration_namespace:
@@ -2083,7 +2087,6 @@ class Generator():
             exclude_arrays: exclude array types.
             exclude_covariants: exclude covariant type parameters.
             exclude_contravariants: exclude contravariant type parameters.
-            exclude_type_vars: exclude type variables.
             exclude_function_types: exclude function types.
 
         Returns:
@@ -2338,7 +2341,7 @@ class Generator():
             self.namespace, True).values())
         var_decls = [d for d in decls
                      if not isinstance(d, ast.ParameterDeclaration)]
-        if (not var_decls and ret_type != self.bt_factory.get_void_type()):
+        if not var_decls and ret_type != self.bt_factory.get_void_type():
             # The function does not contain any declarations and its return
             # type is not Unit. So, we can create an expression-based function.
             body = expr if ut.randomUtil.bool(cfg.prob.function_expr) else \
@@ -2368,7 +2371,7 @@ class Generator():
         return exprs, decls
 
     def _gen_ret_and_paramas_from_sig(self, etype, inside_lambda=False) -> \
-            Tuple[tp.Type, ast.ParameterDeclaration]:
+            Tuple[tp.Type, List[ast.ParameterDeclaration]]:
         """Generate parameters from signature and return them along with return
         type.
 
@@ -2376,6 +2379,7 @@ class Generator():
             etype: signature type
             inside_lambda: true if we want to generate parameters for a lambda
         """
+        prev_inside_java_lamdba = False
         if inside_lambda:
             prev_inside_java_lamdba = self._inside_java_lambda
             self._inside_java_lambda = self.language == "java"
@@ -2421,6 +2425,7 @@ class Generator():
         Returns:
             AttrReceiverInfo
         """
+        fun_type_var_map = {}
         decls = []
         variables = self.context.get_vars(self.namespace).values()
         if self._inside_java_lambda:
@@ -2642,6 +2647,7 @@ class Generator():
         return self._gen_matching_class(etype, 'functions',
                                         signature=signature)
 
+    # noinspection PyProtectedMember
     def _get_matching_class(self,
                             etype: tp.Type,
                             subtype: bool,
@@ -2809,9 +2815,7 @@ class Generator():
                                   subtype: bool,
                                   attr_name: str,
                                   signature=False
-                                  ) -> List[Tuple[ast.ClassDeclaration,
-    tu.TypeVarMap,
-    ast.Declaration]]:
+                                  ) -> List[Tuple[ast.ClassDeclaration, tu.TypeVarMap, ast.Declaration]]:
         """Get classes that have attributes of attr_name that are/return etype.
 
         Args:

@@ -1,5 +1,5 @@
 # pylint: disable=dangerous-default-value
-from typing import List, Set, Union
+from typing import List, Union
 from copy import deepcopy
 
 from ordered_set import OrderedSet
@@ -27,8 +27,10 @@ def check_default_eq(first, second):
         return second is None
 
 
+# noinspection PyAbstractClass
 class Expr(Node):
-    pass
+    def is_equal(self, other):
+        pass
 
 
 class Program(Node):
@@ -67,6 +69,7 @@ class Program(Node):
             new_types.append(t)
         return new_types
 
+    # noinspection PyProtectedMember
     def update_declarations(self, decls):
         self.context._context[GLOBAL_NAMESPACE]['decls'] = decls
 
@@ -151,6 +154,7 @@ class Block(Node):
         return False
 
 
+# noinspection PyAbstractClass
 class Declaration(Node):
     def get_type(self):
         raise NotImplementedError('get_type() must be implemented')
@@ -245,6 +249,7 @@ class FieldDeclaration(Declaration):
         return False
 
 
+# noinspection PyAbstractClass
 class ObjectDecleration(Declaration):
     def __init__(self, name: str):
         self.name = name
@@ -265,7 +270,9 @@ class ObjectDecleration(Declaration):
 
 
 class SuperClassInstantiation(Node):
-    def __init__(self, class_type: types.Type, args: List[Expr] = []):
+    def __init__(self, class_type: types.Type, args: List[Expr] = None):
+        if args is None:
+            args = []
         assert not isinstance(class_type, types.AbstractType)
         self.class_type = class_type
         self.args = args
@@ -379,7 +386,9 @@ class FunctionDeclaration(Declaration):
                  inferred_type: types.Type = None,
                  is_final=True,
                  override=False,
-                 type_parameters=[]):
+                 type_parameters=None):
+        if type_parameters is None:
+            type_parameters = []
         self.name = name
         self.params = params
         self.ret_type = ret_type
@@ -393,6 +402,7 @@ class FunctionDeclaration(Declaration):
         assert self.inferred_type, ("The inferred_type of a function must"
                                     " not be None")
 
+    # noinspection PyTypeChecker
     def children(self):
         children = self.params + self.type_parameters
         if self.body is None:
@@ -489,6 +499,7 @@ class Lambda(Expr):
         self.body = body
         self.signature = signature
 
+    # noinspection PyTypeChecker
     def children(self):
         if self.body is None:
             return self.params
@@ -538,23 +549,24 @@ class ClassDeclaration(Declaration):
     def __init__(self, name: str,
                  superclasses: List[SuperClassInstantiation],
                  class_type: int = None,
-                 fields: List[FieldDeclaration] = [],
-                 functions: List[FunctionDeclaration] = [],
+                 fields: List[FieldDeclaration] = None,
+                 functions: List[FunctionDeclaration] = None,
                  is_final=True,
-                 type_parameters: List[types.TypeParameter] = []):
+                 type_parameters: List[types.TypeParameter] = None):
         self.name = name
         self.superclasses = superclasses
         self.class_type = class_type or self.REGULAR
-        self.fields = fields
-        self.functions = functions
+        self.fields = fields if fields else []
+        self.functions = functions if functions else []
         self.is_final = is_final
-        self.type_parameters = type_parameters
+        self.type_parameters = type_parameters if type_parameters else []
         self.supertypes = [s.class_type for s in self.superclasses]
 
     @property
     def attributes(self):
         return self.fields + self.functions
 
+    # noinspection PyTypeChecker
     def children(self):
         return self.fields + self.superclasses + self.functions + \
                self.type_parameters
@@ -717,16 +729,17 @@ class ClassDeclaration(Declaration):
         Get all attributes (fields + functions) from the inheritance chain
         """
         attributes = self.get_callable_functions(class_decls)
+        # noinspection PyTypeChecker
         attributes.update(self.get_all_fields(class_decls))
         return attributes
 
     def get_abstract_functions(self, class_decls) -> List[FunctionDeclaration]:
         # Get the abstract functions that are declared in the current class.
-        functions = {
+        functions = [
             f
             for f in self.functions
             if f.body is None
-        }
+        ]
         if not self.superclasses:
             return functions
 
@@ -770,7 +783,7 @@ class ClassDeclaration(Declaration):
             new_f.inferred_type = ret_type
             new_f.ret_type = ret_type
             new_f.type_parameters = type_params
-            functions.add(new_f)
+            functions.append(new_f)
         return functions
 
     def inherits_from(self, cls):
@@ -866,7 +879,7 @@ class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
     def __init__(self, literal: int, integer_type):
         assert isinstance(literal, int), 'Integer literal must be int'
-        super().__init__(literal)
+        super().__init__(str(literal))
         self.integer_type = integer_type
 
     def is_equal(self, other):
@@ -1036,7 +1049,7 @@ class BinaryOp(Expr):
             # @theosotr should we keep this check? If we ant to keep it we may
             # want to check if the operator is valid for a given language
             assert operator in self.ALL_OPERATORS, (
-                    'Binary operator ' + operator + ' is not valid')
+                    'Binary operator ' + str(operator) + ' is not valid')
         self.lexpr = lexpr
         self.rexpr = rexpr
         self.operator = operator
@@ -1092,9 +1105,9 @@ class EqualityExpr(BinaryOp):
     VALID_OPERATORS = {
         "kotlin": [
             Operator('=='),
-            Operator('==='),
+            # Operator('==='), TODO may be use reference comparison in kotlin instead of regular comparison
             Operator('=', is_not=True),
-            Operator('==', is_not=True)
+            # Operator('==', is_not=True)
         ],
         "groovy": [
             Operator('=='),
@@ -1188,6 +1201,7 @@ class IncDecExpr(BinaryOp):
     }
 
     def __init__(self, lexpr: Expr, operator: Operator, prefix: bool = False):
+        # noinspection PyTypeChecker
         super().__init__(lexpr, None, operator)
         self.prefix = prefix
 
@@ -1203,6 +1217,7 @@ class IncDecExpr(BinaryOp):
 class Is(BinaryOp):
     def __init__(self, expr: Expr, etype: types.Type, is_not=False):
         operator = Operator('is', is_not=is_not)
+        # noinspection PyTypeChecker
         super().__init__(expr, etype, operator)
 
     def children(self):
@@ -1227,6 +1242,7 @@ class New(Expr):
         super().update_children(children)
         self.args = children
 
+    # noinspection PyUnresolvedReferences
     def __str__(self):
         if getattr(self.class_type, 'type_args', None) is not None:
             return " new {}<{}> ({})".format(
@@ -1270,16 +1286,17 @@ class FieldAccess(Expr):
 class FunctionCall(Expr):
     def __init__(self, func: str, args: List[CallArgument],
                  receiver: Expr = None,
-                 type_args: List[types.Type] = [],
+                 type_args: List[types.Type] = None,
                  is_ref_call: bool = False):
         self.func = func
         self.args = args
         self.receiver = receiver
-        self.type_args = type_args
+        self.type_args = type_args if type_args else []
         self.is_ref_call = is_ref_call
         self._can_infer_type_args = False
         self.type_parameters = []
 
+    # noinspection PyTypeChecker
     def children(self):
         if self.receiver is None:
             return self.args
@@ -1399,6 +1416,7 @@ class Assignment(Expr):
         return False
 
 
+# noinspection PyAbstractClass
 class LoopExpr(Expr):
 
     def __init__(self, body: Node):
@@ -1443,6 +1461,7 @@ class ForExpr(LoopExpr):
         return "for ({})\n{}".format(str(self.loop_expr), str(self.body))
 
 
+# noinspection PyAbstractClass
 class WhileExprBase(LoopExpr):
 
     def __init__(self, body: Node, condition: Expr):

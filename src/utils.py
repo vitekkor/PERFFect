@@ -5,6 +5,7 @@ import string
 import pickle
 import os
 import sys
+import inspect
 
 from ordered_set import OrderedSet
 
@@ -113,6 +114,22 @@ def get_reserved_words(resource_path, language):
     path = os.path.join(resource_path, filename)
     return path2set(path)
 
+# for debugging purposes
+def random_inspect(random_fun):
+    def inner(*args, **kwargs):
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        from_ = calframe[1][1]
+        line = calframe[1][2]
+        caller = calframe[1][3]
+        callings = calframe[1][4]
+        result = random_fun(*args, **kwargs)
+        str_ = "caller - {}:{}:{}; method - {}; args - {}, kwargs - {}, result - {}".format(from_, line, caller, callings, args[1:], kwargs, result)
+        print(str_)
+        return result
+
+    return inner
+
 
 class RandomUtils():
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
@@ -140,6 +157,7 @@ class RandomUtils():
     def reset_word_pool(self):
         self.WORDS = OrderedSet(self.INITIAL_WORDS)
 
+    @random_inspect
     def bool(self, prob=0.5):
         self.previous_result = self.result
         self.previous_call = self.call
@@ -147,6 +165,7 @@ class RandomUtils():
         self.call = "bool"
         return self.result
 
+    @random_inspect
     def word(self):
         self.previous_result = self.result
         self.previous_call = self.call
@@ -156,11 +175,13 @@ class RandomUtils():
         self.call = "word"
         return word
 
+    @random_inspect
     def remove_reserved_words(self, language):
         reserved_words = get_reserved_words(self.resource_path, language)
         self.INITIAL_WORDS = self.INITIAL_WORDS - reserved_words
         self.WORDS = self.WORDS - reserved_words
 
+    @random_inspect
     def integer(self, min_int=0, max_int=10):
         self.previous_result = self.result
         self.previous_call = self.call
@@ -168,29 +189,59 @@ class RandomUtils():
         self.call = "integer {} {}".format(min_int, max_int)
         return self.result
 
+    @random_inspect
     def char(self):
-        return self.r.choice(string.ascii_letters + string.digits)
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.choice(string.ascii_letters + string.digits)
+        self.call = "char"
+        return self.result
 
+    @random_inspect
     def choice(self, choices):
-        return self.r.choice(choices)
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.choice(choices)
+        self.call = "choice {}".format(str(choices))
+        return self.result
 
+    @random_inspect
     def sample(self, choices, k=None):
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.call = "sample {} k={}".format(str(choices), k)
         k = k or self.integer(0, len(choices))
-        return self.r.sample(choices, k)
+        self.result = self.r.sample(choices, k)
+        return self.result
 
+    @random_inspect
     def str(self, length=5):
-        return ''.join(self.r.sample(
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = ''.join(self.r.sample(
             string.ascii_letters + string.digits, length))
+        self.call = "str {}".format(length)
+        return self.result
 
+    @random_inspect
     def caps(self, length=1, blacklist=None):
+        self.previous_result = self.result
+        self.previous_call = self.call
         blacklist = blacklist if blacklist is not None else []
+        self.call = "caps {} {}".format(length, str(blacklist))
         while True:
             res = ''.join(self.r.sample(string.ascii_uppercase, length))
             if res not in blacklist:
+                self.result = res
                 return res
 
+    @random_inspect
     def range(self, from_value, to_value):
-        return range(0, self.integer(from_value, to_value))
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = range(0, self.integer(from_value, to_value))
+        self.call = "range {} {}".format(from_value, to_value)
+        return self.result
 
 
 randomUtil = RandomUtils()

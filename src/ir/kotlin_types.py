@@ -210,7 +210,7 @@ class BooleanType(AnyType):
 class ArrayType(tp.TypeConstructor, AnyType):
     def __init__(self, name="Array"):
         # In Kotlin, arrays are invariant.
-        super().__init__(name, [tp.TypeParameter("T")])
+        super().__init__(name, [tp.TypeParameter("T", variance=tp.Covariant)])
         self.supertypes.append(AnyType())
 
 
@@ -232,9 +232,9 @@ class FunctionType(tp.TypeConstructor, AnyType):
         name = "Function" + str(nr_type_parameters)
         # We can have decl-variance in Kotlin
         type_parameters = [
-                              tp.TypeParameter("A" + str(i), tp.Contravariant)
+                              tp.TypeParameter("A" + str(i)) #, tp.Contravariant)
                               for i in range(1, nr_type_parameters + 1)
-                          ] + [tp.TypeParameter("R", tp.Covariant)]
+                          ] + [tp.TypeParameter("R")] #, tp.Covariant)]
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
         self.supertypes.append(AnyType())

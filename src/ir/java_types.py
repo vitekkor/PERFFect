@@ -84,7 +84,7 @@ class JavaBuiltin(Builtin):
         return str(self.name).lower() + "(java-primitive)"
 
     def is_primitive(self):
-        return self.primitive
+        return False
 
     def box_type(self):
         raise NotImplementedError('box_type() must be implemented')
@@ -346,7 +346,7 @@ class IteratorType(tp.TypeConstructor, ObjectType):
         self.supertypes.append(ObjectType())
 
 
-class FunctionType(tp.TypeConstructor):
+class FunctionType(tp.TypeConstructor, ObjectType):
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
         type_parameters = [
@@ -355,6 +355,7 @@ class FunctionType(tp.TypeConstructor):
                           ] + [tp.TypeParameter("R")]
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
+        self.supertypes.append(ObjectType())
 
 
 ### WARNING: use them only for testing ###
