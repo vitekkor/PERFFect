@@ -137,6 +137,13 @@ class Generator():
             self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
+        usr_types = [
+            c.get_type()
+            for c in self.context.get_classes(self.namespace).values()
+        ]
+        iterable_types = tu.get_iterable_types(self.bt_factory, usr_types, [x for x in self.get_types() if hasattr(x, 'type_args')])
+        random_type_to_iterate = ut.random.choice(iterable_types)
+
         body = ast.Block(decls + [expr])
         main_func.body = body
         self.depth = initial_depth
