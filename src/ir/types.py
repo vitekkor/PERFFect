@@ -4,6 +4,8 @@ from copy import deepcopy, copy
 from collections import defaultdict
 from typing import List, Dict, Set
 
+from ordered_set import OrderedSet
+
 from src.ir.node import Node
 
 
@@ -494,7 +496,7 @@ class TypeConstructor(AbstractType):
         #    In this context, the type constructor Bar<T> is not a subtype
         #    of Foo<Float, T>.
         # }
-        type_vars = set(
+        type_vars = OrderedSet(
             matched_supertype.get_type_variable_assignments().values())
         return not bool(type_vars.intersection(self.type_parameters))
 
@@ -650,7 +652,7 @@ class ParameterizedType(SimpleClassifier):
     def get_type_variables(self, factory) -> Dict[TypeParameter, Set[Type]]:
         # This function actually returns a dict of the enclosing type variables
         # along with the set of their bounds.
-        type_vars = defaultdict(set)
+        type_vars = defaultdict(OrderedSet)
         for i, t_arg in enumerate(self.type_args):
             t_arg = t_arg
             if t_arg.is_type_var():
@@ -708,6 +710,7 @@ class ParameterizedType(SimpleClassifier):
         return False
 
     def is_assignable(self, other: Type):
+        #TODO
         # Import here to prevent circular dependency.
         from src.ir import java_types as jt
         # We should handle Java primitive arrays

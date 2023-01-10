@@ -68,16 +68,16 @@ class KotlinBuiltinFactory(bt.BuiltinFactory):
 
     def get_non_nothing_types(self):
         types = super().get_non_nothing_types()
-        types.extend([
-            DoubleArray,
-            FloatArray,
-            LongArray,
-            IntegerArray,
-            ShortArray,
-            ByteArray,
-            CharArray,
-            BooleanArray
-        ])
+        # types.extend([
+        #     DoubleArray,
+        #     FloatArray,
+        #     LongArray,
+        #     IntegerArray,
+        #     ShortArray,
+        #     ByteArray,
+        #     CharArray,
+        #     BooleanArray
+        # ])
         return types
 
 

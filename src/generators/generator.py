@@ -33,6 +33,7 @@ from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
 from src.modules.logging import Logger, log
+from ordered_set import OrderedSet
 
 
 class Generator():
@@ -79,7 +80,7 @@ class Generator():
         # their fields and functions yet). So, we avoid instantiating these
         # classes or using them as supertypes, because we do not have the
         # complete informations about them.
-        self._blacklisted_classes: set = set()
+        self._blacklisted_classes: OrderedSet = OrderedSet()
 
     ### Entry Point Generators ###
 
@@ -319,7 +320,7 @@ class Generator():
                            self.namespace[-2][0].islower())
 
         prev_inside_java_lamdba = self._inside_java_lambda
-        self._inside_java_lambda = nested_function and self.language == "java"
+        # self._inside_java_lambda = nested_function and self.language == "java"
         # Type parameters of functions cannot be variant.
         # Also note that at this point, we do not allow a conflict between
         # type variable names of class and type variable names of functions.
@@ -349,11 +350,7 @@ class Generator():
         else:
             params = (
                 self._gen_func_params()
-                if (
-                        ut.randomUtil.bool(prob=0.25) or
-                        self.language == 'java' or
-                        self.language == 'groovy' and is_interface
-                )
+                if (ut.randomUtil.bool(prob=0.25) or is_interface)
                 else self._gen_func_params_with_default()
             )
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
@@ -1201,7 +1198,7 @@ class Generator():
         """
         initial_depth = self.depth
         self.depth += 1
-        exclude_function_types = self.language == 'java'
+        exclude_function_types = True
         etype = self.select_type(exclude_function_types=exclude_function_types)
         op = ut.randomUtil.choice(ast.EqualityExpr.VALID_OPERATORS[self.language])
         e1 = self.generate_expr(etype, only_leaves, subtype=False)
@@ -1287,10 +1284,10 @@ class Generator():
         e1 = self.generate_expr(e1_type, only_leaves)
         e2 = self.generate_expr(e2_type, only_leaves)
         self.depth = initial_depth
-        if self.language == 'java' and e1_type.name in ('Boolean', 'String'):
-            op = ut.randomUtil.choice(
-                ast.EqualityExpr.VALID_OPERATORS[self.language])
-            return ast.EqualityExpr(e1, e2, op)
+        # if self.language == 'java' and e1_type.name in ('Boolean', 'String'):
+        #     op = ut.randomUtil.choice(
+        #         ast.EqualityExpr.VALID_OPERATORS[self.language])
+        #     return ast.EqualityExpr(e1, e2, op)
         return ast.ComparisonExpr(e1, e2, op)
 
     def gen_conditional(self,
@@ -1455,12 +1452,12 @@ class Generator():
         for t in subtypes:
             if t.is_type_var():
                 continue
-            if self.language != 'kotlin':
-                # We can't check the instance of a parameterized type due
-                # to type erasure. The only exception is Kotlin, see below.
-                if not t.is_parameterized():
-                    new_subtypes.append(t)
-                continue
+            # if self.language != 'kotlin':
+            #     # We can't check the instance of a parameterized type due
+            #     # to type erasure. The only exception is Kotlin, see below.
+            #     if not t.is_parameterized():
+            #         new_subtypes.append(t)
+            #     continue
 
             # In Kotlin, you can smart cast a parameterized type like the
             # following.
@@ -1508,7 +1505,7 @@ class Generator():
         self.depth += 1
 
         prev_inside_java_lamdba = self._inside_java_lambda
-        self._inside_java_lambda = self.language == "java"
+        # self._inside_java_lambda = self.language == "java"
 
         params = params if params is not None else self._gen_func_params()
         param_types = [p.param_type for p in params]

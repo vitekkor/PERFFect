@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from ordered_set import OrderedSet
+
 from src import utils
 from src.ir import ast
 
@@ -114,7 +116,7 @@ class Context():
         """Return a set of tuples of namespace, decl. Note that namespace
         includes the name of the decl.
         """
-        namespaces_decls = set()  # Set of tuples of namespace, decl
+        namespaces_decls = OrderedSet()  # Set of tuples of namespace, decl
         if glob:
             namespaces = [(namespace[0],)]
         else:

@@ -1,9 +1,12 @@
+import typing
 from collections import defaultdict
 import random as rnd
 import string
 import pickle
 import os
 import sys
+
+from ordered_set import OrderedSet
 
 
 class Singleton(type):
@@ -97,12 +100,12 @@ def save_text(path, text):
 def path2set(path):
     if os.path.isfile(path):
         with open(path, 'r') as f:
-            return {
+            return OrderedSet([
                 line.strip()
                 for line in f.readlines()
-            }
+            ])
     else:
-        return set()
+        return OrderedSet()
 
 
 def get_reserved_words(resource_path, language):
@@ -116,28 +119,41 @@ class RandomUtils():
 
     WORD_POOL_LEN = 10000
     # Construct a random word pool of size 'WORD_POOL_LEN'.
-    WORDS: set
-    INITIAL_WORDS: set
+    WORDS: OrderedSet
+    INITIAL_WORDS: OrderedSet
+
+    previous_call: str
+    call: str = ''
+    previous_result: typing.Any
+    result: typing.Any = None
 
     def __init__(self):
         self.seed = 7768787821573447645  # rnd.randrange(sys.maxsize)
         self.r = rnd.Random(self.seed)
-        self.WORDS = set(self.sample(
+        self.WORDS = OrderedSet(self.sample(
             read_lines(os.path.join(self.resource_path, 'words')), self.WORD_POOL_LEN))
-        self.INITIAL_WORDS = set(self.WORDS)
+        self.INITIAL_WORDS = OrderedSet(self.WORDS)
 
     def reset_random(self):
         self.r = rnd.Random(self.seed)
 
     def reset_word_pool(self):
-        self.WORDS = set(self.INITIAL_WORDS)
+        self.WORDS = OrderedSet(self.INITIAL_WORDS)
 
     def bool(self, prob=0.5):
-        return self.r.random() < prob
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.random() < prob
+        self.call = "bool"
+        return self.result
 
     def word(self):
+        self.previous_result = self.result
+        self.previous_call = self.call
         word = self.r.choice(tuple(self.WORDS))
         self.WORDS.remove(word)
+        self.result = word
+        self.call = "word"
         return word
 
     def remove_reserved_words(self, language):
@@ -146,7 +162,11 @@ class RandomUtils():
         self.WORDS = self.WORDS - reserved_words
 
     def integer(self, min_int=0, max_int=10):
-        return self.r.randint(min_int, max_int)
+        self.previous_result = self.result
+        self.previous_call = self.call
+        self.result = self.r.randint(min_int, max_int)
+        self.call = "integer {} {}".format(min_int, max_int)
+        return self.result
 
     def char(self):
         return self.r.choice(string.ascii_letters + string.digits)

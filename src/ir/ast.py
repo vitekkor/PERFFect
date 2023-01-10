@@ -2,6 +2,8 @@
 from typing import List, Set, Union
 from copy import deepcopy
 
+from ordered_set import OrderedSet
+
 import src.ir.type_utils as tu
 import src.ir.types as types
 from src import utils
@@ -630,11 +632,11 @@ class ClassDeclaration(Declaration):
             if f.can_override
         ]
 
-    def get_callable_functions(self, class_decls) -> Set[FunctionDeclaration]:
+    def get_callable_functions(self, class_decls) -> OrderedSet[FunctionDeclaration]:
         """All functions that can be called in instantiations of this class
         """
         # Get functions that are implemented in the current class
-        functions = set(self.functions)
+        functions = OrderedSet(self.functions)
 
         if not self.superclasses:
             return functions
@@ -676,12 +678,12 @@ class ClassDeclaration(Declaration):
 
         return functions
 
-    def get_all_fields(self, class_decls) -> Set[FieldDeclaration]:
+    def get_all_fields(self, class_decls) -> OrderedSet[FieldDeclaration]:
         """
         All fields (including the inheritted ones) that can be accessed by
         instantiations of this class.
         """
-        fields = set(self.fields)
+        fields = OrderedSet(self.fields)
         field_names = {f.name for f in fields}
 
         if not self.superclasses:
@@ -710,7 +712,7 @@ class ClassDeclaration(Declaration):
 
         return fields
 
-    def get_all_attributes(self, class_decls) -> Set[Union[FunctionDeclaration, FieldDeclaration]]:
+    def get_all_attributes(self, class_decls) -> OrderedSet[Union[FunctionDeclaration, FieldDeclaration]]:
         """
         Get all attributes (fields + functions) from the inheritance chain
         """

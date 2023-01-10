@@ -1,5 +1,7 @@
 # pylint: disable=abstract-method, useless-super-delegation,too-many-ancestors
 # pylint: disable=too-few-public-methods
+from ordered_set import OrderedSet
+
 from src.ir.types import Builtin
 
 import src.ir.builtins as bt
@@ -64,23 +66,11 @@ class JavaBuiltinFactory(bt.BuiltinFactory):
     def get_function_type(self, nr_parameters=0):
         return FunctionType(nr_parameters)
 
-    def get_primitive_types(self):
-        return [
-            ByteType(primitive=True),
-            ShortType(primitive=True),
-            IntegerType(primitive=True),
-            LongType(primitive=True),
-            FloatType(primitive=True),
-            DoubleType(primitive=True),
-            CharType(primitive=True),
-            BooleanType(primitive=True)
-        ]
-
     def get_non_nothing_types(self):
-        return super().get_non_nothing_types() + self.get_primitive_types()
+        return super().get_non_nothing_types()
 
     def get_number_types(self):
-        return super().get_number_types() + self.get_primitive_types()[:-1]
+        return super().get_number_types()
 
 
 class JavaBuiltin(Builtin):
@@ -117,7 +107,7 @@ class VoidType(JavaBuiltin):
         if not self.primitive:
             self.supertypes.append(ObjectType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Void
@@ -145,7 +135,7 @@ class IntegerType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Integer
@@ -170,7 +160,7 @@ class ShortType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Short
@@ -195,7 +185,7 @@ class LongType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Long
@@ -220,7 +210,7 @@ class ByteType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Byte
@@ -245,7 +235,7 @@ class FloatType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Float
@@ -270,7 +260,7 @@ class DoubleType(NumberType):
         if not self.primitive:
             self.supertypes.append(NumberType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Double
@@ -295,7 +285,7 @@ class CharType(ObjectType):
         if not self.primitive:
             self.supertypes.append(ObjectType())
         else:
-            self.supertypes = set()
+            self.supertypes = OrderedSet()
 
     def get_builtin_type(self):
         return bt.Char

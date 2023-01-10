@@ -1,3 +1,5 @@
+from ordered_set import OrderedSet
+
 from src.analysis.use_analysis import NONE_NODE
 
 
@@ -129,7 +131,7 @@ def find_longest_paths(graph, vertex):
 
 
 def find_all_reachable(graph, vertex):
-    res = set()
+    res = OrderedSet()
     for path in find_longest_paths(graph, vertex):
         res.update(path)
     return res

@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from typing import TypeVar, List, Tuple, Dict
 
+from ordered_set import OrderedSet
+
 import src.ir.types as tp
 import src.ir.context as ctx
 import src.ir.builtins as bt
@@ -227,7 +229,7 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
         t_set = etype.get_supertypes()
     else:
         # Find subtypes
-        t_set = set()
+        t_set = OrderedSet()
         for c in types:
             selected_type = c.get_type() if hasattr(c, 'get_type') else c
             if etype == selected_type:
