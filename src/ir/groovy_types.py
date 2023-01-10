@@ -78,6 +78,9 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
     def get_number_types(self):
         return super().get_number_types() + self.get_primitive_types()[:-1]
 
+    def get_iterator_type(self):
+        pass
+
 
 class GroovyBuiltin(Builtin):
     def __init__(self, name, primitive):

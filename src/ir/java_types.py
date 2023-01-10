@@ -2,7 +2,6 @@
 # pylint: disable=too-few-public-methods
 from src.ir.types import Builtin
 
-
 import src.ir.builtins as bt
 import src.ir.types as tp
 
@@ -55,6 +54,9 @@ class JavaBuiltinFactory(bt.BuiltinFactory):
 
     def get_array_type(self):
         return ArrayType()
+
+    def get_iterator_type(self):
+        return IteratorType()
 
     def get_big_integer_type(self):
         return IntegerType(primitive=False)
@@ -348,13 +350,19 @@ class ArrayType(tp.TypeConstructor, ObjectType):
         self.supertypes.append(ObjectType())
 
 
+class IteratorType(tp.TypeConstructor, ObjectType):
+    def __init__(self, name="java.util.Iterator"):
+        super().__init__(name, [tp.TypeParameter("T")])
+        self.supertypes.append(ObjectType())
+
+
 class FunctionType(tp.TypeConstructor):
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
         type_parameters = [
-            tp.TypeParameter("A" + str(i))
-            for i in range(1, nr_type_parameters + 1)
-        ] + [tp.TypeParameter("R")]
+                              tp.TypeParameter("A" + str(i))
+                              for i in range(1, nr_type_parameters + 1)
+                          ] + [tp.TypeParameter("R")]
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
 

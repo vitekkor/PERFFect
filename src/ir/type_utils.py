@@ -207,7 +207,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
                 return etype
             # Type argument should not be primitives.
             t_args = [t for t in t_args if not t.is_primitive()]
-            t_arg = utils.random.choice(t_args)
+            t_arg = utils.randomUtil.choice(t_args)
             type_var_map[t_param] = t_arg
     return etype.t_constructor.new(list(type_var_map.values()))
 
@@ -283,7 +283,7 @@ def get_irrelevant_parameterized_type(etype, types, type_args_map,
             type_list = [to_type(t, types)
                          for t in types
                          if t != type_args[i]]
-            new_type_args[i] = utils.random.choice(type_list)
+            new_type_args[i] = utils.randomUtil.choice(type_list)
         else:
             t = find_irrelevant_type(type_args[i], types, factory)
             if t is None:
@@ -334,7 +334,7 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type],
     available_types = [t for t in types if t not in relevant_types]
     if not available_types:
         return None
-    t = utils.random.choice(available_types)
+    t = utils.randomUtil.choice(available_types)
     if t.is_type_constructor():
         # Must instantiate the given type constrcutor. Also pass the map of
         # type arguments in order to pass type arguments that are irrelevant
@@ -490,7 +490,7 @@ def _get_type_arg_variance(t_param, variance_choices):
         variances = [tp.Invariant] + covariance
     else:
         variances = [tp.Invariant] + contravariance
-    return utils.random.choice(variances)
+    return utils.randomUtil.choice(variances)
 
 
 def update_type_var_bound_rec(t_param: tp.TypeParameter,
@@ -643,7 +643,7 @@ def _compute_type_variable_assignments(
                         a_types = [t_bound]
                 else:
                     a_types = types
-        c = utils.random.choice(a_types)
+        c = utils.randomUtil.choice(a_types)
         if isinstance(c, ast.ClassDeclaration):
             cls_type = c.get_type()
         else:
@@ -742,7 +742,7 @@ def instantiate_parameterized_function(
 def choose_type(types: List[tp.Type], only_regular=True):
     # Randomly choose a type from the list of available types.
     types = _get_available_types(None, types, only_regular)
-    c = utils.random.choice(types)
+    c = utils.randomUtil.choice(types)
     if isinstance(c, ast.ClassDeclaration):
         cls_type = c.get_type()
     else:
@@ -1354,9 +1354,3 @@ def build_type_variable_dependencies(t1: tp.Type, t2: tp.Type):
             parent = st
             supertypes = _get_supertypes(st)
     return type_deps
-
-
-def get_iterable_types(builtin: bt.BuiltinFactory, usr_types: list[tp.Type] = [], builtin_types: list[tp.ParameterizedType] = []) -> list[tp.Type]:
-    iterable_types = [tp.ParameterizedType(builtin.get_array_type(), [t]) for t in usr_types]
-    iterable_types = iterable_types + builtin_types
-    return iterable_types

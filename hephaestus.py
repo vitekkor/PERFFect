@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 # pylint: disable=too-few-public-methods
+import random
 from datetime import datetime
 import json
 import multiprocessing as mp
@@ -267,56 +268,29 @@ def gen_program(pid, dirname, packages):
 
     The program belongs to the given packages.
     """
-    utils.random.reset_word_pool()
+    utils.randomUtil.reset_word_pool()
+    utils.randomUtil.reset_random()
+    cli_args.language = 'kotlin'
     translator = TRANSLATORS[cli_args.language]('src.' + packages[0],
                                                 cli_args.options['Translator'])
     proc = ProgramProcessor(pid, cli_args)
     try:
         program, oracle = proc.get_program()
-        utils.translate_program(translator, program)
-        if cli_args.examine:
-            print("pp program.context._context (to print the context)")
-            __import__('ipdb').set_trace()
-        if cli_args.keep_all:
-            # Save the initial program.
-            save_program(
-                program,
-                utils.translate_program(translator, program),
-                os.path.join(get_generator_dir(pid), translator.get_filename())
-            )
-        correct_program = process_cp_transformations(
-            pid, dirname, translator, proc, program, packages[0])
-        stats = {
-            'transformations': [t.get_name()
-                                for t in proc.get_transformations()],
-            'error': None,
-            'programs': {
-                correct_program: True
-            },
-        }
-        if not cli_args.only_correctness_preserving_transformations:
-            incorrect_program = process_ncp_transformations(
-                pid, dirname, translator, proc, program, packages[1])
-            if incorrect_program:
-                stats['error'] = incorrect_program[1]
-                stats['programs'][incorrect_program[0]] = False
-        return ProgramRes(False, stats)
+        kotlin = utils.translate_program(translator, program)
+        utils.randomUtil.reset_random()
+        utils.randomUtil.reset_word_pool()
+        cli_args.language = 'java'
+        proc = ProgramProcessor(pid, cli_args)
+        program2, oracle2 = proc.get_program()
+        translator = TRANSLATORS[cli_args.language]('src.' + packages[0],
+                                                    cli_args.options['Translator'])
+        java = utils.translate_program(translator, program)
+        return program, kotlin, program2, java
     except Exception as exc:
         # This means that we have programming error in transformations
-        err = ''
-        if cli_args.print_stacktrace:
-            err = str(traceback.format_exc())
-        else:
-            err = str(exc)
-        if cli_args.debug:
-            print(err)
-        stats = {
-            'transformations': [t.get_name()
-                                for t in proc.get_transformations()],
-            'error': err,
-            'program': None
-        }
-        return ProgramRes(True, stats)
+        err = str(traceback.format_exc())
+        print(err)
+        return None
 
 
 def gen_program_mul(pid, dirname, packages):
@@ -324,7 +298,7 @@ def gen_program_mul(pid, dirname, packages):
     if STOP_COND:
         return
     try:
-        utils.random.r.seed()
+        # utils.random.r.seed()
         return gen_program(pid, dirname, packages)
     except KeyboardInterrupt:
         STOP_COND = True
@@ -474,12 +448,12 @@ def _run(process_program, process_res):
     start_time = time.time()
     while stop_condition(iteration, time_passed):
         try:
-            utils.random.reset_word_pool()
+            utils.randomUtil.reset_word_pool()
             tmpdir = tempfile.mkdtemp()
             res = []
             batches = get_batches(iteration - 1)
             for i in range(batches):
-                packages = (utils.random.word(), utils.random.word())
+                packages = (utils.randomUtil.word(), utils.randomUtil.word())
                 dirname = os.path.join(tmpdir, 'src')
                 pid = iteration + i
                 r = process_program(pid, dirname, packages)
@@ -505,8 +479,14 @@ def run():
         res = {} if cli_args.dry_run else check_oracle(testdir, oracles)
         update_stats(res, batch)
 
+    utils.randomUtil.reset_word_pool()
+    packages = (utils.randomUtil.word(), utils.randomUtil.word())
+    utils.randomUtil.reset_random()
+    tmpdir = tempfile.mkdtemp()
+    dirname = os.path.join(tmpdir, 'src')
+    res = []
     try:
-        _run(process_program, process_res)
+        res.append(process_program(1, dirname, packages))
     except KeyboardInterrupt:
         pass
     path = os.path.join(cli_args.test_directory, 'tmp')

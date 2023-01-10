@@ -74,6 +74,10 @@ class BuiltinFactory(ABC):
         pass
 
     @abstractmethod
+    def get_iterator_type(self):
+        pass
+
+    @abstractmethod
     def get_function_type(self, nr_parameters=0):
         pass
 

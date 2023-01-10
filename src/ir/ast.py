@@ -1165,6 +1165,39 @@ class ArithExpr(BinaryOp):
     }
 
 
+class IncDecExpr(BinaryOp):
+    ALL_OPERATORS = [
+        Operator('++'),
+        Operator('--')
+    ]
+    VALID_OPERATORS = {
+        "kotlin": [
+            Operator('++'),
+            Operator('--')
+        ],
+        "groovy": [
+            Operator('++'),
+            Operator('--')
+        ],
+        "java": [
+            Operator('++'),
+            Operator('--')
+        ]
+    }
+
+    def __init__(self, lexpr: Expr, operator: Operator, prefix: bool = False):
+        super().__init__(lexpr, None, operator)
+        self.prefix = prefix
+
+    def __str__(self):
+        if self.prefix:
+            return "{}{}".format(
+                str(self.operator), str(self.lexpr))
+        else:
+            return "{}{}".format(
+                str(self.lexpr), str(self.operator))
+
+
 class Is(BinaryOp):
     def __init__(self, expr: Expr, etype: types.Type, is_not=False):
         operator = Operator('is', is_not=is_not)
@@ -1418,7 +1451,7 @@ class WhileExprBase(LoopExpr):
 class WhileExpr(WhileExprBase):
 
     def __str__(self):
-        return "while ({}) { {} }".format(str(self.condition), str(self.body))
+        return "while ({})\n{}".format(str(self.condition), str(self.body))
 
     def children(self):
         return [self.condition, self.body]
@@ -1427,7 +1460,7 @@ class WhileExpr(WhileExprBase):
 class DoWhileExpr(WhileExprBase):
 
     def __str__(self):
-        return "do { {} } while ({})".format(str(self.condition), str(self.body))
+        return "do\n{}\nwhile ({})".format(str(self.body), str(self.condition))
 
     def children(self):
         return [self.body, self.condition]

@@ -523,6 +523,18 @@ class KotlinTranslator(BaseTranslator):
         self._children_res.append(res)
 
     @append_to
+    def visit_inc_dec_expr(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = [node.children()[0]]
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "{}({}{})".format(" " * old_ident, children_res[0], node.operator)
+        self.ident = old_ident
+        self._children_res.append(res)
+
+    @append_to
     def visit_new(self, node):
         old_ident = self.ident
         self.ident = 0

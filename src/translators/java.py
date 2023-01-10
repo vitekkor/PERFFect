@@ -3,13 +3,11 @@
 import re
 from collections import OrderedDict
 
-
 import src.utils as ut
 from src.ir import ast, java_types as jt, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.transformations.base import change_namespace
 from src.translators.base import BaseTranslator
-
 
 PRIMITIVES_TO_BOXED = {
     'boolean': 'Boolean',
@@ -34,6 +32,7 @@ def append_to(visit):
 
     We also use this function to set _nodes_stack
     """
+
     def inner(self, node):
         self._nodes_stack.append(node)
         res = visit(self, node)
@@ -45,16 +44,16 @@ def append_to(visit):
             # main(String[] args)
             self._main_method = res
         elif (self._namespace == ast.GLOBAL_NAMESPACE and
-                isinstance(
-                    node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
+              isinstance(
+                  node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
             self._main_children.append(res)
         else:
             self._children_res.append(res)
+
     return inner
 
 
 class JavaTranslator(BaseTranslator):
-
     filename = "Main.java"
     incorrect_filename = "Incorrect.java"
     executable = "Main.jar"
@@ -103,7 +102,7 @@ class JavaTranslator(BaseTranslator):
         # A set of numbers where numbers is the number of type parameters that
         # an interface for a function should have.
         # TODO pass it as option, or produce the list during the AST traverse
-        self._function_interfaces = {0,1,2,3}
+        self._function_interfaces = {0, 1, 2, 3}
 
         # We need nodes_stack to set semicolons when needed.
         # For instance, in visit_func_call we use a semicolon only if parent
@@ -131,7 +130,7 @@ class JavaTranslator(BaseTranslator):
         self.is_nested_func_block = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
-        self._function_interfaces = {0,1,2,3}
+        self._function_interfaces = {0, 1, 2, 3}
         self._nodes_stack = [None]
         self._visit_is_stack = [None]
         self._x_counter = 0
@@ -210,7 +209,7 @@ class JavaTranslator(BaseTranslator):
                 2 * self.ident_value,
                 "R",
                 ", ".join(["A" + str(i + 1) + " a" + str(i + 1)
-                          for i in range(0, number)]),
+                           for i in range(0, number)]),
             )
         res = "\n\n" + res if res != "" else ""
         return res
@@ -222,7 +221,7 @@ class JavaTranslator(BaseTranslator):
     def _parent_is_function(self):
         # The second node is the parent node
         return isinstance(self._nodes_stack[-2], (ast.Lambda,
-                          ast.FunctionDeclaration))
+                                                  ast.FunctionDeclaration))
 
     def _parent_is_func_ref(self):
         # The second node is the parent node
@@ -243,7 +242,7 @@ class JavaTranslator(BaseTranslator):
             self.get_ident() + "static " + d.lstrip()
             for d in self._main_children]
         main_method = self.get_ident() + "static " + \
-            self._main_method.lstrip() if self._main_method else None
+                      self._main_method.lstrip() if self._main_method else None
         main_cls = "class Main {{\n{main_decls}{main_method}\n}}".format(
             main_decls="\n\n".join(main_decls),
             main_method="\n\n" + main_method if main_method else ""
@@ -292,9 +291,9 @@ class JavaTranslator(BaseTranslator):
                                              jt.JavaBuiltinFactory(),
                                              self.types), jt.VoidType):
                 if not isinstance(children[-1],
-                               (ast.VariableDeclaration,
-                                ast.FunctionCall,
-                                ast.Assignment)):
+                                  (ast.VariableDeclaration,
+                                   ast.FunctionCall,
+                                   ast.Assignment)):
                     sugar = "Object x_{x} = ".format(x=self._x_counter)
                     self._x_counter += 1
                 return_stmt += "return null;"
@@ -478,9 +477,9 @@ class JavaTranslator(BaseTranslator):
                                     lmd=r
                                 )
                         res = ", ".join(res)
-                        res = re.sub(r'\s+',' ',res)
+                        res = re.sub(r'\s+', ' ', res)
                     super_call = "\n" + self.get_ident(extra=2) + 'super(' + \
-                        res + ");"
+                                 res + ");"
             return ("{ident}public {name}({params}) {{{super_call}{fields}"
                     "{new_line}{close_ident}}}").format(
                 ident=self.get_ident(),
@@ -987,9 +986,9 @@ class JavaTranslator(BaseTranslator):
         not_1 = "!(" if node.operator.is_not else ""
         not_2 = ")" if node.operator.is_not else ""
         new_var = " {name}{suffix}".format(
-                name=node.lexpr.name,
-                suffix=self._visit_is_stack.count(node.lexpr.name) * "_is"
-            ) if is_variable else ""
+            name=node.lexpr.name,
+            suffix=self._visit_is_stack.count(node.lexpr.name) * "_is"
+        ) if is_variable else ""
         res = "{ident}{not_1}{expr} instanceof {type_to_check}{new}{not_2}".format(
             ident=self.get_ident(old_ident=old_ident),
             not_1=not_1,
@@ -997,6 +996,23 @@ class JavaTranslator(BaseTranslator):
             type_to_check=node.rexpr.get_name(),
             new=new_var,
             not_2=not_2)
+        self.ident = old_ident
+        return res
+
+    @append_to
+    def visit_inc_dec_expr(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = [node.children()[0]]
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "{ident}({left} {operator}){semicolon}".format(
+            ident=self.get_ident(old_ident=old_ident),
+            left=children_res[0],
+            operator=node.operator,
+            semicolon=";" if self._parent_is_block() else ""
+        )
         self.ident = old_ident
         return res
 
@@ -1098,6 +1114,7 @@ class JavaTranslator(BaseTranslator):
             if fdecl and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
                 return True
             return False
+
         old_ident = self.ident
         self.ident = 0
         prev_cast_number = self._cast_number
@@ -1123,7 +1140,7 @@ class JavaTranslator(BaseTranslator):
         # we have to create an array with the vararg arguments.
         if (is_nested_func() and len(fdecl[1].params) > 0 and
                 fdecl[1].params[-1].vararg):
-            varargs = args[len(fdecl[1].params)-1:]
+            varargs = args[len(fdecl[1].params) - 1:]
             varargs_type = fdecl[1].params[-1].param_type
             if not varargs_type.type_args[0].is_primitive():
                 new_stmt = "({etype}) new Object[]".format(
@@ -1137,7 +1154,7 @@ class JavaTranslator(BaseTranslator):
                 new=new_stmt,
                 args=", ".join(varargs)
             )
-            args = args[:len(fdecl[1].params)-1] + [varargs]
+            args = args[:len(fdecl[1].params) - 1] + [varargs]
         if receiver:
             receiver_expr = (
                 '({}).'.format(children_res[0])
@@ -1189,4 +1206,62 @@ class JavaTranslator(BaseTranslator):
         )
         self.ident = old_ident
         self._cast_number = prev_cast_number
+        return res
+
+    @append_to
+    def visit_loop(self, node: ast.Node):
+        old_ident = self.ident
+        self.ident += 2
+        body = node.body
+        loop_expr = [child for child in node.children() if child != body][0]
+        body.accept(self)
+        children_res = self.pop_children_res([body])
+        loop_expr_res = self._visit_loop_expr(loop_expr)
+        children_res = [loop_expr_res] + children_res
+        if isinstance(node, ast.ForExpr):
+            res = "{}for ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+        elif isinstance(node, ast.WhileExpr):
+            res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+        elif isinstance(node, ast.DoWhileExpr):
+            res = "{}do\n{}\n{}while({})".format(" " * old_ident, children_res[1], " " * old_ident,
+                                                 children_res[0][self.ident:])
+        else:
+            raise Exception("{} not supported".format(str(node.__class__)))
+        self.ident = old_ident
+        self._children_res.append(res)
+
+    def _visit_loop_expr(self, node):
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        if isinstance(node, ast.ForExpr.IterableExpr):
+            res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
+        elif isinstance(node, ast.ForExpr.RangeExpr):
+            var = str(children_res[0])
+            start = str(children_res[1])
+            end = str(children_res[2])
+            res = "{} = {}; {} <= {}, {}++".format(var, start, var, end, var)
+        elif isinstance(node, ast.ComparisonExpr):
+            self.visit_binary_op(node)
+            res = self.pop_children_res([node])[0]
+        else:
+            raise Exception("{} not supported".format(str(node.__class__)))
+        return res
+
+    @append_to
+    def visit_loop_expr(self, node):
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        if isinstance(node, ast.ForExpr.IterableExpr):
+            res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
+        elif isinstance(node, ast.ForExpr.RangeExpr):
+            res = "{} in {}..{}".format(str(children_res[0]), str(children_res[1]), str(children_res[2]))
+        elif isinstance(node, ast.ComparisonExpr):
+            self.visit_binary_op(node)
+            res = self.pop_children_res([node])
+        else:
+            raise Exception("{} not supported".format(str(node.__class__)))
         return res

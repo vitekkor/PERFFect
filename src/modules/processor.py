@@ -4,7 +4,7 @@ import sys
 from src.generators.generator import Generator
 from src.transformations.type_erasure import TypeErasure
 from src.transformations.type_overwriting import TypeOverwriting
-from src.utils import random, read_lines, load_program
+from src.utils import randomUtil, read_lines, load_program
 from src.modules.logging import Logger
 
 
@@ -54,7 +54,7 @@ class ProgramProcessor():
         if self.args.transformations is not None:
             # Randomly generate a transformation schedule.
             return [
-                random.choice(self.transformations)
+                randomUtil.choice(self.transformations)
                 for i in range(self.args.transformations)
             ]
         # Get transformation schedule from file.
@@ -112,7 +112,7 @@ class ProgramProcessor():
         return program, transformer.preserve_correctness()
 
     def inject_fault(self, program):
-        transformer_cls = random.choice(self.ncp_transformations)
+        transformer_cls = randomUtil.choice(self.ncp_transformations)
         program, transformer = self._apply_transformation(
             transformer_cls, self.current_transformation + 1, program)
         self.current_transformation += 1

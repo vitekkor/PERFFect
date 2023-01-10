@@ -33,6 +33,7 @@ class ASTVisitor():
             ast.ArithExpr: self.visit_arith_expr,
             ast.Conditional: self.visit_conditional,
             ast.Is: self.visit_is,
+            ast.IncDecExpr: self.visit_inc_dec_expr,
             ast.New: self.visit_new,
             ast.FieldAccess: self.visit_field_access,
             ast.FunctionCall: self.visit_func_call,
@@ -134,6 +135,9 @@ class ASTVisitor():
 
     def visit_is(self, node):
         raise NotImplementedError('visit_is() must be implemented')
+
+    def visit_inc_dec_expr(self, node):
+        raise NotImplementedError('visit_inc_dec_expr() must be implemented')
 
     def visit_new(self, node):
         raise NotImplementedError('visit_new() must be implemented')

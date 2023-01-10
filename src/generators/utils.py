@@ -77,13 +77,13 @@ def select_class_type(contain_fields: bool):
     """
     # TODO probabilities table
     # there's higher probability to generate a regular class.
-    if ut.random.bool():
+    if ut.randomUtil.bool():
         return ast.ClassDeclaration.REGULAR
 
     candidates = [ast.ClassDeclaration.ABSTRACT]
     if not contain_fields:
         candidates.append(ast.ClassDeclaration.INTERFACE)
-    return ut.random.choice(candidates)
+    return ut.randomUtil.choice(candidates)
 
 
 def init_variance_choices(type_var_map: tu.TypeVarMap) -> tu.VarianceChoices:
@@ -110,7 +110,7 @@ def gen_identifier(ident_type:str=None) -> str:
         AssertionError: Raises an AssertionError if the ident_type is neither
             'capitalize' nor 'lower'.
     """
-    word = ut.random.word()
+    word = ut.randomUtil.word()
     if ident_type is None:
         return word
     if ident_type == 'lower':

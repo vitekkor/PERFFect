@@ -1,5 +1,5 @@
 from collections import defaultdict
-import random
+import random as rnd
 import string
 import pickle
 import os
@@ -112,17 +112,22 @@ def get_reserved_words(resource_path, language):
 
 
 class RandomUtils():
-
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
 
     WORD_POOL_LEN = 10000
     # Construct a random word pool of size 'WORD_POOL_LEN'.
-    WORDS = set(random.sample(
-        read_lines(os.path.join(resource_path, 'words')), WORD_POOL_LEN))
-    INITIAL_WORDS = set(WORDS)
+    WORDS: set
+    INITIAL_WORDS: set
 
-    def __init__(self, seed=None):
-        self.r = random.Random(seed)
+    def __init__(self):
+        self.seed = 7768787821573447645  # rnd.randrange(sys.maxsize)
+        self.r = rnd.Random(self.seed)
+        self.WORDS = set(self.sample(
+            read_lines(os.path.join(self.resource_path, 'words')), self.WORD_POOL_LEN))
+        self.INITIAL_WORDS = set(self.WORDS)
+
+    def reset_random(self):
+        self.r = rnd.Random(self.seed)
 
     def reset_word_pool(self):
         self.WORDS = set(self.INITIAL_WORDS)
@@ -168,7 +173,7 @@ class RandomUtils():
         return range(0, self.integer(from_value, to_value))
 
 
-random = RandomUtils()
+randomUtil = RandomUtils()
 
 
 class IdGen():
@@ -177,7 +182,6 @@ class IdGen():
 
     def get_node_id(self, node_id):
         if node_id not in self._cache:
-            self._cache[node_id]
             return node_id, None
         else:
             value = self._cache[node_id]
