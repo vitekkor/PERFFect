@@ -1,5 +1,4 @@
 # pylint: disable=dangerous-default-value
-from abc import ABC
 from typing import List, Set, Union
 from copy import deepcopy
 
@@ -1365,7 +1364,7 @@ class Assignment(Expr):
         return False
 
 
-class LoopExpr(Expr, ABC):
+class LoopExpr(Expr):
 
     def __init__(self, body: Node):
         self.body = body
@@ -1373,7 +1372,7 @@ class LoopExpr(Expr, ABC):
 
 class ForExpr(LoopExpr):
     class IterableExpr(Expr):
-        def __int__(self, array: ArrayExpr, variable: Variable):
+        def __init__(self, array: ArrayExpr, variable: Variable):
             self.arrayExpr = array
             self.parameter = variable
 
@@ -1384,7 +1383,7 @@ class ForExpr(LoopExpr):
             return [self.parameter, self.arrayExpr]
 
     class RangeExpr(Expr):
-        def __int__(self, variable: Variable, left_bound: Node, right_bound: Node):
+        def __init__(self, variable: Variable, left_bound: Node, right_bound: Node):
             self.parameter = variable
             self.left_bound = left_bound
             self.right_bound = right_bound
@@ -1395,7 +1394,7 @@ class ForExpr(LoopExpr):
         def children(self):
             return [self.parameter, self.left_bound, self.right_bound]
 
-    def __int__(self, body: Node, loop_expr: IterableExpr | RangeExpr):
+    def __init__(self, body: Node, loop_expr: IterableExpr | RangeExpr):
         super(ForExpr, self).__init__(body)
         self.loop_expr = loop_expr
 
@@ -1405,8 +1404,11 @@ class ForExpr(LoopExpr):
             return children
         return children + [self.body]
 
+    def __str__(self):
+        return "for ({})\n{}".format(str(self.loop_expr), str(self.body))
 
-class WhileExprBase(LoopExpr, ABC):
+
+class WhileExprBase(LoopExpr):
 
     def __init__(self, body: Node, condition: Expr):
         super(WhileExprBase, self).__init__(body)

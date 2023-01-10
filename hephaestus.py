@@ -273,6 +273,7 @@ def gen_program(pid, dirname, packages):
     proc = ProgramProcessor(pid, cli_args)
     try:
         program, oracle = proc.get_program()
+        utils.translate_program(translator, program)
         if cli_args.examine:
             print("pp program.context._context (to print the context)")
             __import__('ipdb').set_trace()

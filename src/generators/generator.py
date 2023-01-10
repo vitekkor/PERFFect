@@ -137,21 +137,35 @@ class Generator():
             self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
-        usr_types = [
-            c.get_type()
-            for c in self.context.get_classes(self.namespace).values()
-        ]
-        iterable_types = tu.get_iterable_types(self.bt_factory, usr_types, [x for x in self.get_types() if hasattr(x, 'type_args')])
-        random_type_to_iterate = ut.random.choice(iterable_types)
+        loop_expr = self.generate_loop_expr()
 
-        body = ast.Block(decls + [expr])
+        body = ast.Block(decls + [expr, loop_expr])
         main_func.body = body
         self.depth = initial_depth
         self.namespace = initial_namespace
         return main_func
+    # array_expr = self.gen_array_expr(iterable_types[27])
+    # iterable_expr = ast.ForExpr.IterableExpr(array_expr, ast.Variable(gens.gen_string_constant()))
+    # main_func.body = ast.Block(ast.ForExpr(body, iterable_expr))
+    #
+    # ast.Variable(gens.gen_string_constant())
+    # gen_variable(array_expr.array_type.type_args[0])
+    # self.gen_variable_decl(array_expr.array_type.type_args[0])
 
     def generate_loop_expr(self):
-        pass
+        usr_types = [
+            c.get_type()
+            for c in self.context.get_classes(self.namespace).values()
+        ]
+        iterable_types = tu.get_iterable_types(self.bt_factory, # usr_types,
+                                               builtin_types=[x for x in self.get_types() if hasattr(x, 'type_args')])
+        random_type_to_iterate = ut.random.choice(iterable_types)
+        array_expr = self.gen_array_expr(random_type_to_iterate)
+        iterable_expr = ast.ForExpr.IterableExpr(array_expr, ast.Variable(gu.gen_identifier('lower')))
+        expr = self.generate_expr()
+        body = ast.Block([expr], False)
+        return ast.ForExpr(body, iterable_expr)
+
 
     ### Generators ###
 
