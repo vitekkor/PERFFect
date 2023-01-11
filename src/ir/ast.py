@@ -1084,10 +1084,6 @@ class LogicalExpr(BinaryOp):
             Operator('&&'),
             Operator('||')
         ],
-        "groovy": [
-            Operator('&&'),
-            Operator('||')
-        ],
         "java": [
             Operator('&&'),
             Operator('||')
@@ -1109,12 +1105,6 @@ class EqualityExpr(BinaryOp):
             Operator('=', is_not=True),
             # Operator('==', is_not=True)
         ],
-        "groovy": [
-            Operator('=='),
-            Operator('==='),
-            Operator('=', is_not=True),
-            Operator('==', is_not=True)
-        ],
         "java": [
             Operator('=='),
             Operator('=', is_not=True)
@@ -1131,12 +1121,6 @@ class ComparisonExpr(BinaryOp):
     ]
     VALID_OPERATORS = {
         "kotlin": [
-            Operator('>'),
-            Operator('>='),
-            Operator('<'),
-            Operator('<=')
-        ],
-        "groovy": [
             Operator('>'),
             Operator('>='),
             Operator('<'),
@@ -1165,12 +1149,6 @@ class ArithExpr(BinaryOp):
             Operator('/'),
             Operator('*')
         ],
-        "groovy": [
-            Operator('+'),
-            Operator('-'),
-            Operator('/'),
-            Operator('*')
-        ],
         "java": [
             Operator('+'),
             Operator('-'),
@@ -1187,10 +1165,6 @@ class IncDecExpr(BinaryOp):
     ]
     VALID_OPERATORS = {
         "kotlin": [
-            Operator('++'),
-            Operator('--')
-        ],
-        "groovy": [
             Operator('++'),
             Operator('--')
         ],

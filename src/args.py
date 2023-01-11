@@ -1,10 +1,9 @@
 import argparse
 import os
 import sys
-from src.utils import randomUtil, mkdir
-from src.modules.processor import ProgramProcessor
-from src.generators.config import cfg
 
+from src.generators.config import cfg
+from src.utils import randomUtil
 
 cwd = os.getcwd()
 
@@ -40,13 +39,6 @@ parser.add_argument(
     "-n", "--name",
     default=randomUtil.str(),
     help="Set name of this testing instance (default: random string)"
-)
-parser.add_argument(
-    "-T", "--transformation-types",
-    default=ProgramProcessor.CP_TRANSFORMATIONS.keys(),
-    nargs="*",
-    choices=ProgramProcessor.CP_TRANSFORMATIONS.keys(),
-    help="Select specific transformations to perform"
 )
 parser.add_argument(
     "--transformation-schedule",
@@ -236,9 +228,3 @@ def validate_args(args):
     if args.examine and not args.replay:
         sys.exit("You cannot use --examine option without the --replay option")
 
-
-def pre_process_args(args):
-    # PRE-PROCESSING
-
-    if not os.path.isdir(args.bugs):
-        mkdir(args.bugs)

@@ -114,6 +114,7 @@ def get_reserved_words(resource_path, language):
     path = os.path.join(resource_path, filename)
     return path2set(path)
 
+
 # for debugging purposes
 def random_inspect(random_fun):
     def inner(*args, **kwargs):
@@ -124,7 +125,9 @@ def random_inspect(random_fun):
         caller = calframe[1][3]
         callings = calframe[1][4]
         result = random_fun(*args, **kwargs)
-        str_ = "caller - {}:{}:{}; method - {}; args - {}, kwargs - {}, result - {}".format(from_, line, caller, callings, args[1:], kwargs, result)
+        str_ = "caller - {}:{}:{}; method - {}; args - {}, kwargs - {}, result - {}".format(from_, line, caller,
+                                                                                            callings, args[1:], kwargs,
+                                                                                            result)
         print(str_)
         return result
 
@@ -151,8 +154,9 @@ class RandomUtils():
             read_lines(os.path.join(self.resource_path, 'words')), self.WORD_POOL_LEN))
         self.INITIAL_WORDS = OrderedSet(self.WORDS)
 
-    def reset_random(self):
-        self.r = rnd.Random(self.seed)
+    def reset_random(self, seed=None):
+        seed = seed if seed else self.seed
+        self.r = rnd.Random(seed)
 
     def reset_word_pool(self):
         self.WORDS = OrderedSet(self.INITIAL_WORDS)
@@ -258,3 +262,8 @@ class IdGen():
             value = self._cache[node_id]
             self._cache[node_id] += 1
             return node_id, str(value)
+
+
+class Namespace:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
