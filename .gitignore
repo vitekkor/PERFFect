@@ -137,3 +137,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/codeGenerator/src/server/server_pb2.py
+/codeGenerator/src/server/server_pb2.pyi
+/codeGenerator/src/server/server_pb2_grpc.py
