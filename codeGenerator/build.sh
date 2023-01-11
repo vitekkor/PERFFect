@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Build grpc server"
+
 python3 -m grpc_tools.protoc \
 --proto_path=../protobuf/ \
 --python_out=./src/server \
