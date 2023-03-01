@@ -90,8 +90,7 @@ tasks.test {
 
 val downloadStdLib by tasks.creating(Copy::class.java) {
     if (!file("files/lib/kotlin-stdlib-${kotlinVersion}.jar").exists()) {
-        val librariesToCopy = configurations.runtimeClasspath.get().allDependencies.map { toCopy.files(it) }
-        from(librariesToCopy)
+        from(toCopy)
         into("files/lib")
     }
 }
@@ -100,9 +99,26 @@ val cleanUpStdLib by tasks.creating(Delete::class.java) {
     delete("files/lib/")
 }
 
+val provideKotlinVersion: Task by tasks.creating {
+    project.sourceSets.main {
+        File(resources.srcDirs.first().path + "/kotlin.yml").apply {
+            if (exists()) delete()
+            createNewFile()
+            writeText("compilerArgs.kotlinVersion: $kotlinVersion")
+        }
+    }
+}
+
+val cleanKotlinVersion by tasks.creating(Delete::class.java) {
+    project.sourceSets.main {
+        delete(File(resources.srcDirs.first().path + "/kotlin.yml"))
+    }
+    delete("files/lib/")
+}
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
     dependsOn(downloadStdLib)
+    dependsOn(provideKotlinVersion)
 }
 
 tasks["clean"].finalizedBy(cleanUpStdLib)
