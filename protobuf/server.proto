@@ -1,0 +1,16 @@
+syntax = "proto3";
+package src.server;
+
+service Generator {
+  rpc generateKotlin(GenerateRequest) returns (Program) {}
+  rpc generateJava(GenerateRequest) returns (Program) {}
+}
+
+message GenerateRequest {
+  int64 seed = 1;
+}
+
+message Program {
+  string language = 1;
+  string text = 2;
+}
