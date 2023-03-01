@@ -4,9 +4,9 @@ import com.vitekkor.compiler.model.CompilationResult
 import com.vitekkor.compiler.model.KotlincInvokeStatus
 import com.vitekkor.compiler.model.Stream
 import com.vitekkor.compiler.util.MessageCollectorImpl
+import com.vitekkor.config.CompilerArgs
 import com.vitekkor.project.Directives
 import com.vitekkor.project.Project
-import com.vitekkor.config.CompilerArgs
 import com.vitekkor.util.WithLogger
 import org.apache.commons.io.FileUtils
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -26,7 +26,7 @@ open class JVMCompiler(
     override val compilerInfo: String
         get() = "JVM $arguments"
 
-    override var pathToCompiled: String = "tmp/tmp.jar"
+    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/tmp.jar"
 
 
     override fun checkCompiling(project: Project): Boolean {
@@ -110,7 +110,7 @@ open class JVMCompiler(
         }
         return KotlincInvokeStatus(
             MessageCollectorImpl.crashMessages.joinToString("\n") +
-                    MessageCollectorImpl.compileErrorMessages.joinToString("\n"),
+                MessageCollectorImpl.compileErrorMessages.joinToString("\n"),
             !MessageCollectorImpl.hasCompileError,
             MessageCollectorImpl.hasException,
             hasTimeout,

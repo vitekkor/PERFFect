@@ -1,8 +1,9 @@
 package com.vitekkor.util
 
+import mu.KLogger
 import mu.KotlinLogging.logger
 
 interface WithLogger {
-    val logger
-        get() = logger {}
+    val logger: KLogger
+        get() = logger(javaClass.name)
 }
