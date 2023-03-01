@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.7.21" apply false
+    kotlin("jvm") apply false
 }
 
 
