@@ -20,7 +20,7 @@ import java.util.concurrent.TimeoutException
 import java.util.jar.JarInputStream
 import java.util.jar.JarOutputStream
 
-open class JVMCompiler(
+open class KotlinJVMCompiler(
     override val arguments: String = ""
 ) : BaseCompiler(), WithLogger {
     override val compilerInfo: String
