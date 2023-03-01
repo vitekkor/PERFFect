@@ -30,6 +30,7 @@ dependencies {
     implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
+    implementation("io.grpc:grpc-okhttp:1.53.0")
     implementation("org.apache.commons:commons-exec:1.3")
     implementation("commons-io:commons-io:2.7")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
@@ -104,7 +105,7 @@ val provideKotlinVersion: Task by tasks.creating {
         File(resources.srcDirs.first().path + "/kotlin.yml").apply {
             if (exists()) delete()
             createNewFile()
-            writeText("compilerArgs.kotlinVersion: $kotlinVersion")
+            writeText("compilerArgs:\n  kotlinVersion: \"$kotlinVersion\"")
         }
     }
 }

@@ -24,9 +24,9 @@ open class KotlinJVMCompiler(
     override val arguments: String = ""
 ) : BaseCompiler(), WithLogger {
     override val compilerInfo: String
-        get() = "JVM $arguments"
+        get() = "Kotlin JVM $arguments"
 
-    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/tmp.jar"
+    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/kotlin.jar"
 
 
     override fun checkCompiling(project: Project): Boolean {
