@@ -44,6 +44,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-daemon-embeddable:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
 
+    //implementation("com.pinterest:ktlint:0.48.2")
+
     libraries.map {
         toCopy(it)
     }

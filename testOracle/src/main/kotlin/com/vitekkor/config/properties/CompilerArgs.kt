@@ -13,5 +13,5 @@ data class CompilerArgs(
         "kotlin-reflect",
         "kotlin-stdlib-jdk8",
         "kotlin-stdlib-jdk7"
-    ).map { "$jvmStdLibBasePath/$it" }
+    ).map { "$jvmStdLibBasePath/$it-$kotlinVersion.jar" }
 }
