@@ -5,7 +5,6 @@ import com.vitekkor.compiler.model.KotlincInvokeStatus
 import com.vitekkor.compiler.model.Stream
 import com.vitekkor.compiler.util.MessageCollectorImpl
 import com.vitekkor.config.CompilerArgs
-import com.vitekkor.project.Directives
 import com.vitekkor.project.Project
 import com.vitekkor.util.WithLogger
 import org.apache.commons.io.FileUtils
@@ -49,7 +48,7 @@ open class KotlinJVMCompiler(
     private fun getCompilationResult(projectWithMainFun: Project, includeRuntime: Boolean): CompilationResult {
         val path = projectWithMainFun.saveOrRemoveToTmp(true)
         val tmpJar = "$pathToCompiled.jar"
-        val args = prepareArgs(projectWithMainFun, path, tmpJar)
+        val args = prepareArgs(path, tmpJar)
         val status = executeCompiler(projectWithMainFun, args)
         if (status.hasException || status.hasTimeout || !status.isCompileSuccess) return CompilationResult(-1, "")
         val res = File(pathToCompiled)
@@ -64,11 +63,16 @@ open class KotlinJVMCompiler(
         return CompilationResult(0, pathToCompiled)
     }
 
-    private fun prepareArgs(project: Project, path: String, destination: String): K2JVMCompilerArguments {
+    private fun prepareArgs(path: String, destination: String): K2JVMCompilerArguments {
         val destFile = File(destination)
         if (destFile.isFile) destFile.delete()
         else if (destFile.isDirectory) FileUtils.cleanDirectory(destFile)
-        val projectArgs = project.getProjectSettingsAsCompilerArgs("JVM") as K2JVMCompilerArguments
+        val projectArgs = K2JVMCompilerArguments().apply {
+            K2JVMCompiler().parseArguments(
+                arrayOf(),
+                this
+            )
+        }
         val compilerArgs =
             if (arguments.isEmpty())
                 "$path -d $destination".split(" ")
@@ -83,8 +87,6 @@ open class KotlinJVMCompiler(
                 .joinToString(":")
         projectArgs.jvmTarget = "1.8"
         projectArgs.optIn = arrayOf("kotlin.ExperimentalStdlibApi", "kotlin.contracts.ExperimentalContracts")
-        if (project.configuration.jvmDefault.isNotEmpty())
-            projectArgs.jvmDefault = project.configuration.jvmDefault.substringAfter(Directives.jvmDefault)
         return projectArgs
     }
 
@@ -122,7 +124,7 @@ open class KotlinJVMCompiler(
     override fun tryToCompile(project: Project): KotlincInvokeStatus {
         val path = project.saveOrRemoveToTmp(true)
         val trashDir = "${CompilerArgs.pathToTmpDir}/trash/"
-        val args = prepareArgs(project, path, trashDir)
+        val args = prepareArgs(path, trashDir)
         return executeCompiler(project, args)
     }
 
