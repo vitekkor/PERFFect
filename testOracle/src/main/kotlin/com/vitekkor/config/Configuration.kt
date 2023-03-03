@@ -12,5 +12,4 @@ private val mainConfig = ConfigLoader.builder()
     .build()
     .loadConfigOrThrow<MainConfig>()
 
-
 val CompilerArgs = mainConfig.compilerArgs
