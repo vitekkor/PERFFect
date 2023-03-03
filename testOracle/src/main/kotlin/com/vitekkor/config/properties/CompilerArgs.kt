@@ -14,4 +14,8 @@ data class CompilerArgs(
         "kotlin-stdlib-jdk8",
         "kotlin-stdlib-jdk7"
     ).map { "$jvmStdLibBasePath/$it-$kotlinVersion.jar" }
+
+    fun getAnnotationsPath(version: String): String {
+        return "$jvmStdLibBasePath/annotations-$version.jar"
+    }
 }

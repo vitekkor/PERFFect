@@ -11,17 +11,16 @@ val grpcVersion = "1.47.0"
 val protobufVersion = "3.21.2"
 val kotlinVersion: String by project
 
-
 val libraries = listOf(
-    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-test:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-test-common:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-script-runtime:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-test-annotations-common:${kotlinVersion}",
-    "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-test:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-script-runtime:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
 )
 
 val toCopy: Configuration by configurations.creating
@@ -37,14 +36,14 @@ dependencies {
     implementation("com.sksamuel.hoplite:hoplite-core:2.7.1")
     implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.1")
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-compiler:${kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:${kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-daemon-embeddable:${kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-daemon-embeddable:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
-    //implementation("com.pinterest:ktlint:0.48.2")
+    // implementation("com.pinterest:ktlint:0.48.2")
 
     libraries.map {
         toCopy(it)
@@ -86,15 +85,14 @@ sourceSets {
     }
 }
 
-
 tasks.test {
     useJUnitPlatform()
 }
 
 val downloadStdLib by tasks.creating(Copy::class.java) {
-    if (!file("files/lib/kotlin-stdlib-${kotlinVersion}.jar").exists()) {
+    if (!file("files/lib/kotlin-stdlib-$kotlinVersion.jar").exists()) {
         from(toCopy)
-        into("files/lib")
+        into("${project.rootDir.path}/files/lib")
     }
 }
 

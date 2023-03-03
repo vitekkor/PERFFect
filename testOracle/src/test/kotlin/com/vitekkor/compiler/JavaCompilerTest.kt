@@ -7,12 +7,13 @@ import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class KotlinJVMCompilerTest {
+class JavaCompilerTest {
+
     @Test
     fun compileProject() {
-        val kotlinFile = File(checkNotNull(this::class.java.getResource("/Test.kt")).path)
-        val project = Project.createFromCode(kotlinFile.readText(), Language.KOTLIN)
-        val compiler = KotlinJVMCompiler()
+        val javaFile = File(checkNotNull(this::class.java.getResource("/Test.java")).path)
+        val project = Project.createFromCode(javaFile.readText(), Language.JAVA)
+        val compiler = JavaCompiler()
         val result = compiler.compile(project)
         assertEquals(0, result.status)
         val jar = File(result.pathToCompiled)

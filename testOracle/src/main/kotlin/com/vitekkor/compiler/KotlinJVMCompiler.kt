@@ -1,8 +1,8 @@
 package com.vitekkor.compiler
 
 import com.vitekkor.compiler.model.CompilationResult
+import com.vitekkor.compiler.model.InvokeStatus
 import com.vitekkor.compiler.model.KotlincInvokeStatus
-import com.vitekkor.compiler.model.Stream
 import com.vitekkor.compiler.util.MessageCollectorImpl
 import com.vitekkor.config.CompilerArgs
 import com.vitekkor.project.Project
@@ -13,7 +13,6 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.config.Services
 import java.io.File
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.jar.JarInputStream
@@ -27,7 +26,6 @@ open class KotlinJVMCompiler(
 
     override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/kotlin.jar"
 
-
     override fun checkCompiling(project: Project): Boolean {
         val status = tryToCompile(project)
         return !MessageCollectorImpl.hasCompileError && !status.hasTimeout && !MessageCollectorImpl.hasException
@@ -37,9 +35,6 @@ open class KotlinJVMCompiler(
         val status = tryToCompile(project)
         return status.combinedOutput to status.locations
     }
-
-    override fun isCompilerBug(project: Project): Boolean =
-        tryToCompile(project).hasException
 
     override fun compile(project: Project, includeRuntime: Boolean): CompilationResult {
         return getCompilationResult(project, includeRuntime)
@@ -55,8 +50,9 @@ open class KotlinJVMCompiler(
         val input = JarInputStream(File(tmpJar).inputStream())
         val output = JarOutputStream(res.outputStream(), input.manifest)
         copyFullJarImpl(output, File(tmpJar))
-        if (includeRuntime)
+        if (includeRuntime) {
             CompilerArgs.jvmStdLibPaths.forEach { writeRuntimeToJar(it, output) }
+        }
         output.finish()
         input.close()
         File(tmpJar).delete()
@@ -65,8 +61,9 @@ open class KotlinJVMCompiler(
 
     private fun prepareArgs(path: String, destination: String): K2JVMCompilerArguments {
         val destFile = File(destination)
-        if (destFile.isFile) destFile.delete()
-        else if (destFile.isDirectory) FileUtils.cleanDirectory(destFile)
+        if (destFile.isFile) {
+            destFile.delete()
+        } else if (destFile.isDirectory) FileUtils.cleanDirectory(destFile)
         val projectArgs = K2JVMCompilerArguments().apply {
             K2JVMCompiler().parseArguments(
                 arrayOf(),
@@ -74,10 +71,11 @@ open class KotlinJVMCompiler(
             )
         }
         val compilerArgs =
-            if (arguments.isEmpty())
+            if (arguments.isEmpty()) {
                 "$path -d $destination".split(" ")
-            else
+            } else {
                 "$path $arguments -d $destination".split(" ")
+            }
         projectArgs.apply { K2JVMCompiler().parseArguments(compilerArgs.toTypedArray(), this) }
         projectArgs.classpath =
             "${CompilerArgs.jvmStdLibPaths.joinToString(separator = ":")}:${System.getProperty("java.class.path")}"
@@ -90,11 +88,11 @@ open class KotlinJVMCompiler(
         return projectArgs
     }
 
-    private fun executeCompiler(project: Project, args: K2JVMCompilerArguments): KotlincInvokeStatus {
+    override fun executeCompiler(project: Project, args: Any): InvokeStatus {
+        args as K2JVMCompilerArguments
         val compiler = K2JVMCompiler()
         val services = Services.EMPTY
         MessageCollectorImpl.clear()
-        val threadPool = Executors.newCachedThreadPool()
         val futureExitCode = threadPool.submit {
             compiler.exec(MessageCollectorImpl, services, args)
         }
@@ -125,15 +123,6 @@ open class KotlinJVMCompiler(
         val path = project.saveOrRemoveToTmp(true)
         val trashDir = "${CompilerArgs.pathToTmpDir}/trash/"
         val args = prepareArgs(path, trashDir)
-        return executeCompiler(project, args)
-    }
-
-    override fun exec(path: String, streamType: Stream, mainClass: String): String {
-        val mc =
-            mainClass.ifEmpty { JarInputStream(File(path).inputStream()).manifest.mainAttributes.getValue("Main-class") }
-        return commonExec(
-            "java -classpath ${CompilerArgs.jvmStdLibPaths.joinToString(":")}:$path $mc",
-            streamType
-        )
+        return executeCompiler(project, args) as KotlincInvokeStatus
     }
 }
