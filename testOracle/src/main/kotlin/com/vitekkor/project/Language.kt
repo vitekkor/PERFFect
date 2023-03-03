@@ -1,8 +1,7 @@
 package com.vitekkor.project
 
-enum class LANGUAGE {
-    KOTLIN,
-    KJAVA,
-    JAVA,
-    UNKNOWN
+enum class LANGUAGE(val extension: String) {
+    KOTLIN(".kt"),
+    JAVA(".java"),
+    UNKNOWN("")
 }

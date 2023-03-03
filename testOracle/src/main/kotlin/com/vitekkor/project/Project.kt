@@ -11,8 +11,8 @@ class Project(
     constructor(file: KJFile, language: LANGUAGE) : this(listOf(file), language)
 
     companion object {
-        fun createFromCode(code: String): Project {
-            val file = KJFileFactory(code).createKJFiles()
+        fun createFromCode(code: String, language: LANGUAGE): Project {
+            val file = KJFileFactory(code, language).createKJFiles()
             val language = file.getLanguage()
             return Project(file, language)
         }

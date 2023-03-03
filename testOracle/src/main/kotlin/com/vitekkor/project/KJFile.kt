@@ -19,13 +19,14 @@ data class KJFile(val name: String, var text: String) {
 }
 
 internal class KJFileFactory(
-    private val text: String
+    private val text: String,
+    private val language: LANGUAGE
 ) : WithLogger {
 
     fun createKJFiles(name: String = "Main"): KJFile {
         val pathToTmp = CompilerArgs.pathToTmpDir
         return text.let { code ->
-            val fileName = "$pathToTmp/$name.kt"
+            val fileName = "$pathToTmp/$name${language.extension}"
             KJFile(fileName, code)
         }
     }

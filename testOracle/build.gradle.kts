@@ -94,7 +94,7 @@ tasks.test {
 val downloadStdLib by tasks.creating(Copy::class.java) {
     if (!file("files/lib/kotlin-stdlib-${kotlinVersion}.jar").exists()) {
         from(toCopy)
-        into("files/lib")
+        into("${project.rootDir.path}/files/lib")
     }
 }
 
