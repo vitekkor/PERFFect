@@ -5,13 +5,13 @@ import java.io.File
 
 class Project(
     var files: List<KJFile>,
-    val language: LANGUAGE = LANGUAGE.KOTLIN
+    val language: Language = Language.KOTLIN
 ) {
 
-    constructor(file: KJFile, language: LANGUAGE) : this(listOf(file), language)
+    constructor(file: KJFile, language: Language) : this(listOf(file), language)
 
     companion object {
-        fun createFromCode(code: String, language: LANGUAGE): Project {
+        fun createFromCode(code: String, language: Language): Project {
             val file = KJFileFactory(code, language).createKJFiles()
             val language = file.getLanguage()
             return Project(file, language)
@@ -70,11 +70,9 @@ class Project(
         return files.joinToString(" ") { it.name }
     }
 
-
     fun copy(): Project {
         return Project(files.map { it.copy() }, language)
     }
-
 
     override fun toString(): String = files.joinToString("\n\n") {
         it.name + "\n" + it.text

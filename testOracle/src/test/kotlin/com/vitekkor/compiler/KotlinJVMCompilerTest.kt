@@ -1,6 +1,6 @@
 package com.vitekkor.compiler
 
-import com.vitekkor.project.LANGUAGE
+import com.vitekkor.project.Language
 import com.vitekkor.project.Project
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -11,7 +11,7 @@ class KotlinJVMCompilerTest {
     @Test
     fun compileProject() {
         val kotlinFile = File(checkNotNull(this::class.java.getResource("/Test.kt")).path)
-        val project = Project.createFromCode(kotlinFile.readText(), LANGUAGE.KOTLIN)
+        val project = Project.createFromCode(kotlinFile.readText(), Language.KOTLIN)
         val compiler = KotlinJVMCompiler()
         val result = compiler.compile(project)
         assertEquals(0, result.status)

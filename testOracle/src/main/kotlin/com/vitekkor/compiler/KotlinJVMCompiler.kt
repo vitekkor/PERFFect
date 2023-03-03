@@ -26,7 +26,6 @@ open class KotlinJVMCompiler(
 
     override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/kotlin.jar"
 
-
     override fun checkCompiling(project: Project): Boolean {
         val status = tryToCompile(project)
         return !MessageCollectorImpl.hasCompileError && !status.hasTimeout && !MessageCollectorImpl.hasException
@@ -51,8 +50,9 @@ open class KotlinJVMCompiler(
         val input = JarInputStream(File(tmpJar).inputStream())
         val output = JarOutputStream(res.outputStream(), input.manifest)
         copyFullJarImpl(output, File(tmpJar))
-        if (includeRuntime)
+        if (includeRuntime) {
             CompilerArgs.jvmStdLibPaths.forEach { writeRuntimeToJar(it, output) }
+        }
         output.finish()
         input.close()
         File(tmpJar).delete()
@@ -61,8 +61,9 @@ open class KotlinJVMCompiler(
 
     private fun prepareArgs(path: String, destination: String): K2JVMCompilerArguments {
         val destFile = File(destination)
-        if (destFile.isFile) destFile.delete()
-        else if (destFile.isDirectory) FileUtils.cleanDirectory(destFile)
+        if (destFile.isFile) {
+            destFile.delete()
+        } else if (destFile.isDirectory) FileUtils.cleanDirectory(destFile)
         val projectArgs = K2JVMCompilerArguments().apply {
             K2JVMCompiler().parseArguments(
                 arrayOf(),
@@ -70,10 +71,11 @@ open class KotlinJVMCompiler(
             )
         }
         val compilerArgs =
-            if (arguments.isEmpty())
+            if (arguments.isEmpty()) {
                 "$path -d $destination".split(" ")
-            else
+            } else {
                 "$path $arguments -d $destination".split(" ")
+            }
         projectArgs.apply { K2JVMCompiler().parseArguments(compilerArgs.toTypedArray(), this) }
         projectArgs.classpath =
             "${CompilerArgs.jvmStdLibPaths.joinToString(separator = ":")}:${System.getProperty("java.class.path")}"

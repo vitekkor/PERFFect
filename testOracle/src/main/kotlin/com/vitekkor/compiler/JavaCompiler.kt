@@ -16,7 +16,6 @@ import javax.tools.DiagnosticCollector
 import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
 
-
 class JavaCompiler(override val arguments: String = "") : BaseCompiler() {
     override val compilerInfo: String
         get() = "Java $arguments"
@@ -39,8 +38,9 @@ class JavaCompiler(override val arguments: String = "") : BaseCompiler() {
 
     override fun compile(project: Project, includeRuntime: Boolean): CompilationResult {
         val compilerInvokeStatus = executeCompilerInternal(project)
-        if (compilerInvokeStatus.hasException || compilerInvokeStatus.hasTimeout || !compilerInvokeStatus.isCompileSuccess)
+        if (compilerInvokeStatus.hasException || compilerInvokeStatus.hasTimeout || !compilerInvokeStatus.isCompileSuccess) {
             return CompilationResult(-1, "")
+        }
 
         return CompilationResult(0, pathToCompiled)
     }

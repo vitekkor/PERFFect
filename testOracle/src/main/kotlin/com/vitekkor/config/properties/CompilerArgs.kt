@@ -16,6 +16,6 @@ data class CompilerArgs(
     ).map { "$jvmStdLibBasePath/$it-$kotlinVersion.jar" }
 
     fun getAnnotationsPath(version: String): String {
-        return "${jvmStdLibBasePath}/annotations-$version.jar"
+        return "$jvmStdLibBasePath/annotations-$version.jar"
     }
 }

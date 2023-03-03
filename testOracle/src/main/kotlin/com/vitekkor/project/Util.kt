@@ -7,6 +7,6 @@ internal fun getCommentSection(text: String) =
         .takeWhile { it.startsWith("//") || it.trim().isEmpty() }
         .joinToString("\n")
 
-fun Server.Program.toProject(language: LANGUAGE): Project {
+fun Server.Program.toProject(language: Language): Project {
     return Project.createFromCode(text, language)
 }
