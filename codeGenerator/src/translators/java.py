@@ -1,5 +1,6 @@
 # pylint: disable=protected-access,too-many-instance-attributes,too-many-locals
 # pylint: disable=too-many-statements
+import random
 import re
 from collections import OrderedDict
 
@@ -386,7 +387,7 @@ class JavaTranslator(BaseTranslator):
                                          smart_casts=self.smart_casts)
             etype_str = self.get_type_name(etype, get_boxed_void=True)
             etype_str = PRIMITIVES_TO_BOXED.get(etype_str, etype_str)
-            res = "((Function0<{etype}>) (() -> {res})).apply()".format(
+            res = "((Function0<{etype}>) (() -> {res})).apply();".format(
                 etype=etype_str,
                 res=res
             )
@@ -579,6 +580,10 @@ class JavaTranslator(BaseTranslator):
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
+        if var_type == "Long":
+            expr += "L"
+        elif var_type == "Float":
+            expr += "F"
         res = "{ident}{final}{var_type} {main_prefix}{name} = {expr};".format(
             ident=self.get_ident(),
             final="final " if node.is_final else "",
@@ -1007,11 +1012,11 @@ class JavaTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{ident}({left} {operator}){semicolon}".format(
+        res = "{ident}{left}{operator}{semicolon}".format(
             ident=self.get_ident(old_ident=old_ident),
             left=children_res[0],
             operator=node.operator,
-            semicolon=";" if self._parent_is_block() else ""
+            semicolon=";"
         )
         self.ident = old_ident
         return res
@@ -1214,10 +1219,9 @@ class JavaTranslator(BaseTranslator):
         self.ident += 2
         body = node.body
         loop_expr = [child for child in node.children() if child != body][0]
-        body.accept(self)
-        children_res = self.pop_children_res([body])
+        children_res = self._visit_loop_body(body)
         loop_expr_res = self._visit_loop_expr(loop_expr)
-        children_res = [loop_expr_res] + children_res
+        children_res = [loop_expr_res, children_res]
         if isinstance(node, ast.ForExpr):
             res = "{}for ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
         elif isinstance(node, ast.WhileExpr):
@@ -1247,6 +1251,24 @@ class JavaTranslator(BaseTranslator):
             res = self.pop_children_res([node])[0]
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
+        return res
+
+    def _visit_loop_body(self, node):
+        children = node.children()
+        is_func_non_void_block = self.is_func_non_void_block
+        is_nested_func_block = self.is_nested_func_block
+        self.is_func_non_void_block = False
+        self.is_nested_func_block = False
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        self.is_func_non_void_block = is_func_non_void_block
+        self.is_nested_func_block = is_nested_func_block
+
+        res = "{{\n{stmts}\n{old_ident}}}".format(
+            stmts="\n".join(children_res),
+            old_ident=self.get_ident(extra=-2)
+        )
         return res
 
     @append_to

@@ -142,7 +142,7 @@ class Generator:
             self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
-        loop_expr = self.generate_loop_expr()
+        loop_expr = self.generate_loop_expr(decls)
 
         body = ast.Block(decls + [expr] + loop_expr)
         main_func.body = body
@@ -158,12 +158,13 @@ class Generator:
     # gen_variable(array_expr.array_type.type_args[0])
     # self.gen_variable_decl(array_expr.array_type.type_args[0])
 
-    def generate_loop_expr(self):
+    def generate_loop_expr(self, already_in_main: list):
         res = []
         iterable_types = self._get_iterable_types()
         random_type_to_iterate = ut.randomUtil.choice(iterable_types)
         body = self._gen_func_body(self.bt_factory.get_void_type())
         body.is_func_block = False
+        body.body = [decl for decl in body.body if decl not in already_in_main and not isinstance(decl, ast.Constant)]
         # TODO use variables inside loop
         if isinstance(random_type_to_iterate, tp.ParameterizedType):  # generate an iteration loop over an array
             array_expr = self.gen_array_expr(random_type_to_iterate)

@@ -1,0 +1,11 @@
+
+epython:S1192µ"GDefine a constant instead of duplicating this literal "{}({})" 3 times.(‡Ñú‰˛ˇˇˇˇ
+?python:S1481"'Remove the unused local variable "res".(Ø’˝—
+:python:S3457Æ"Remove this unused argument.(˚∫àæ˚ˇˇˇˇ
+:python:S3457¨"Remove this unused argument.(◊Ê•ˇ˘ˇˇˇˇ
+:python:S3457≠"Remove this unused argument.(¢û¢ü˘ˇˇˇˇ
+5python:S3457Ø"Remove this unused argument.(É◊ÈÀ
+mpython:S3776¥"TRefactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.(Âø˛Ó
+Mpython:S1135…"4Complete the task associated to this "TODO" comment.(öûÛÇ
+Vpython:S112õ">Replace this generic exception class with a more specific one.(ÁŒ≠è
+Vpython:S112™">Replace this generic exception class with a more specific one.(ÁŒ≠è
