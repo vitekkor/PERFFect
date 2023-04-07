@@ -121,8 +121,7 @@ open class KotlinJVMCompiler(
 
     override fun tryToCompile(project: Project): KotlincInvokeStatus {
         val path = project.saveOrRemoveToTmp(true)
-        val trashDir = "${CompilerArgs.pathToTmpDir}/trash/"
-        val args = prepareArgs(path, trashDir)
+        val args = prepareArgs(path, pathToCompiled)
         return executeCompiler(project, args) as KotlincInvokeStatus
     }
 }
