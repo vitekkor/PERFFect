@@ -141,3 +141,4 @@ dmypy.json
 /codeGenerator/src/server/server_pb2.pyi
 /codeGenerator/src/server/server_pb2_grpc.py
 /testOracle/src/main/resources/kotlin.yml
+.idea/
