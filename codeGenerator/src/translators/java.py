@@ -702,6 +702,34 @@ class JavaTranslator(BaseTranslator):
                 body=body,
                 semicolon=";" if body == "" else ""
             )
+            if len(node.params) != 0 and all(param.default is not None for param in node.params):
+                for param in node.params:
+                    param.default.accept(self)
+                default_param_res = self.pop_children_res(node.params)
+                body_call_with_defaults = '{\n' + "{start_indent}return {name}({default_params});\n{indent}".format(
+                    start_indent=self.get_ident(),
+                    name=node.name,
+                    default_params=", ".join(default_param_res),
+                    indent=self.get_ident(old_ident=old_ident)
+                ) + "}"
+                overload = ("{ident}{public}{final}{abstract}{type_params}{ret_type} "
+                            "{name}() {body}{semicolon}").format(
+                    ident=self.get_ident(old_ident=old_ident),
+                    public="public ",
+                    final="final " if node.is_final else "",
+                    abstract="",
+                    type_params=(
+                        "<" + type_parameters_res + "> "
+                        if type_parameters_res else ""
+                    ),
+                    ret_type=self.get_type_name(node.inferred_type),
+                    name=node.name,
+                    body=body_call_with_defaults,
+                    semicolon=";" if body_call_with_defaults == "" else ""
+                )
+                if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+                    overload = "static " + overload
+                res = res + "\n" + overload
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
         self.ident = old_ident
