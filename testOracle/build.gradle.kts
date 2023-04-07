@@ -8,7 +8,7 @@ plugins {
 
 val grpcKotlinVersion = "1.3.0"
 val grpcVersion = "1.47.0"
-val protobufVersion = "3.21.2"
+val protobufVersion = "3.21.7"
 val kotlinVersion: String by project
 
 val libraries = listOf(
@@ -33,6 +33,7 @@ dependencies {
     implementation("org.apache.commons:commons-exec:1.3")
     implementation("commons-io:commons-io:2.7")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("com.sksamuel.hoplite:hoplite-core:2.7.1")
     implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.1")
 
