@@ -128,9 +128,13 @@ class KotlinTranslator(BaseTranslator):
         if node.args is None:
             self._children_res.append(self.get_type_name(node.class_type))
             return
-        self._children_res.append(
-            self.get_type_name(node.class_type) + "(" + ", ".join(
-                children_res) + ")")
+        class_decl = self.context.get_classes(('global',), glob=True)[node.class_type.name]
+        res = "{class_type}{children}".format(
+            class_type=self.get_type_name(node.class_type),
+            children=("(" + ", ".join(children_res) + ")") if class_decl.class_type != ast.ClassDeclaration.INTERFACE else ""
+        )
+        self._children_res.append(res)
+
 
     @append_to
     def visit_class_decl(self, node):
