@@ -130,9 +130,12 @@ class Generator:
         self.namespace += ('main',)
         initial_depth = self.depth
         self.depth += 1
+        t_constructor = self.bt_factory.get_array_type()
+        type_arg = self.bt_factory.get_string_type()
+        args = ast.ParameterDeclaration('args', tp.ParameterizedType(t_constructor, [type_arg]))
         main_func = ast.FunctionDeclaration(
             "main",
-            params=[],
+            params=[args],
             ret_type=self.bt_factory.get_void_type(),
             body=None,
             func_type=ast.FunctionDeclaration.FUNCTION)
