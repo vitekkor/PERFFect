@@ -317,7 +317,7 @@ class JavaTranslator(BaseTranslator):
                     not isinstance(children[-1],
                                    (ast.VariableDeclaration,
                                     ast.FunctionCall,
-                                    ast.Assignment))):
+                                    ast.Assignment, ast.LoopExpr))):
                 is_bottom = children[-1].is_bottom()
                 type_hint = tu.get_type_hint(children[-1],
                                              self.context,
