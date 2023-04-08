@@ -1,0 +1,3 @@
+compilerArgs:
+  pathToTmpDir: ../files/tmp
+  jvmStdLibBasePath: ../files/lib

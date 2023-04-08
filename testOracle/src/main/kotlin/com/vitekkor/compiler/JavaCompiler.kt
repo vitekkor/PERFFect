@@ -20,7 +20,7 @@ class JavaCompiler(override val arguments: String = "") : BaseCompiler() {
     override val compilerInfo: String
         get() = "Java $arguments"
 
-    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/java.jar"
+    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/java"
 
     override fun checkCompiling(project: Project): Boolean {
         val status = tryToCompile(project)
@@ -55,8 +55,8 @@ class JavaCompiler(override val arguments: String = "") : BaseCompiler() {
         val manager = compiler.getStandardFileManager(diagnostics, null, null)
         val sources = manager.getJavaFileObjectsFromFiles(javaFiles)
         val classPath =
-            (CompilerArgs.jvmStdLibPaths + CompilerArgs.getAnnotationsPath("13.0") + CompilerArgs.pathToTmpDir).joinToString(":")
-        val options = mutableListOf("-classpath", classPath, "-d", CompilerArgs.pathToTmpDir)
+            (CompilerArgs.jvmStdLibPaths + CompilerArgs.getAnnotationsPath("13.0")).joinToString(":")
+        val options = mutableListOf("-classpath", classPath, "-d", pathToCompiled)
         val task = compiler.getTask(null, manager, diagnostics, options, null, sources)
 
         val futureExitCode = threadPool.submit {
