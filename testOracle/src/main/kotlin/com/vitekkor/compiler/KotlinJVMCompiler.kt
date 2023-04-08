@@ -15,8 +15,6 @@ import org.jetbrains.kotlin.config.Services
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import java.util.jar.JarInputStream
-import java.util.jar.JarOutputStream
 
 open class KotlinJVMCompiler(
     override val arguments: String = ""
