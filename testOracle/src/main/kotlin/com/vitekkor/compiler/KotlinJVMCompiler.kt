@@ -24,7 +24,7 @@ open class KotlinJVMCompiler(
     override val compilerInfo: String
         get() = "Kotlin JVM $arguments"
 
-    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/kotlin.jar"
+    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/kotlin"
 
     override fun checkCompiling(project: Project): Boolean {
         val status = tryToCompile(project)
@@ -42,20 +42,9 @@ open class KotlinJVMCompiler(
 
     private fun getCompilationResult(projectWithMainFun: Project, includeRuntime: Boolean): CompilationResult {
         val path = projectWithMainFun.saveOrRemoveToTmp(true)
-        val tmpJar = "$pathToCompiled.jar"
-        val args = prepareArgs(path, tmpJar)
+        val args = prepareArgs(path, pathToCompiled)
         val status = executeCompiler(projectWithMainFun, args)
         if (status.hasException || status.hasTimeout || !status.isCompileSuccess) return CompilationResult(-1, "")
-        val res = File(pathToCompiled)
-        val input = JarInputStream(File(tmpJar).inputStream())
-        val output = JarOutputStream(res.outputStream(), input.manifest)
-        copyFullJarImpl(output, File(tmpJar))
-        if (includeRuntime) {
-            CompilerArgs.jvmStdLibPaths.forEach { writeRuntimeToJar(it, output) }
-        }
-        output.finish()
-        input.close()
-        File(tmpJar).delete()
         return CompilationResult(0, pathToCompiled)
     }
 
