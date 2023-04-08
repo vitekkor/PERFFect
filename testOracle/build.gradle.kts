@@ -4,6 +4,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("com.google.protobuf") version "0.9.2"
+    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+}
+
+ktlint {
+    filter {
+        exclude { element -> element.file.path.contains("generated/") }
+    }
 }
 
 val grpcKotlinVersion = "1.3.0"
@@ -91,6 +98,7 @@ tasks.test {
 }
 
 val downloadStdLib by tasks.creating(Copy::class.java) {
+    group = "build"
     if (!file("files/lib/kotlin-stdlib-$kotlinVersion.jar").exists()) {
         from(toCopy)
         into("${project.rootDir.path}/files/lib")
@@ -98,10 +106,12 @@ val downloadStdLib by tasks.creating(Copy::class.java) {
 }
 
 val cleanUpStdLib by tasks.creating(Delete::class.java) {
+    group = "build"
     delete("files/lib/")
 }
 
 val provideKotlinVersion: Task by tasks.creating {
+    group = "build"
     project.sourceSets.main {
         File(resources.srcDirs.first().path + "/kotlin.yml").apply {
             if (exists()) delete()
@@ -112,6 +122,7 @@ val provideKotlinVersion: Task by tasks.creating {
 }
 
 val cleanKotlinVersion by tasks.creating(Delete::class.java) {
+    group = "build"
     project.sourceSets.main {
         delete(File(resources.srcDirs.first().path + "/kotlin.yml"))
     }
@@ -123,4 +134,4 @@ tasks.withType<KotlinCompile> {
     dependsOn(provideKotlinVersion)
 }
 
-tasks["clean"].finalizedBy(cleanUpStdLib)
+tasks["clean"].finalizedBy(cleanUpStdLib).finalizedBy(cleanKotlinVersion)

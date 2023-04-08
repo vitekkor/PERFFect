@@ -68,7 +68,7 @@ class JavaCompiler(override val arguments: String = "") : BaseCompiler() {
             val startTime = System.currentTimeMillis()
             futureExitCode.get(10L, TimeUnit.SECONDS)
             compilerWorkingTime = System.currentTimeMillis() - startTime
-        } catch (ex: TimeoutException) {
+        } catch (_: TimeoutException) {
             hasTimeout = true
             futureExitCode.cancel(true)
         } finally {

@@ -32,7 +32,7 @@ class TestOracle {
             val (kotlinCompileStatus, kotlinCompileTime) = kotlinCompiler.tryToCompileWithStatusAndExecutionTime(kotlin.toProject(Language.KOTLIN))
             log.info("$KOTLIN_PROGRAM compileStatus: $kotlinCompileStatus; compileTime: $kotlinCompileTime")
 
-            val  (javaCompileStatus, javaCompileTime) = javaCompiler.tryToCompileWithStatusAndExecutionTime(java.toProject(Language.JAVA))
+            val (javaCompileStatus, javaCompileTime) = javaCompiler.tryToCompileWithStatusAndExecutionTime(java.toProject(Language.JAVA))
             log.info("$JAVA_PROGRAM compileStatus: $javaCompileStatus; compileTime: $javaCompileTime")
         }
     }
