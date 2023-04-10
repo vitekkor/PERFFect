@@ -5,7 +5,6 @@ import com.vitekkor.compiler.BaseCompiler
 import com.vitekkor.compiler.JavaCompiler
 import com.vitekkor.compiler.KotlinJVMCompiler
 import com.vitekkor.compiler.model.CompileStatus
-import com.vitekkor.config.CompilerArgs
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
 import com.vitekkor.project.toProject
