@@ -138,5 +138,9 @@ abstract class BaseCompiler {
         )
     }
 
+    fun cleanUp() {
+        File(pathToCompiled).deleteRecursively()
+    }
+
     override fun toString(): String = compilerInfo
 }

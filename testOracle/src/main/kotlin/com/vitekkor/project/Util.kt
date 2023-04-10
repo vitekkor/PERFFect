@@ -10,3 +10,7 @@ internal fun getCommentSection(text: String) =
 fun Server.Program.toProject(language: Language): Project {
     return Project.createFromCode(text, language)
 }
+
+fun String.toProject(language: Language): Project {
+    return Project.createFromCode(this, language)
+}
