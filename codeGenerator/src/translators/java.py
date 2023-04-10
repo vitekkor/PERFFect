@@ -1116,8 +1116,13 @@ class JavaTranslator(BaseTranslator):
             if isinstance(node.expr, ast.BottomConstant)
             else children_res[0]
         )
-        return "{ident}{expr}.{field}{semicolon}".format(
+        sugar = ""
+        if self._parent_is_block() and self._nodes_stack[-2].children()[-1] != node:
+            sugar = "Object x_{x} = ".format(x=self._x_counter)
+            self._x_counter += 1
+        return "{ident}{sugar}{expr}.{field}{semicolon}".format(
             ident=self.get_ident(),
+            sugar=sugar,
             expr=receiver,
             field=node.field,
             semicolon=";" if self._parent_is_block() else ""
@@ -1189,9 +1194,11 @@ class JavaTranslator(BaseTranslator):
 
         # From where we are in the AST we search backwards for declarations
         # with the same name.
-        fdecl = get_decl(self.context, self._namespace, node.func)
-        if fdecl and not isinstance(fdecl[1], ast.FunctionDeclaration):
+        fdecl = self.context.get_funcs(self._namespace, glob=True)[node.func]
+        if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
             fdecl = None
+        else:
+            fdecl = (self.context.get_namespace(fdecl), fdecl)
 
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
@@ -1283,7 +1290,7 @@ class JavaTranslator(BaseTranslator):
         elif isinstance(node, ast.WhileExpr):
             res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
         elif isinstance(node, ast.DoWhileExpr):
-            res = "{}do\n{}\n{}while({})".format(" " * old_ident, children_res[1], " " * old_ident,
+            res = "{}do\n{}\n{}while({});".format(" " * old_ident, children_res[1], " " * old_ident,
                                                  children_res[0][self.ident:])
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
