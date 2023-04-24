@@ -49,15 +49,15 @@ abstract class BaseCompiler {
     }
 
     fun tryToCompileWithStatusAndExecutionTime(project: Project): Pair<CompileStatus, Long> {
-        val kotlincInvokeStatus = tryToCompile(project)
+        val invokeStatus = tryToCompile(project)
         val compilationStatus =
             when {
-                kotlincInvokeStatus.hasException -> CompileStatus.BUG
-                kotlincInvokeStatus.hasCompilationError() || kotlincInvokeStatus.hasTimeout -> CompileStatus.ERROR
-                kotlincInvokeStatus.isCompileSuccess -> CompileStatus.OK
+                invokeStatus.hasException -> CompileStatus.BUG
+                invokeStatus.hasCompilationError() || invokeStatus.hasTimeout -> CompileStatus.ERROR
+                invokeStatus.isCompileSuccess -> CompileStatus.OK
                 else -> CompileStatus.ERROR
             }
-        return compilationStatus to kotlincInvokeStatus.compilerExecTimeMillis
+        return compilationStatus to invokeStatus.compilerExecTimeMillis
     }
 
     fun commonExec(command: String, streamType: Stream = Stream.INPUT, timeoutSec: Long = 5L): String {
@@ -136,6 +136,10 @@ abstract class BaseCompiler {
             "java -classpath ${CompilerArgs.jvmStdLibPaths.joinToString(":")}:$path $mc",
             streamType
         )
+    }
+
+    fun cleanUp() {
+        File(pathToCompiled).deleteRecursively()
     }
 
     override fun toString(): String = compilerInfo

@@ -1,4 +1,4 @@
-package src.crusting
+package com.vitekkor
 
 open abstract class Plantains(var slaves: Function1<Int, Int>, var retries: Function1<Long, Double>) {
     open fun rippled(sleighs: Long, cameroons: Long): Long {
