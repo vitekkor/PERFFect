@@ -105,9 +105,10 @@ val downloadStdLib by tasks.creating(Copy::class.java) {
     }
 }
 
-val cleanUpStdLib by tasks.creating(Delete::class.java) {
+val cleanUpStdLib by tasks.creating(Task::class.java) {
     group = "build"
-    delete("files/lib/")
+    outputs.upToDateWhen { false }
+    File("files/lib/").delete()
 }
 
 val provideKotlinVersion: Task by tasks.creating {
@@ -121,12 +122,11 @@ val provideKotlinVersion: Task by tasks.creating {
     }
 }
 
-val cleanKotlinVersion by tasks.creating(Delete::class.java) {
+val cleanKotlinVersion by tasks.creating(Task::class.java) {
     group = "build"
     project.sourceSets.main {
-        delete(File(resources.srcDirs.first().path + "/kotlin.yml"))
+        File(resources.srcDirs.first().path + "/kotlin.yml").delete()
     }
-    delete("files/lib/")
 }
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = project.property("jvmTarget") as String
