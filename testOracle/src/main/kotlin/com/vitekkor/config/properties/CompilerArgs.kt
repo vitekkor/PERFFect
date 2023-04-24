@@ -3,7 +3,8 @@ package com.vitekkor.config.properties
 data class CompilerArgs(
     val pathToTmpDir: String,
     val jvmStdLibBasePath: String,
-    val kotlinVersion: String
+    val kotlinVersion: String,
+    val percentageDelta: Double = 5.0
 ) {
     val jvmStdLibPaths: List<String> = listOf(
         "kotlin-stdlib",
