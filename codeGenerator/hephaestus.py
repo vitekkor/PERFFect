@@ -38,7 +38,7 @@ def gen_program(pid, packages):
     translator = TRANSLATORS[cli_args.language]('src.' + packages[0],
                                                 cli_args.options['Translator'])
     if cli_args.log:
-        logger = Logger(cli_args.name, cli_args.args.test_directory, pid, "Generator", pid)
+        logger = Logger(cli_args.name, cli_args.args.test_directory, "Generator", pid)
     else:
         logger = None
     generator = Generator(language=cli_args.language, logger=logger)

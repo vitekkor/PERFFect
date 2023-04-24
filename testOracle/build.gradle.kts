@@ -129,7 +129,7 @@ val cleanKotlinVersion by tasks.creating(Delete::class.java) {
     delete("files/lib/")
 }
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = project.property("jvmTarget") as String
     dependsOn(downloadStdLib)
     dependsOn(provideKotlinVersion)
 }
