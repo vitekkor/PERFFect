@@ -33,7 +33,7 @@ class TestOracle {
             log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
 
             val java = client.generateJava(seed)
-            val javaProject = kotlin.toProject(Language.JAVA)
+            val javaProject = java.toProject(Language.JAVA)
             log.info("$JAVA_PROGRAM generated code: ${java.text}")
 
             val (kotlinCompileStatus, kotlinCompileTime) =
