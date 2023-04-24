@@ -32,6 +32,14 @@ val libraries = listOf(
 
 val toCopy: Configuration by configurations.creating
 
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.name.contains("kotlin-stdlib")) {
+            useVersion(kotlinVersion)
+        }
+    }
+}
+
 dependencies {
     implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
@@ -108,24 +116,31 @@ val downloadStdLib by tasks.creating(Copy::class.java) {
 val cleanUpStdLib by tasks.creating(Task::class.java) {
     group = "build"
     outputs.upToDateWhen { false }
-    File("files/lib/").delete()
+    doLast {
+        File("files/lib/").deleteRecursively()
+    }
 }
 
 val provideKotlinVersion: Task by tasks.creating {
     group = "build"
-    project.sourceSets.main {
-        File(resources.srcDirs.first().path + "/kotlin.yml").apply {
-            if (exists()) delete()
-            createNewFile()
-            writeText("compilerArgs:\n  kotlinVersion: \"$kotlinVersion\"")
+    outputs.upToDateWhen { false }
+    doLast {
+        project.sourceSets.main {
+            File(resources.srcDirs.first().path + "/kotlin.yml").apply {
+                if (exists()) delete()
+                createNewFile()
+                writeText("compilerArgs:\n  kotlinVersion: \"$kotlinVersion\"")
+            }
         }
     }
 }
 
 val cleanKotlinVersion by tasks.creating(Task::class.java) {
     group = "build"
-    project.sourceSets.main {
-        File(resources.srcDirs.first().path + "/kotlin.yml").delete()
+    doLast {
+        project.sourceSets.main {
+            File(resources.srcDirs.first().path + "/kotlin.yml").delete()
+        }
     }
 }
 tasks.withType<KotlinCompile> {
