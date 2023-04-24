@@ -5,6 +5,8 @@ import com.vitekkor.compiler.BaseCompiler
 import com.vitekkor.compiler.JavaCompiler
 import com.vitekkor.compiler.KotlinJVMCompiler
 import com.vitekkor.compiler.model.CompileStatus
+import com.vitekkor.config.CompilerArgs
+import com.vitekkor.model.MeasurementResult
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
 import com.vitekkor.project.toProject
@@ -64,12 +66,20 @@ class TestOracle {
             val compiledKotlin = kotlinCompiler.tryToCompileWithStatusAndExecutionTime(newKotlinProject)
             log.info("$KOTLIN_PROGRAM compileStatus: ${compiledKotlin.first}; compileTime: ${compiledKotlin.second}")
 
-            val kotlinExecTime = measureAverageExecutionTime(kotlinCompiler, newKotlinProject.mainClass, targetRepeatCount)
+            val kotlinExecTime =
+                measureAverageExecutionTime(kotlinCompiler, newKotlinProject.mainClass, targetRepeatCount)
             val javaExecTime = measureAverageExecutionTime(javaCompiler, newJavaProject.mainClass, targetRepeatCount)
 
             log.info("$SEED $seed")
             log.info("$KOTLIN_PROGRAM average execution time - $kotlinExecTime")
             log.info("$JAVA_PROGRAM average execution time - $javaExecTime")
+
+            val measurementResult = MeasurementResult(
+                MeasurementResult.Execution(kotlinExecTime, kotlinProject),
+                MeasurementResult.Execution(javaExecTime, javaProject),
+                seed
+            )
+            compareExecutionTimes(measurementResult)
         }
     }
 
@@ -152,6 +162,14 @@ class TestOracle {
             .joinToString(":") { it.path }
         val totalTime = compiler.getExecutionTime(path, mainClass = mainClass).second
         return totalTime / executionCount.toDouble()
+    }
+
+    private fun compareExecutionTimes(measurementResult: MeasurementResult) {
+        val percentage = measurementResult.kotlin.time / measurementResult.java.time
+        if (percentage > CompilerArgs.percentageDelta) {
+            log.warn { "Performance degradation detected" }
+            // todo save projects
+        }
     }
 
     companion object {
