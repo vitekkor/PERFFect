@@ -22,6 +22,7 @@ class GeneratorImpl(server_pb2_grpc.GeneratorServicer):
         'kotlin': KotlinTranslator,
         'java': JavaTranslator
     }
+    _log: Logger = Logger('', ".", "server_class", 42)
 
     def generateProgram(self, language, seed):
         packages = generate_package_name()
@@ -29,7 +30,7 @@ class GeneratorImpl(server_pb2_grpc.GeneratorServicer):
         utils.randomUtil.reset_random(seed)
         translator = self.TRANSLATORS[language]('src.' + packages[0], {})
         proc_id = random.Random().randint(0, 10000)
-        logger = Logger(packages[0], ".", proc_id, "Generator", proc_id)
+        logger = Logger(packages[0], ".", "Generator", proc_id)
         generator = Generator(language=language, logger=logger)
         try:
             program = generator.generate()

@@ -1194,7 +1194,10 @@ class JavaTranslator(BaseTranslator):
 
         # From where we are in the AST we search backwards for declarations
         # with the same name.
-        fdecl = self.context.get_funcs(self._namespace, glob=True)[node.func]
+        try:
+            fdecl = self.context.get_funcs(self._namespace, glob=True)[node.func]
+        except KeyError:
+            fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
         if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
             fdecl = None
         else:
