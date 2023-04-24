@@ -4,18 +4,17 @@ from src.utils import mkdir
 
 
 class Logger():
-    def __init__(self, session, test_directory, iteration, name, number,
+    def __init__(self, session, test_directory, name, number,
                  stdout=False):
         self.session = session
         self.test_directory = test_directory
-        self.iteration = iteration
         self.transformation_name = name
         self.transformation_number = number
         self.stdout = stdout
         if not self.stdout:
             self.directory = os.path.join(self.test_directory, "logs")
             mkdir(self.directory)
-            self.filename = os.path.join(self.directory, str(self.iteration))
+            self.filename = os.path.join(self.directory, "codeGenerator.log")
 
     def log_info(self):
         msg = "\n{}\nTransformation name:{}\nTransformation No: {}\n\n".format(

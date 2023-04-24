@@ -17,6 +17,10 @@ class KotlinJVMCompilerTest {
         assertEquals(0, result.status)
         val jar = File(result.pathToCompiled)
         assertTrue(jar.exists())
-        jar.delete()
+        val files = jar.walkTopDown().maxDepth(3).toList()
+        assertTrue { files.count { it.path.contains("com/vitekkor") } == 39 }
+        assertTrue { files.count { it.path.contains("META-INF") } == 2 }
+        assertTrue { files.count { it.extension == "class" } == 38 }
+        jar.deleteRecursively()
     }
 }

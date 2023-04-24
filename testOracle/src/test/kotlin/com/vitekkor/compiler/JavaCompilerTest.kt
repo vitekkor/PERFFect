@@ -18,6 +18,9 @@ class JavaCompilerTest {
         assertEquals(0, result.status)
         val jar = File(result.pathToCompiled)
         assertTrue(jar.exists())
-        jar.delete()
+        val files = jar.walkTopDown().maxDepth(3).toList().drop(2)
+        assertTrue { files.all { it.path.contains("com/vitekkor") } }
+        assertTrue { files.count { it.extension == "class" } == 21 }
+        jar.deleteRecursively()
     }
 }

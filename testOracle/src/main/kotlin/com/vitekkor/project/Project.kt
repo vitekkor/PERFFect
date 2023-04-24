@@ -5,16 +5,22 @@ import java.io.File
 
 class Project(
     var files: List<KJFile>,
-    val language: Language = Language.KOTLIN
+    val language: Language = Language.KOTLIN,
+    val `package`: String
 ) {
 
-    constructor(file: KJFile, language: Language) : this(listOf(file), language)
+    val mainClass: String
+        get() = `package` + "." + if (language == Language.KOTLIN) "MainKt" else "Main"
+
+    constructor(file: KJFile, language: Language, `package`: String) : this(listOf(file), language, `package`)
 
     companion object {
+
+        private val packageRegex = "package (.*)".toRegex()
         fun createFromCode(code: String, language: Language): Project {
             val file = KJFileFactory(code, language).createKJFiles()
-            val language = file.getLanguage()
-            return Project(file, language)
+            val `package` = checkNotNull(packageRegex.find(code)?.value).removePrefix("package").removeSuffix(";")
+            return Project(file, language, `package`)
         }
     }
 
@@ -71,7 +77,7 @@ class Project(
     }
 
     fun copy(): Project {
-        return Project(files.map { it.copy() }, language)
+        return Project(files.map { it.copy() }, language, `package`)
     }
 
     override fun toString(): String = files.joinToString("\n\n") {

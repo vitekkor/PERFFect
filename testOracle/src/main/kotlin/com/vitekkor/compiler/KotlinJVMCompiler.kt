@@ -15,8 +15,6 @@ import org.jetbrains.kotlin.config.Services
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import java.util.jar.JarInputStream
-import java.util.jar.JarOutputStream
 
 open class KotlinJVMCompiler(
     override val arguments: String = ""
@@ -24,7 +22,7 @@ open class KotlinJVMCompiler(
     override val compilerInfo: String
         get() = "Kotlin JVM $arguments"
 
-    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/kotlin.jar"
+    override var pathToCompiled: String = CompilerArgs.pathToTmpDir + "/kotlin"
 
     override fun checkCompiling(project: Project): Boolean {
         val status = tryToCompile(project)
@@ -42,20 +40,9 @@ open class KotlinJVMCompiler(
 
     private fun getCompilationResult(projectWithMainFun: Project, includeRuntime: Boolean): CompilationResult {
         val path = projectWithMainFun.saveOrRemoveToTmp(true)
-        val tmpJar = "$pathToCompiled.jar"
-        val args = prepareArgs(path, tmpJar)
+        val args = prepareArgs(path, pathToCompiled)
         val status = executeCompiler(projectWithMainFun, args)
         if (status.hasException || status.hasTimeout || !status.isCompileSuccess) return CompilationResult(-1, "")
-        val res = File(pathToCompiled)
-        val input = JarInputStream(File(tmpJar).inputStream())
-        val output = JarOutputStream(res.outputStream(), input.manifest)
-        copyFullJarImpl(output, File(tmpJar))
-        if (includeRuntime) {
-            CompilerArgs.jvmStdLibPaths.forEach { writeRuntimeToJar(it, output) }
-        }
-        output.finish()
-        input.close()
-        File(tmpJar).delete()
         return CompilationResult(0, pathToCompiled)
     }
 
@@ -121,8 +108,7 @@ open class KotlinJVMCompiler(
 
     override fun tryToCompile(project: Project): KotlincInvokeStatus {
         val path = project.saveOrRemoveToTmp(true)
-        val trashDir = "${CompilerArgs.pathToTmpDir}/trash/"
-        val args = prepareArgs(path, trashDir)
+        val args = prepareArgs(path, pathToCompiled)
         return executeCompiler(project, args) as KotlincInvokeStatus
     }
 }

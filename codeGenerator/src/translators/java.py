@@ -54,6 +54,11 @@ def append_to(visit):
     return inner
 
 
+def _handle_range_expression(variable, value):
+    if isinstance(value, ast.IntegerConstant):
+        return f"int {variable}"
+
+
 class JavaTranslator(BaseTranslator):
     filename = "Main.java"
     incorrect_filename = "Incorrect.java"
@@ -62,6 +67,7 @@ class JavaTranslator(BaseTranslator):
 
     def __init__(self, package=None, options={}):
         super().__init__(package, options)
+        self.sugar_cond = False
         self._children_res = []
         self.ident = 0
         self.context = None
@@ -344,10 +350,11 @@ class JavaTranslator(BaseTranslator):
                     var_prefix = sig if sig else 'var'
                 else:
                     var_prefix = 'Object'
-                sugar = "{p} x_{x} = ".format(p=var_prefix, x=self._x_counter)
-                return_stmt += ';' if is_lambda and not return_stmt.strip() \
-                    else ''
-                self._x_counter += 1
+                if not isinstance(children[-1], ast.Conditional) or (isinstance(children[-1], ast.Conditional) and self.sugar_cond):
+                    sugar = "{p} x_{x} = ".format(p=var_prefix, x=self._x_counter)
+                    return_stmt += ';' if is_lambda and not return_stmt.strip() \
+                        else ''
+                    self._x_counter += 1
 
         # A block could be the body of a function or the body of an if statement
         if len(children_res) == 0:  # empty block
@@ -580,10 +587,11 @@ class JavaTranslator(BaseTranslator):
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
-        if var_type == "Long":
-            expr += "L"
-        elif var_type == "Float":
-            expr += "F"
+        if isinstance(children[0], ast.Constant):
+            if var_type == "Long":
+                expr += "L"
+            elif var_type == "Float":
+                expr += "F"
         res = "{ident}{final}{var_type} {main_prefix}{name} = {expr};".format(
             ident=self.get_ident(),
             final="final " if node.is_final else "",
@@ -703,11 +711,15 @@ class JavaTranslator(BaseTranslator):
                 semicolon=";" if body == "" else ""
             )
             if len(node.params) != 0 and all(param.default is not None for param in node.params):
+                old_cast_number = self._cast_number
+                self._cast_number = True
                 for param in node.params:
                     param.default.accept(self)
+                self._cast_number = old_cast_number
                 default_param_res = self.pop_children_res(node.params)
-                body_call_with_defaults = '{\n' + "{start_indent}return {name}({default_params});\n{indent}".format(
+                body_call_with_defaults = '{\n' + "{start_indent}{return_word}{name}({default_params});\n{indent}".format(
                     start_indent=self.get_ident(),
+                    return_word="return " if node.get_type() != jt.Void else "",
                     name=node.name,
                     default_params=", ".join(default_param_res),
                     indent=self.get_ident(old_ident=old_ident)
@@ -994,6 +1006,22 @@ class JavaTranslator(BaseTranslator):
             else_body=children_res[2],
             semicolon=";" if self._parent_is_block() else ""
         )
+        if self._parent_is_block():
+            block = self._nodes_stack[-2]
+            parent_for_block = self._nodes_stack[-3]
+            if isinstance(parent_for_block, ast.FunctionDeclaration):
+                if parent_for_block.inferred_type != node.inferred_type:
+                    if node.inferred_type != jt.Void and block.children()[-1] == node:
+                        self.sugar_cond = True
+                    else:
+                        self.sugar_cond = False
+                        # translate this node as if () {} else {}
+                        res = "{ident}if ({if_condition}) {{\n{body}; \n{ident}}} else {{ \n {else_body}; \n{ident} }}".format(
+                            ident=self.get_ident(old_ident=old_ident),
+                            if_condition=children_res[0].lstrip(),
+                            body=children_res[1],
+                            else_body=children_res[2]
+                    )
         self.ident = old_ident
         self._inside_is = prev_inside_is
         self._namespace = prev_namespace
@@ -1088,8 +1116,13 @@ class JavaTranslator(BaseTranslator):
             if isinstance(node.expr, ast.BottomConstant)
             else children_res[0]
         )
-        return "{ident}{expr}.{field}{semicolon}".format(
+        sugar = ""
+        if self._parent_is_block() and self._nodes_stack[-2].children()[-1] != node:
+            sugar = "Object x_{x} = ".format(x=self._x_counter)
+            self._x_counter += 1
+        return "{ident}{sugar}{expr}.{field}{semicolon}".format(
             ident=self.get_ident(),
+            sugar=sugar,
             expr=receiver,
             field=node.field,
             semicolon=";" if self._parent_is_block() else ""
@@ -1161,9 +1194,14 @@ class JavaTranslator(BaseTranslator):
 
         # From where we are in the AST we search backwards for declarations
         # with the same name.
-        fdecl = get_decl(self.context, self._namespace, node.func)
-        if fdecl and not isinstance(fdecl[1], ast.FunctionDeclaration):
+        try:
+            fdecl = self.context.get_funcs(self._namespace, glob=True)[node.func]
+        except KeyError:
+            fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
+        if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
             fdecl = None
+        else:
+            fdecl = (self.context.get_namespace(fdecl), fdecl)
 
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
@@ -1251,11 +1289,11 @@ class JavaTranslator(BaseTranslator):
         loop_expr_res = self._visit_loop_expr(loop_expr)
         children_res = [loop_expr_res, children_res]
         if isinstance(node, ast.ForExpr):
-            res = "{}for ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+            res = "{}for ({})\n{}".format(" " * old_ident, children_res[0], children_res[1])
         elif isinstance(node, ast.WhileExpr):
             res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
         elif isinstance(node, ast.DoWhileExpr):
-            res = "{}do\n{}\n{}while({})".format(" " * old_ident, children_res[1], " " * old_ident,
+            res = "{}do\n{}\n{}while({});".format(" " * old_ident, children_res[1], " " * old_ident,
                                                  children_res[0][self.ident:])
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
@@ -1268,12 +1306,13 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if isinstance(node, ast.ForExpr.IterableExpr):
+            # TODO
             res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
         elif isinstance(node, ast.ForExpr.RangeExpr):
             var = str(children_res[0])
             start = str(children_res[1])
             end = str(children_res[2])
-            res = "{} = {}; {} <= {}, {}++".format(var, start, var, end, var)
+            res = "{} = {}; {} <= {}; {}++".format(_handle_range_expression(var, children[1]), start, var, end, var)
         elif isinstance(node, ast.ComparisonExpr):
             self.visit_binary_op(node)
             res = self.pop_children_res([node])[0]
@@ -1294,7 +1333,7 @@ class JavaTranslator(BaseTranslator):
         self.is_nested_func_block = is_nested_func_block
 
         res = "{{\n{stmts}\n{old_ident}}}".format(
-            stmts="\n".join(children_res),
+            stmts=";\n".join(children_res) + ";",
             old_ident=self.get_ident(extra=-2)
         )
         return res
