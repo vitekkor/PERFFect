@@ -185,7 +185,14 @@ class TestOracle {
         val percentage = measurementResult.kotlin.time / measurementResult.java.time
         if (percentage > CompilerArgs.percentageDelta) {
             log.warn { "Performance degradation detected" }
-            // todo save projects
+            measurementResult.kotlin.project.saveOrRemoveToDirectory(
+                true,
+                CompilerArgs.pathToResultsDir + "/${measurementResult.seed}"
+            )
+            measurementResult.java.project.saveOrRemoveToDirectory(
+                true,
+                CompilerArgs.pathToResultsDir + "/${measurementResult.seed}"
+            )
         }
     }
 

@@ -1,3 +1,4 @@
 compilerArgs:
   pathToTmpDir: files/tmp
   jvmStdLibBasePath: files/lib
+  pathToResultsDir: files/results
