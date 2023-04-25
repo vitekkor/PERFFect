@@ -26,60 +26,74 @@ class TestOracle {
         val client = CodeGeneratorClient.create()
         val kotlinCompiler = KotlinJVMCompiler()
         val javaCompiler = JavaCompiler()
-        for (i in 1..10) {
+        for (i in 1..10_000_000) {
             val seed = Random.nextLong()
-            log.info("$SEED $seed")
+            try {
+                log.info("$SEED $seed")
 
-            val kotlin = client.generateKotlin(seed)
-            val kotlinProject = kotlin.toProject(Language.KOTLIN)
-            log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
+                val kotlin = client.generateKotlin(seed)
+                if (kotlin.text.isBlank()) {
+                    log.error { "$KOTLIN_PROGRAM is empty - seed $seed" }
+                    continue
+                }
+                val kotlinProject = kotlin.toProject(Language.KOTLIN)
+                log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
 
-            val java = client.generateJava(seed)
-            val javaProject = java.toProject(Language.JAVA)
-            log.info("$JAVA_PROGRAM generated code: ${java.text}")
+                val java = client.generateJava(seed)
+                if (java.text.isBlank()) {
+                    log.error { "$JAVA_PROGRAM is empty - seed $seed" }
+                    continue
+                }
+                val javaProject = java.toProject(Language.JAVA)
+                log.info("$JAVA_PROGRAM generated code: ${java.text}")
 
-            val (kotlinCompileStatus, kotlinCompileTime) =
-                kotlinCompiler.tryToCompileWithStatusAndExecutionTime(kotlinProject)
-            log.info("$KOTLIN_PROGRAM compileStatus: $kotlinCompileStatus; compileTime: $kotlinCompileTime")
+                val (kotlinCompileStatus, kotlinCompileTime) =
+                    kotlinCompiler.tryToCompileWithStatusAndExecutionTime(kotlinProject)
+                log.info("$KOTLIN_PROGRAM compileStatus: $kotlinCompileStatus; compileTime: $kotlinCompileTime")
 
-            val (javaCompileStatus, javaCompileTime) =
-                javaCompiler.tryToCompileWithStatusAndExecutionTime(javaProject)
-            log.info("$JAVA_PROGRAM compileStatus: $javaCompileStatus; compileTime: $javaCompileTime")
+                val (javaCompileStatus, javaCompileTime) =
+                    javaCompiler.tryToCompileWithStatusAndExecutionTime(javaProject)
+                log.info("$JAVA_PROGRAM compileStatus: $javaCompileStatus; compileTime: $javaCompileTime")
 
-            if (javaCompileStatus != CompileStatus.OK || kotlinCompileStatus != CompileStatus.OK) {
-                log.error { "One of compilers finished with non-zero status code" }
-                log.error { "$SEED investigate this with $seed" }
-                continue
+                if (javaCompileStatus != CompileStatus.OK || kotlinCompileStatus != CompileStatus.OK) {
+                    log.error { "One of compilers finished with non-zero status code" }
+                    log.error { "$SEED investigate this with $seed" }
+                    continue
+                }
+
+                val javaRepeatCount = chooseNumberOfExecutions(javaCompiler, java)
+                val kotlinRepeatCount = chooseNumberOfExecutions(kotlinCompiler, kotlin)
+
+                val targetRepeatCount = maxOf(javaRepeatCount, kotlinRepeatCount)
+
+                val newJavaProject = replaceJavaMainFun(java.text, targetRepeatCount).toProject(Language.JAVA)
+                val newKotlinProject = replaceKotlinMainFun(kotlin.text, targetRepeatCount).toProject(Language.KOTLIN)
+
+                val compiledJava = javaCompiler.tryToCompileWithStatusAndExecutionTime(newJavaProject)
+                log.info("$JAVA_PROGRAM compileStatus: ${compiledJava.first}; compileTime: ${compiledJava.second}")
+
+                val compiledKotlin = kotlinCompiler.tryToCompileWithStatusAndExecutionTime(newKotlinProject)
+                log.info("$KOTLIN_PROGRAM compileStatus: ${compiledKotlin.first}; compileTime: ${compiledKotlin.second}")
+
+                val kotlinExecTime =
+                    measureAverageExecutionTime(kotlinCompiler, newKotlinProject.mainClass, targetRepeatCount)
+                val javaExecTime =
+                    measureAverageExecutionTime(javaCompiler, newJavaProject.mainClass, targetRepeatCount)
+
+                log.info("$SEED $seed")
+                log.info("$KOTLIN_PROGRAM average execution time - $kotlinExecTime")
+                log.info("$JAVA_PROGRAM average execution time - $javaExecTime")
+
+                val measurementResult = MeasurementResult(
+                    MeasurementResult.Execution(kotlinExecTime, kotlinProject),
+                    MeasurementResult.Execution(javaExecTime, javaProject),
+                    seed
+                )
+                compareExecutionTimes(measurementResult)
+            } catch (e: Exception) {
+                log.error("Unexpected exception occurred: ", e)
+                log.error { "$SEED - $seed" }
             }
-
-            val javaRepeatCount = chooseNumberOfExecutions(javaCompiler, java)
-            val kotlinRepeatCount = chooseNumberOfExecutions(kotlinCompiler, kotlin)
-
-            val targetRepeatCount = maxOf(javaRepeatCount, kotlinRepeatCount)
-
-            val newJavaProject = replaceJavaMainFun(java.text, targetRepeatCount).toProject(Language.JAVA)
-            val newKotlinProject = replaceKotlinMainFun(kotlin.text, targetRepeatCount).toProject(Language.KOTLIN)
-
-            val compiledJava = javaCompiler.tryToCompileWithStatusAndExecutionTime(newJavaProject)
-            log.info("$JAVA_PROGRAM compileStatus: ${compiledJava.first}; compileTime: ${compiledJava.second}")
-
-            val compiledKotlin = kotlinCompiler.tryToCompileWithStatusAndExecutionTime(newKotlinProject)
-            log.info("$KOTLIN_PROGRAM compileStatus: ${compiledKotlin.first}; compileTime: ${compiledKotlin.second}")
-
-            val kotlinExecTime =
-                measureAverageExecutionTime(kotlinCompiler, newKotlinProject.mainClass, targetRepeatCount)
-            val javaExecTime = measureAverageExecutionTime(javaCompiler, newJavaProject.mainClass, targetRepeatCount)
-
-            log.info("$SEED $seed")
-            log.info("$KOTLIN_PROGRAM average execution time - $kotlinExecTime")
-            log.info("$JAVA_PROGRAM average execution time - $javaExecTime")
-
-            val measurementResult = MeasurementResult(
-                MeasurementResult.Execution(kotlinExecTime, kotlinProject),
-                MeasurementResult.Execution(javaExecTime, javaProject),
-                seed
-            )
-            compareExecutionTimes(measurementResult)
         }
     }
 
