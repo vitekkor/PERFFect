@@ -91,7 +91,10 @@ class TestOracle {
                 compiler.cleanUp()
                 project = replaceKotlinMainFun(program.text, repeatCount).toProject(Language.KOTLIN)
                 val compiled = compiler.compile(project)
-                val executionTime = compiler.getExecutionTime(compiled.pathToCompiled)
+                val executionTime = compiler.getExecutionTime(compiled.pathToCompiled, mainClass = project.mainClass)
+                if (executionTime.first.contains("Exception")) {
+                    break
+                }
                 repeatCount *= 10
             } while (executionTime.second < 1000)
             log.info("$KOTLIN_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
@@ -105,7 +108,10 @@ class TestOracle {
                 compiler.cleanUp()
                 project = replaceJavaMainFun(program.text, repeatCount).toProject(Language.JAVA)
                 val compiled = compiler.compile(project)
-                val executionTime = compiler.getExecutionTime(compiled.pathToCompiled)
+                val executionTime = compiler.getExecutionTime(compiled.pathToCompiled, mainClass = project.mainClass)
+                if (executionTime.first.contains("Exception")) {
+                    break
+                }
                 repeatCount *= 10
             } while (executionTime.second < 1000)
             log.info("$JAVA_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
