@@ -123,19 +123,30 @@ class TestOracle {
 
     private fun replaceKotlinMainFun(code: String, repeat: Int): String {
         var mainFunFound = false
+        var curlyBraces = 0
         val currentMainFun = code.split("\n").filter {
             if (it.contains("fun main(args: Array<String>)")) {
                 mainFunFound = true
                 true
+            } else if (mainFunFound) {
+                if (it.contains("{")) {
+                    curlyBraces++
+                } else if (it.contains("}")) {
+                    curlyBraces--
+                }
+                if (curlyBraces == 0) {
+                    mainFunFound = false
+                }
+                true
             } else {
-                mainFunFound
+                false
             }
         }.joinToString("\n")
         val firstCurlyBracket = currentMainFun.indexOf('{')
         val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
-        newMainFun.append("\n    repeat($repeat) {\n    try {\n")
+        newMainFun.append("\n    repeat($repeat) {\n        try {\n")
         newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
-        newMainFun.append(" catch(t: Throwable) {}\n}")
+        newMainFun.append(" catch(t: Throwable) {}\n    }\n}")
         return code.replace(currentMainFun, newMainFun.toString())
     }
 
