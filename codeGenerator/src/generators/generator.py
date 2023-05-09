@@ -31,7 +31,7 @@ from src.generators import generators as gens
 from src.generators import utils as gu
 from src.generators.config import cfg
 from src.ir import BUILTIN_FACTORIES
-from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
+from src.ir import ast, types as tp, type_utils as tu
 from src.ir.builtins import BuiltinFactory
 from src.ir.context import Context
 from src.modules.logging import Logger, log
@@ -48,7 +48,7 @@ class Generator:
         self.language = language
         self.logger: Logger = logger
         # noinspection PyTypeChecker
-        self.context: Context = None
+        self.context: typing.Optional[Context] = None
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.depth = 1
         self._vars_in_context = defaultdict(lambda: 0)
@@ -173,14 +173,6 @@ class Generator:
         type_arg = self.bt_factory.get_string_type()
         args = ast.ParameterDeclaration('args', tp.ParameterizedType(t_constructor, [type_arg]))
         return self.gen_func_decl(self.bt_factory.get_void_type(), class_is_final=True, func_name='main', params=[args])
-
-    # array_expr = self.gen_array_expr(iterable_types[27])
-    # iterable_expr = ast.ForExpr.IterableExpr(array_expr, ast.Variable(gens.gen_string_constant()))
-    # main_func.body = ast.Block(ast.ForExpr(body, iterable_expr))
-    #
-    # ast.Variable(gens.gen_string_constant())
-    # gen_variable(array_expr.array_type.type_args[0])
-    # self.gen_variable_decl(array_expr.array_type.type_args[0])
 
     def generate_loop_expr(self, already_in_main: list):
         res = []
@@ -335,7 +327,6 @@ class Generator:
         # Check if this function we want to generate is a class method, by
         # checking the name of the outer namespace. If we are in class then
         # the outer namespace begins with capital letter.
-        class_method = self.namespace[-2][0].isupper()
         class_method = (False if len(self.namespace) < 2 else
                         self.namespace[-2][0].isupper())
         can_override = abstract or is_interface or (class_method and not
@@ -1316,11 +1307,7 @@ class Generator:
         e1 = self.generate_expr(e1_type, only_leaves)
         e2 = self.generate_expr(e2_type, only_leaves)
         self.depth = initial_depth
-        # if self.language == 'java' and e1_type.name in ('Boolean', 'String'):
-        #     op = ut.randomUtil.choice(
-        #         ast.EqualityExpr.VALID_OPERATORS[self.language])
-        #     return ast.EqualityExpr(e1, e2, op)
-        return ast.ComparisonExpr(e1, e2, op)
+        return ast.ComparisonExpr(e1, e2, op, e1_type)
 
     def gen_conditional(self,
                         etype: tp.Type,
@@ -2373,8 +2360,7 @@ class Generator:
             param = self.gen_param_decl()
             # If the type of the parameter is an array consider make it
             # a vararg.
-            if not vararg_found and self._can_vararg_param(param) and (
-                ut.randomUtil.bool()):
+            if not vararg_found and self._can_vararg_param(param) and (ut.randomUtil.bool()):
                 param.vararg = True
                 arr_index = i
                 vararg = param
@@ -2391,17 +2377,18 @@ class Generator:
     def _can_vararg_param(self, param: ast.ParameterDeclaration) -> bool:
         """Check if a parameter can be vararg.
         """
-        if self.language == 'kotlin':
-            # TODO theosotr Can we do this in a better way? without hardcode?
-            # Actually in Kotlin, the type of varargs is Array<out T>.
-            # So, until we add support for use-site variance, we support
-            # varargs for 'primitive' types only which kotlinc treats them
-            # as specialized arrays.
-            t_constructor = getattr(param.get_type(), 't_constructor', None)
-            return isinstance(t_constructor, kt.SpecializedArrayType)
-        # A vararg is actually a syntactic sugar for a parameter whose type
-        # is an array of something.
-        return param.get_type().name == 'Array'
+        return False  # FIXME: vararg support is disabled for some reason (code equivalence)
+        # if self.language == 'kotlin':
+        #     # TODO theosotr Can we do this in a better way? without hardcode?
+        #     # Actually in Kotlin, the type of varargs is Array<out T>.
+        #     # So, until we add support for use-site variance, we support
+        #     # varargs for 'primitive' types only which kotlinc treats them
+        #     # as specialized arrays.
+        #     t_constructor = getattr(param.get_type(), 't_constructor', None)
+        #     return isinstance(t_constructor, kt.SpecializedArrayType)
+        # # A vararg is actually a syntactic sugar for a parameter whose type
+        # # is an array of something.
+        # return param.get_type().name == 'Array'
 
     def _gen_func_body(self, ret_type: tp.Type):
         """Generate the body of a function or a lambda.

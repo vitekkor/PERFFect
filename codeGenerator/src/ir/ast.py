@@ -1,6 +1,6 @@
 # pylint: disable=dangerous-default-value
-from typing import List, Union
 from copy import deepcopy
+from typing import List, Union
 
 from ordered_set import OrderedSet
 
@@ -569,7 +569,7 @@ class ClassDeclaration(Declaration):
     # noinspection PyTypeChecker
     def children(self):
         return self.fields + self.superclasses + self.functions + \
-               self.type_parameters
+            self.type_parameters
 
     def update_children(self, children):
         def get_lst(start, end):
@@ -765,7 +765,7 @@ class ClassDeclaration(Declaration):
                 new_p.param_type = types.substitute_type(new_p.get_type(),
                                                          type_var_map)
                 if new_p.param_type.is_type_var() and (
-                        new_p.param_type.bound is not None):
+                    new_p.param_type.bound is not None):
                     new_p.param_type.bound = _instantiate_type_param_rec(
                         new_p.param_type.bound, type_var_map
                     )
@@ -1049,7 +1049,7 @@ class BinaryOp(Expr):
             # @theosotr should we keep this check? If we ant to keep it we may
             # want to check if the operator is valid for a given language
             assert operator in self.ALL_OPERATORS, (
-                    'Binary operator ' + str(operator) + ' is not valid')
+                'Binary operator ' + str(operator) + ' is not valid')
         self.lexpr = lexpr
         self.rexpr = rexpr
         self.operator = operator
@@ -1133,6 +1133,10 @@ class ComparisonExpr(BinaryOp):
             Operator('<=')
         ]
     }
+
+    def __init__(self, lexpr: Expr, rexpr: Expr, operator: Operator, etype: types.Type = None):
+        super().__init__(lexpr, rexpr, operator)
+        self.etype = etype
 
 
 class ArithExpr(BinaryOp):
@@ -1226,7 +1230,7 @@ class New(Expr):
             )
 
         return "new " + self.class_type.name + "(" + \
-               ", ".join(map(str, self.args)) + ")"
+            ", ".join(map(str, self.args)) + ")"
 
     def is_equal(self, other):
         if isinstance(other, New):

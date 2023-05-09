@@ -963,6 +963,9 @@ class JavaTranslator(BaseTranslator):
         self.visit_binary_op(node)
 
     def visit_comparison_expr(self, node):
+        if node.etype is not None and node.etype.name in ('Boolean', 'String'):
+            node.lexpr = ast.FunctionCall('compareTo', [ast.CallArgument(node.rexpr)], node.lexpr)
+            node.rexpr = ast.IntegerConstant(0, None)
         self.visit_binary_op(node)
 
     def visit_arith_expr(self, node):
@@ -1185,7 +1188,7 @@ class JavaTranslator(BaseTranslator):
     def visit_func_call(self, node):
         def is_nested_func():
             # fdecl[0][-1] is the parent.
-            if fdecl and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
+            if all(fdecl) and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
                 return True
             return False
 
@@ -1209,7 +1212,7 @@ class JavaTranslator(BaseTranslator):
             try:
                 fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
             except KeyError:
-                var_decl = self.context.get_vars(self._namespace, only_current=True)[node.func]
+                var_decl = self.context.get_vars(self._namespace, only_current=True).get(node.func, None)
                 fdecl = None
         if var_decl is None:
             if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
