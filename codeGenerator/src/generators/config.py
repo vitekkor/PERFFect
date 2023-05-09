@@ -78,12 +78,12 @@ class GenConfig(metaclass=Singleton):
                 max_funcs=2
             ),
             fn=FunctionLimits(
-                max_side_effects=1,
+                max_side_effects=0,
                 max_params=2
             ),
             max_var_decls=3,
-            max_type_params=3,
-            max_functional_params=3,
+            max_type_params=0,
+            max_functional_params=1,
             max_top_level=10,
             min_top_level=5,
             max_depth=6

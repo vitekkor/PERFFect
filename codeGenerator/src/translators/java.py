@@ -56,7 +56,15 @@ def append_to(visit):
 
 def _handle_range_expression(variable, value):
     if isinstance(value, ast.IntegerConstant):
-        return f"int {variable}"
+        integer_types = {
+            jt.Long: "long",
+            jt.Short: "short",
+            jt.Byte: "byte",
+            jt.Number: "Number",
+            jt.Char: "char"
+        }
+        prefix = integer_types.get(value.integer_type, "int")
+        return f"{prefix} {variable}"
 
 
 class JavaTranslator(BaseTranslator):
@@ -1194,14 +1202,20 @@ class JavaTranslator(BaseTranslator):
 
         # From where we are in the AST we search backwards for declarations
         # with the same name.
+        var_decl = None
         try:
             fdecl = self.context.get_funcs(self._namespace, glob=True)[node.func]
         except KeyError:
-            fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
-        if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
-            fdecl = None
-        else:
-            fdecl = (self.context.get_namespace(fdecl), fdecl)
+            try:
+                fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
+            except KeyError:
+                var_decl = self.context.get_vars(self._namespace, only_current=True)[node.func]
+                fdecl = None
+        if var_decl is None:
+            if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
+                fdecl = None
+            else:
+                fdecl = (self.context.get_namespace(fdecl), fdecl)
 
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
