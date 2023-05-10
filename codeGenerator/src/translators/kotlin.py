@@ -388,6 +388,7 @@ class KotlinTranslator(BaseTranslator):
             kt.Short: ".toShort()",
             kt.Byte: ".toByte()",
             kt.Number: " as Number",
+            kt.Char: ".toChar()"
         }
         suffix = integer_types.get(node.integer_type, "")
         literal = str(node.literal)
@@ -657,6 +658,8 @@ class KotlinTranslator(BaseTranslator):
     def visit_loop(self, node: ast.Node):
         old_ident = self.ident
         self.ident += 2
+        prev = self._cast_integers
+        self._cast_integers = True
         children = node.children()
         for c in children:
             c.accept(self)
@@ -670,6 +673,7 @@ class KotlinTranslator(BaseTranslator):
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
         self.ident = old_ident
+        self._cast_integers = prev
         self._children_res.append(res)
 
     @append_to
