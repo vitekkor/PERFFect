@@ -13,6 +13,7 @@ class KotlinJVMCompilerTest {
         val kotlinFile = File(checkNotNull(this::class.java.getResource("/Test.kt")).path)
         val project = Project.createFromCode(kotlinFile.readText(), Language.KOTLIN)
         val compiler = KotlinJVMCompiler()
+        compiler.cleanUp()
         val result = compiler.compile(project)
         assertEquals(0, result.status)
         val jar = File(result.pathToCompiled)

@@ -14,6 +14,7 @@ class JavaCompilerTest {
         val javaFile = File(checkNotNull(this::class.java.getResource("/Test.java")).path)
         val project = Project.createFromCode(javaFile.readText(), Language.JAVA)
         val compiler = JavaCompiler()
+        compiler.cleanUp()
         val result = compiler.compile(project)
         assertEquals(0, result.status)
         val jar = File(result.pathToCompiled)
