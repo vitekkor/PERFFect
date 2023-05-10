@@ -32,6 +32,14 @@ val libraries = listOf(
 
 val toCopy: Configuration by configurations.creating
 
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.name.contains("kotlin-stdlib")) {
+            useVersion(kotlinVersion)
+        }
+    }
+}
+
 dependencies {
     implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
@@ -105,28 +113,35 @@ val downloadStdLib by tasks.creating(Copy::class.java) {
     }
 }
 
-val cleanUpStdLib by tasks.creating(Delete::class.java) {
+val cleanUpStdLib by tasks.creating(Task::class.java) {
     group = "build"
-    delete("files/lib/")
+    outputs.upToDateWhen { false }
+    doLast {
+        File("files/lib/").deleteRecursively()
+    }
 }
 
 val provideKotlinVersion: Task by tasks.creating {
     group = "build"
-    project.sourceSets.main {
-        File(resources.srcDirs.first().path + "/kotlin.yml").apply {
-            if (exists()) delete()
-            createNewFile()
-            writeText("compilerArgs:\n  kotlinVersion: \"$kotlinVersion\"")
+    outputs.upToDateWhen { false }
+    doLast {
+        project.sourceSets.main {
+            File(resources.srcDirs.first().path + "/kotlin.yml").apply {
+                if (exists()) delete()
+                createNewFile()
+                writeText("compilerArgs:\n  kotlinVersion: \"$kotlinVersion\"")
+            }
         }
     }
 }
 
-val cleanKotlinVersion by tasks.creating(Delete::class.java) {
+val cleanKotlinVersion by tasks.creating(Task::class.java) {
     group = "build"
-    project.sourceSets.main {
-        delete(File(resources.srcDirs.first().path + "/kotlin.yml"))
+    doLast {
+        project.sourceSets.main {
+            File(resources.srcDirs.first().path + "/kotlin.yml").delete()
+        }
     }
-    delete("files/lib/")
 }
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = project.property("jvmTarget") as String
@@ -135,3 +150,13 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks["clean"].finalizedBy(cleanUpStdLib).finalizedBy(cleanKotlinVersion)
+
+tasks.jar {
+    manifest.attributes["Main-Class"] = "com.vitekkor.TestOracleKt"
+    val dependencies = configurations
+        .runtimeClasspath
+        .get()
+        .map(::zipTree)
+    from(dependencies)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

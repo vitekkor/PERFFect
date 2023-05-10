@@ -56,7 +56,15 @@ def append_to(visit):
 
 def _handle_range_expression(variable, value):
     if isinstance(value, ast.IntegerConstant):
-        return f"int {variable}"
+        integer_types = {
+            jt.Long: "long",
+            jt.Short: "short",
+            jt.Byte: "byte",
+            jt.Number: "Number",
+            jt.Char: "char"
+        }
+        prefix = integer_types.get(value.integer_type, "int")
+        return f"{prefix} {variable}"
 
 
 class JavaTranslator(BaseTranslator):
@@ -955,6 +963,9 @@ class JavaTranslator(BaseTranslator):
         self.visit_binary_op(node)
 
     def visit_comparison_expr(self, node):
+        if node.etype is not None and node.etype.name in ('Boolean', 'String'):
+            node.lexpr = ast.FunctionCall('compareTo', [ast.CallArgument(node.rexpr)], node.lexpr)
+            node.rexpr = ast.IntegerConstant(0, None)
         self.visit_binary_op(node)
 
     def visit_arith_expr(self, node):
@@ -1177,7 +1188,7 @@ class JavaTranslator(BaseTranslator):
     def visit_func_call(self, node):
         def is_nested_func():
             # fdecl[0][-1] is the parent.
-            if fdecl and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
+            if all(fdecl) and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
                 return True
             return False
 
@@ -1194,14 +1205,20 @@ class JavaTranslator(BaseTranslator):
 
         # From where we are in the AST we search backwards for declarations
         # with the same name.
+        var_decl = None
         try:
             fdecl = self.context.get_funcs(self._namespace, glob=True)[node.func]
         except KeyError:
-            fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
-        if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
-            fdecl = None
-        else:
-            fdecl = (self.context.get_namespace(fdecl), fdecl)
+            try:
+                fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
+            except KeyError:
+                var_decl = self.context.get_vars(self._namespace, only_current=True).get(node.func, None)
+                fdecl = None
+        if var_decl is None:
+            if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
+                fdecl = None
+            else:
+                fdecl = (self.context.get_namespace(fdecl), fdecl)
 
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
