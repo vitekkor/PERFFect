@@ -150,3 +150,13 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks["clean"].finalizedBy(cleanUpStdLib).finalizedBy(cleanKotlinVersion)
+
+tasks.jar {
+    manifest.attributes["Main-Class"] = "com.vitekkor.TestOracleKt"
+    val dependencies = configurations
+        .runtimeClasspath
+        .get()
+        .map(::zipTree)
+    from(dependencies)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
