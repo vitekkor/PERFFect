@@ -28,6 +28,8 @@ class TestOracle {
         val javaCompiler = JavaCompiler()
         for (i in 1..10_000_000) {
             val seed = Random.nextLong()
+            kotlinCompiler.cleanUp()
+            javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
 
