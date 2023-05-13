@@ -149,7 +149,7 @@ class TestOracle {
         var mainFunFound = false
         var curlyBraces = 0
         val currentMainFun = code.split("\n").filter {
-            if (it.contains("fun main(args: Array<String>)")) {
+            if (it.contains("fun main(args: Array<out String>)")) {
                 mainFunFound = true
                 true
             } else if (mainFunFound) {
