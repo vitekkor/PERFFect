@@ -1872,7 +1872,7 @@ class Generator:
         if t == self.bt_factory.get_any_type() and len(const_gen) == 1:
             return const_gen[0](t)
         if len(const_gen) == 1:
-            return const_gen[0]()
+            return const_gen[0](t)
 
     # Where
 
@@ -2019,13 +2019,27 @@ class Generator:
                                    sam_coercion=sam_coercion),
         ]
         constant_candidates = {
-            self.bt_factory.get_number_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_integer_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_big_integer_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_byte_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_short_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_long_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_float_type().name: gens.gen_real_constant,
+            self.bt_factory.get_number_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_number_type())
+            ),
+            self.bt_factory.get_integer_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_integer_type())
+            ),
+            self.bt_factory.get_big_integer_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_big_integer_type())
+            ),
+            self.bt_factory.get_byte_type().name:(
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_byte_type())
+            ),
+            self.bt_factory.get_short_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_short_type())
+            ),
+            self.bt_factory.get_long_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_long_type())
+            ),
+            self.bt_factory.get_float_type().name: (
+                lambda x: gens.gen_real_constant(self.bt_factory.get_float_type())
+            ),
             self.bt_factory.get_double_type().name: gens.gen_real_constant,
             self.bt_factory.get_big_decimal_type().name: gens.gen_real_constant,
             self.bt_factory.get_char_type().name: gens.gen_char_constant,
