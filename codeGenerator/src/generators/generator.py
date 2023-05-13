@@ -339,7 +339,7 @@ class Generator:
                            self.namespace[-2][0].islower())
 
         prev_inside_java_lamdba = self._inside_java_lambda
-        # self._inside_java_lambda = nested_function and self.language == "java"
+        self._inside_java_lambda = nested_function
         # Type parameters of functions cannot be variant.
         # Also note that at this point, we do not allow a conflict between
         # type variable names of class and type variable names of functions.
@@ -1523,7 +1523,7 @@ class Generator:
         self.depth += 1
 
         prev_inside_java_lamdba = self._inside_java_lambda
-        # self._inside_java_lambda = self.language == "java"
+        self._inside_java_lambda = True
 
         params = params if params is not None else self._gen_func_params()
         param_types = [p.param_type for p in params]
@@ -2463,7 +2463,7 @@ class Generator:
         prev_inside_java_lamdba = False
         if inside_lambda:
             prev_inside_java_lamdba = self._inside_java_lambda
-            self._inside_java_lambda = self.language == "java"
+            self._inside_java_lambda = True # self.language == "java"
         params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
         if inside_lambda:
             self._inside_java_lambda = prev_inside_java_lamdba
