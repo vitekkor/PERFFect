@@ -85,6 +85,7 @@ class Generator:
         # classes or using them as supertypes, because we do not have the
         # complete informations about them.
         self._blacklisted_classes: OrderedSet = OrderedSet()
+        self.fa = 0
 
     ### Entry Point Generators ###
 
@@ -178,6 +179,8 @@ class Generator:
         res = []
         iterable_types = self._get_iterable_types()
         random_type_to_iterate = ut.randomUtil.choice(iterable_types)
+        initial_depth = self.depth
+        self.depth += 1
         body = self._gen_func_body(self.bt_factory.get_void_type())
         body.is_func_block = False
         body.body = [decl for decl in body.body if decl not in already_in_main and not isinstance(decl, ast.Constant)]
@@ -226,6 +229,7 @@ class Generator:
                     loop = ast.DoWhileExpr(body, cond)
                 res.append(i)
         res.append(loop)
+        self.depth = initial_depth
         return res
 
     def _get_iterable_types(self) -> list[tp.Type]:
@@ -339,7 +343,7 @@ class Generator:
                            self.namespace[-2][0].islower())
 
         prev_inside_java_lamdba = self._inside_java_lambda
-        # self._inside_java_lambda = nested_function and self.language == "java"
+        self._inside_java_lambda = nested_function
         # Type parameters of functions cannot be variant.
         # Also note that at this point, we do not allow a conflict between
         # type variable names of class and type variable names of functions.
@@ -1523,7 +1527,7 @@ class Generator:
         self.depth += 1
 
         prev_inside_java_lamdba = self._inside_java_lambda
-        # self._inside_java_lambda = self.language == "java"
+        self._inside_java_lambda = True
 
         params = params if params is not None else self._gen_func_params()
         param_types = [p.param_type for p in params]
@@ -1872,7 +1876,7 @@ class Generator:
         if t == self.bt_factory.get_any_type() and len(const_gen) == 1:
             return const_gen[0](t)
         if len(const_gen) == 1:
-            return const_gen[0]()
+            return const_gen[0](t)
 
     # Where
 
@@ -2019,13 +2023,27 @@ class Generator:
                                    sam_coercion=sam_coercion),
         ]
         constant_candidates = {
-            self.bt_factory.get_number_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_integer_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_big_integer_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_byte_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_short_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_long_type().name: gens.gen_integer_constant,
-            self.bt_factory.get_float_type().name: gens.gen_real_constant,
+            self.bt_factory.get_number_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_number_type())
+            ),
+            self.bt_factory.get_integer_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_integer_type())
+            ),
+            self.bt_factory.get_big_integer_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_big_integer_type())
+            ),
+            self.bt_factory.get_byte_type().name:(
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_byte_type())
+            ),
+            self.bt_factory.get_short_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_short_type())
+            ),
+            self.bt_factory.get_long_type().name: (
+                lambda x: gens.gen_integer_constant(self.bt_factory.get_long_type())
+            ),
+            self.bt_factory.get_float_type().name: (
+                lambda x: gens.gen_real_constant(self.bt_factory.get_float_type())
+            ),
             self.bt_factory.get_double_type().name: gens.gen_real_constant,
             self.bt_factory.get_big_decimal_type().name: gens.gen_real_constant,
             self.bt_factory.get_char_type().name: gens.gen_char_constant,
@@ -2408,10 +2426,11 @@ class Generator:
         if isinstance(expr, (ast.FieldAccess, ast.Conditional, ast.Variable, ast.FunctionReference, ast.ArrayExpr,
                              ast.Lambda, ast.BinaryOp)) and ret_type == self.bt_factory.get_void_type():
             var_decl = ast.VariableDeclaration(
-                f'fieldAccess_{ut.randomUtil.integer()}',
+                f'variableDeclaration_{self.fa.imag}',
                 expr=expr,
                 is_final=False,
                 var_type=expr_type)
+            self.fa += 1
             # self._add_node_to_parent(self.namespace, var_decl)
             expr = var_decl
         decls = list(self.context.get_declarations(
@@ -2463,7 +2482,7 @@ class Generator:
         prev_inside_java_lamdba = False
         if inside_lambda:
             prev_inside_java_lamdba = self._inside_java_lambda
-            self._inside_java_lambda = self.language == "java"
+            self._inside_java_lambda = True # self.language == "java"
         params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
         if inside_lambda:
             self._inside_java_lambda = prev_inside_java_lamdba

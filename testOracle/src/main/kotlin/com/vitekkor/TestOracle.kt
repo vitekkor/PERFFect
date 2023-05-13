@@ -10,10 +10,13 @@ import com.vitekkor.model.MeasurementResult
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
 import com.vitekkor.project.toProject
+import kotlinx.coroutines.withTimeoutOrNull
 import mu.KotlinLogging.logger
 import src.server.Server
 import java.io.File
 import kotlin.random.Random
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 suspend fun main() {
     TestOracle().run()
@@ -21,19 +24,22 @@ suspend fun main() {
 
 class TestOracle {
     private val log = logger {}
+
+    @OptIn(ExperimentalTime::class)
     suspend fun run() {
         log.info("Start test oracle")
         val client = CodeGeneratorClient.create()
         val kotlinCompiler = KotlinJVMCompiler()
         val javaCompiler = JavaCompiler()
-        for (i in 1..10_000_000) {
+        while (true) {
             val seed = Random.nextLong()
             kotlinCompiler.cleanUp()
             javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
-
-                val kotlin = client.generateKotlin(seed)
+                val kotlin = withTimeoutOrNull(Duration.minutes(1)) {
+                    client.generateKotlin(seed)
+                }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
                 if (kotlin.text.isBlank()) {
                     log.error { "$KOTLIN_PROGRAM is empty - seed $seed" }
                     continue
@@ -41,7 +47,9 @@ class TestOracle {
                 val kotlinProject = kotlin.toProject(Language.KOTLIN)
                 log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
 
-                val java = client.generateJava(seed)
+                val java = withTimeoutOrNull(Duration.minutes(1)) {
+                    client.generateJava(seed)
+                }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
                 if (java.text.isBlank()) {
                     log.error { "$JAVA_PROGRAM is empty - seed $seed" }
                     continue

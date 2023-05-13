@@ -486,9 +486,9 @@ class JavaTranslator(BaseTranslator):
                         for expr in supercls.args:
                             translator.visit(expr)
                         res = translator._children_res
-                        for expr, r in zip(supercls.args, res):
+                        for expr, (i, r) in zip(supercls.args, enumerate(res)):
                             if isinstance(expr, ast.Lambda):
-                                r = "({cast}) {lmd}".format(
+                                res[i] = "({cast}) {lmd}".format(
                                     cast=self.get_type_name(expr.signature),
                                     lmd=r
                                 )
@@ -1188,7 +1188,7 @@ class JavaTranslator(BaseTranslator):
     def visit_func_call(self, node):
         def is_nested_func():
             # fdecl[0][-1] is the parent.
-            if all(fdecl) and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
+            if fdecl and all(fdecl) and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
                 return True
             return False
 
