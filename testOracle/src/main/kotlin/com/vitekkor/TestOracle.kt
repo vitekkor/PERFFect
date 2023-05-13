@@ -107,9 +107,9 @@ class TestOracle {
         }
     }
 
-    private fun chooseNumberOfExecutions(compiler: BaseCompiler, program: Server.Program): Int {
+    private fun chooseNumberOfExecutions(compiler: BaseCompiler, program: Server.Program): Long {
         if (program.language == Language.KOTLIN.name.lowercase()) {
-            var repeatCount = 10
+            var repeatCount = 10L
             lateinit var project: Project
             do {
                 compiler.cleanUp()
@@ -119,14 +119,15 @@ class TestOracle {
                 if (executionTime.first.contains("Exception")) {
                     break
                 }
-                repeatCount *= 10
-            } while (executionTime.second < 1000 || repeatCount < 1_000_000_000)
+                repeatCount *= 10L
+            } while (executionTime.second < 1000 || repeatCount <= 100_000_000L)
+            repeatCount /= 10L
             log.info("$KOTLIN_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
         }
         if (program.language == Language.JAVA.name.lowercase()) {
-            var repeatCount = 10
+            var repeatCount = 10L
             lateinit var project: Project
             do {
                 compiler.cleanUp()
@@ -136,8 +137,9 @@ class TestOracle {
                 if (executionTime.first.contains("Exception")) {
                     break
                 }
-                repeatCount *= 10
-            } while (executionTime.second < 1000 || repeatCount < 1_000_000_000)
+                repeatCount *= 10L
+            } while (executionTime.second < 1000 || repeatCount <= 100_000_000L)
+            repeatCount /= 10L
             log.info("$JAVA_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
@@ -145,7 +147,7 @@ class TestOracle {
         throw UnsupportedOperationException("Support only Java and Kotlin")
     }
 
-    private fun replaceKotlinMainFun(code: String, repeat: Int): String {
+    private fun replaceKotlinMainFun(code: String, repeat: Long): String {
         var mainFunFound = false
         var curlyBraces = 0
         val currentMainFun = code.split("\n").filter {
@@ -174,7 +176,7 @@ class TestOracle {
         return code.replace(currentMainFun, newMainFun.toString())
     }
 
-    private fun replaceJavaMainFun(code: String, repeat: Int): String {
+    private fun replaceJavaMainFun(code: String, repeat: Long): String {
         var mainFunFound = false
         val currentMainFun = code.split("\n").filter {
             if (it.contains("static public final void main(String[] args)")) {
@@ -195,7 +197,7 @@ class TestOracle {
         return code.replace(currentMainFun, newMainFun.toString())
     }
 
-    private fun measureAverageExecutionTime(compiler: BaseCompiler, mainClass: String, executionCount: Int): Double {
+    private fun measureAverageExecutionTime(compiler: BaseCompiler, mainClass: String, executionCount: Long): Double {
         val path = File(compiler.pathToCompiled)
             .walkTopDown()
             .maxDepth(mainClass.split(".").size)
