@@ -5,6 +5,7 @@ plugins {
     kotlin("jvm")
     id("com.google.protobuf") version "0.9.2"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+    kotlin("plugin.serialization")
 }
 
 ktlint {
@@ -59,6 +60,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-daemon-embeddable:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2") // 1.5.2 for kotlin 1.5.31
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0") // 1.3.0 for kotlin 1.5.31
 
     // implementation("com.pinterest:ktlint:0.48.2")
 

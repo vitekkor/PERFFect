@@ -10,7 +10,11 @@ import com.vitekkor.model.MeasurementResult
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
 import com.vitekkor.project.toProject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.KotlinLogging.logger
 import src.server.Server
 import java.io.File
@@ -95,9 +99,10 @@ class TestOracle {
                 log.info("$JAVA_PROGRAM average execution time - $javaExecTime")
 
                 val measurementResult = MeasurementResult(
-                    MeasurementResult.Execution(kotlinExecTime, kotlinProject),
-                    MeasurementResult.Execution(javaExecTime, javaProject),
-                    seed
+                    MeasurementResult.Execution(kotlinExecTime, kotlinProject, compiledKotlin.second),
+                    MeasurementResult.Execution(javaExecTime, javaProject, compiledJava.second),
+                    seed,
+                    targetRepeatCount
                 )
                 compareExecutionTimes(measurementResult)
             } catch (e: Exception) {
@@ -207,7 +212,7 @@ class TestOracle {
         return totalTime / executionCount.toDouble()
     }
 
-    private fun compareExecutionTimes(measurementResult: MeasurementResult) {
+    private suspend fun compareExecutionTimes(measurementResult: MeasurementResult) {
         val percentage = measurementResult.kotlin.time / measurementResult.java.time
         if (percentage > CompilerArgs.percentageDelta) {
             log.warn { "Performance degradation detected" }
@@ -219,6 +224,11 @@ class TestOracle {
                 true,
                 CompilerArgs.pathToResultsDir + "/${measurementResult.seed}"
             )
+            withContext(Dispatchers.IO) {
+                File(CompilerArgs.pathToResultsDir + "/${measurementResult.seed}", "meta.json").bufferedWriter().use {
+                    it.write(Json.encodeToString(measurementResult))
+                }
+            }
         }
     }
 
