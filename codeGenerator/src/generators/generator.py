@@ -85,6 +85,7 @@ class Generator:
         # classes or using them as supertypes, because we do not have the
         # complete informations about them.
         self._blacklisted_classes: OrderedSet = OrderedSet()
+        self.fa = 0
 
     ### Entry Point Generators ###
 
@@ -178,6 +179,8 @@ class Generator:
         res = []
         iterable_types = self._get_iterable_types()
         random_type_to_iterate = ut.randomUtil.choice(iterable_types)
+        initial_depth = self.depth
+        self.depth += 1
         body = self._gen_func_body(self.bt_factory.get_void_type())
         body.is_func_block = False
         body.body = [decl for decl in body.body if decl not in already_in_main and not isinstance(decl, ast.Constant)]
@@ -226,6 +229,7 @@ class Generator:
                     loop = ast.DoWhileExpr(body, cond)
                 res.append(i)
         res.append(loop)
+        self.depth = initial_depth
         return res
 
     def _get_iterable_types(self) -> list[tp.Type]:
@@ -2422,10 +2426,11 @@ class Generator:
         if isinstance(expr, (ast.FieldAccess, ast.Conditional, ast.Variable, ast.FunctionReference, ast.ArrayExpr,
                              ast.Lambda, ast.BinaryOp)) and ret_type == self.bt_factory.get_void_type():
             var_decl = ast.VariableDeclaration(
-                f'fieldAccess_{ut.randomUtil.integer()}',
+                f'variableDeclaration_{self.fa.imag}',
                 expr=expr,
                 is_final=False,
                 var_type=expr_type)
+            self.fa += 1
             # self._add_node_to_parent(self.namespace, var_decl)
             expr = var_decl
         decls = list(self.context.get_declarations(
