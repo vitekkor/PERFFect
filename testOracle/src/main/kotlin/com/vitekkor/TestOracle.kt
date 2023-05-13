@@ -120,7 +120,7 @@ class TestOracle {
                     break
                 }
                 repeatCount *= 10
-            } while (executionTime.second < 1000)
+            } while (executionTime.second < 1000 || repeatCount < 1_000_000_000)
             log.info("$KOTLIN_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
@@ -137,7 +137,7 @@ class TestOracle {
                     break
                 }
                 repeatCount *= 10
-            } while (executionTime.second < 1000)
+            } while (executionTime.second < 1000 || repeatCount < 1_000_000_000)
             log.info("$JAVA_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
