@@ -90,9 +90,9 @@ class TestOracle {
                 log.info("$KOTLIN_PROGRAM compileStatus: ${compiledKotlin.first}; compileTime: ${compiledKotlin.second}")
 
                 val kotlinExecTime =
-                    measureAverageExecutionTime(kotlinCompiler, newKotlinProject.mainClass, targetRepeatCount)
+                    measureAverageExecutionTime(kotlinCompiler, newKotlinProject.mainClass)
                 val javaExecTime =
-                    measureAverageExecutionTime(javaCompiler, newJavaProject.mainClass, targetRepeatCount)
+                    measureAverageExecutionTime(javaCompiler, newJavaProject.mainClass)
 
                 log.info("$SEED $seed")
                 log.info("$KOTLIN_PROGRAM average execution time - $kotlinExecTime")
@@ -152,66 +152,6 @@ class TestOracle {
         throw UnsupportedOperationException("Support only Java and Kotlin")
     }
 
-    private fun replaceKotlinMainFun(code: String, repeat: Long): String {
-        var mainFunFound = false
-        var curlyBraces = 0
-        val currentMainFun = code.split("\n").filter {
-            if (it.contains("fun main(args: Array<out String>)")) {
-                mainFunFound = true
-                true
-            } else if (mainFunFound) {
-                if (it.contains("{")) {
-                    curlyBraces++
-                } else if (it.contains("}")) {
-                    curlyBraces--
-                }
-                if (curlyBraces == 0) {
-                    mainFunFound = false
-                }
-                true
-            } else {
-                false
-            }
-        }.joinToString("\n")
-        val firstCurlyBracket = currentMainFun.indexOf('{')
-        val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
-        newMainFun.append("\n    repeat($repeat) {\n        try {\n")
-        newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
-        newMainFun.append(" catch(t: Throwable) {}\n    }\n}")
-        return code.replace(currentMainFun, newMainFun.toString())
-    }
-
-    private fun replaceJavaMainFun(code: String, repeat: Long): String {
-        var mainFunFound = false
-        val currentMainFun = code.split("\n").filter {
-            if (it.contains("static public final void main(String[] args)")) {
-                mainFunFound = true
-                true
-            } else if (it.contains("interface Function0<R>")) {
-                mainFunFound = false
-                false
-            } else {
-                mainFunFound
-            }
-        }.dropLast(2).joinToString("\n")
-        val firstCurlyBracket = currentMainFun.indexOf('{')
-        val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
-        newMainFun.append("\n    for (int javaIterationVariable = 1; javaIterationVariable <= $repeat; javaIterationVariable++) {\n    try {\n")
-        newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
-        newMainFun.append(" catch(Throwable t) {}\n}\n}")
-        return code.replace(currentMainFun, newMainFun.toString())
-    }
-
-    private fun measureAverageExecutionTime(compiler: BaseCompiler, mainClass: String, executionCount: Long): Double {
-        val path = File(compiler.pathToCompiled)
-            .walkTopDown()
-            .maxDepth(mainClass.split(".").size)
-            .filter { it.isFile }
-            .joinToString(":") { it.path }
-        val totalTime = compiler.getExecutionTime(path, mainClass = mainClass).second
-        return totalTime / executionCount.toDouble()
-    }
-
     private suspend fun compareExecutionTimes(measurementResult: MeasurementResult) {
         val percentage = measurementResult.kotlin.time / measurementResult.java.time
         if (percentage > CompilerArgs.percentageDelta) {
@@ -236,5 +176,65 @@ class TestOracle {
         private const val SEED = "[SEED]"
         private const val KOTLIN_PROGRAM = "[KOTLIN]"
         private const val JAVA_PROGRAM = "[JAVA]"
+
+        fun measureAverageExecutionTime(compiler: BaseCompiler, mainClass: String): Double {
+            val path = File(compiler.pathToCompiled)
+                .walkTopDown()
+                .maxDepth(mainClass.split(".").size)
+                .filter { it.isFile }
+                .joinToString(":") { it.path }
+            val totalTime = compiler.getExecutionTime(path, mainClass = mainClass).second
+            return totalTime.toDouble()
+        }
+
+        fun replaceKotlinMainFun(code: String, repeat: Long): String {
+            var mainFunFound = false
+            var curlyBraces = 0
+            val currentMainFun = code.split("\n").filter {
+                if (it.contains("fun main(args: Array<out String>)")) {
+                    mainFunFound = true
+                    true
+                } else if (mainFunFound) {
+                    if (it.contains("{")) {
+                        curlyBraces++
+                    } else if (it.contains("}")) {
+                        curlyBraces--
+                    }
+                    if (curlyBraces == 0) {
+                        mainFunFound = false
+                    }
+                    true
+                } else {
+                    false
+                }
+            }.joinToString("\n")
+            val firstCurlyBracket = currentMainFun.indexOf('{')
+            val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
+            newMainFun.append("\n    repeat($repeat) {\n        try {\n")
+            newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
+            newMainFun.append(" catch(t: Throwable) {}\n    }\n}")
+            return code.replace(currentMainFun, newMainFun.toString())
+        }
+
+        fun replaceJavaMainFun(code: String, repeat: Long): String {
+            var mainFunFound = false
+            val currentMainFun = code.split("\n").filter {
+                if (it.contains("static public final void main(String[] args)")) {
+                    mainFunFound = true
+                    true
+                } else if (it.contains("interface Function0<R>")) {
+                    mainFunFound = false
+                    false
+                } else {
+                    mainFunFound
+                }
+            }.dropLast(2).joinToString("\n")
+            val firstCurlyBracket = currentMainFun.indexOf('{')
+            val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
+            newMainFun.append("\n    for (int javaIterationVariable = 1; javaIterationVariable <= $repeat; javaIterationVariable++) {\n    try {\n")
+            newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
+            newMainFun.append(" catch(Throwable t) {}\n}\n}")
+            return code.replace(currentMainFun, newMainFun.toString())
+        }
     }
 }
