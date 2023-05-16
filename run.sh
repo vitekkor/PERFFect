@@ -8,6 +8,11 @@ killGroup(){
   rm -f testOracle-1.0-SNAPSHOT.jar
 }
 
+if [[ $# -eq 1 && $1 == "build" ]]; then
+    echo "Building..."
+    ./gradlew clean build jar
+fi
+
 cp testOracle/build/libs/testOracle-1.0-SNAPSHOT.jar testOracle-1.0-SNAPSHOT.jar
 
 echo 'Start grpc server...'
