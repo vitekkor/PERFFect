@@ -82,6 +82,7 @@ class JavaTranslator(BaseTranslator):
         self.types = []
         self._generator = None
         self._cast_number = False
+        self._cast_labmda = False
         # Keep track if a block is in a function that has non-void return type
         self.is_func_non_void_block = False
 
@@ -720,10 +721,13 @@ class JavaTranslator(BaseTranslator):
             )
             if len(node.params) != 0 and all(param.default is not None for param in node.params):
                 old_cast_number = self._cast_number
+                old_cast_lambda = self._cast_labmda
                 self._cast_number = True
+                self._cast_labmda = True
                 for param in node.params:
                     param.default.accept(self)
                 self._cast_number = old_cast_number
+                self._cast_labmda = old_cast_lambda
                 default_param_res = self.pop_children_res(node.params)
                 body_call_with_defaults = '{\n' + "{start_indent}{return_word}{name}({default_params});\n{indent}".format(
                     start_indent=self.get_ident(),
@@ -804,6 +808,11 @@ class JavaTranslator(BaseTranslator):
             params=", ".join(param_res),
             body=body
         )
+        if self._cast_labmda:
+            res = "({cast}) {lmd}".format(
+                cast=self.get_type_name(node.signature),
+                lmd=res
+            )
 
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
@@ -909,7 +918,7 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
 
-        if (isinstance(node.array_type, tp.ParameterizedType) and
+        if False and (isinstance(node.array_type, tp.ParameterizedType) and
                 not node.array_type.type_args[0].is_primitive()):
             new_stmt = "({etype}) new Object[]".format(
                 etype=self.get_type_name(node.array_type)
