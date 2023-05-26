@@ -86,6 +86,7 @@ class Generator:
         # complete informations about them.
         self._blacklisted_classes: OrderedSet = OrderedSet()
         self.fa = 0
+        self.loopExpr = 0
 
     ### Entry Point Generators ###
 
@@ -180,6 +181,9 @@ class Generator:
         iterable_types = self._get_iterable_types()
         random_type_to_iterate = ut.randomUtil.choice(iterable_types)
         initial_depth = self.depth
+        initial_namespace = self.namespace
+        self.namespace = self.namespace + (f'loop_{self.loopExpr}',)
+        self.loopExpr += 1
         self.depth += 1
         body = self._gen_func_body(self.bt_factory.get_void_type())
         body.is_func_block = False
@@ -230,6 +234,7 @@ class Generator:
                 res.append(i)
         res.append(loop)
         self.depth = initial_depth
+        self.namespace = initial_namespace
         return res
 
     def _get_iterable_types(self) -> list[tp.Type]:
@@ -973,7 +978,11 @@ class Generator:
             log(self.logger, msg)
         generators = self.get_generators(expr_type, only_leaves, subtype,
                                          exclude_var, sam_coercion=sam_coercion)
-        expr = ut.randomUtil.choice(generators)(expr_type)
+        existing_expr = self.find_existing_variable(expr_type)
+        if existing_expr and ut.randomUtil.bool(0.7):
+            expr = existing_expr
+        else:
+            expr = ut.randomUtil.choice(generators)(expr_type)
         # Make a probablistic choice, and assign the generated expr
         # into a variable, and return that variable reference.
         gen_var = (
@@ -988,6 +997,20 @@ class Generator:
                                               expr=expr)
             expr = ast.Variable(var_decl.name)
         return expr
+
+    def find_existing_variable(self, expr_type: tp.Type = None):
+        if expr_type is None:
+            return None
+        vars = self.context.get_vars(self.namespace)
+        matched_vars = []
+        for key, var in vars.items():
+            if isinstance(var, ast.FieldDeclaration) and var.field_type == expr_type:
+                matched_vars.append(ast.Variable(var.name))
+            if isinstance(var, ast.ParameterDeclaration) and var.param_type == expr_type:
+                matched_vars.append(ast.Variable(var.name))
+        if len(matched_vars) != 0:
+            return ut.randomUtil.choice(matched_vars)
+        return None
 
     # pylint: disable=unused-argument
     def gen_assignment(self,
@@ -2032,7 +2055,7 @@ class Generator:
             self.bt_factory.get_big_integer_type().name: (
                 lambda x: gens.gen_integer_constant(self.bt_factory.get_big_integer_type())
             ),
-            self.bt_factory.get_byte_type().name:(
+            self.bt_factory.get_byte_type().name: (
                 lambda x: gens.gen_integer_constant(self.bt_factory.get_byte_type())
             ),
             self.bt_factory.get_short_type().name: (
@@ -2426,7 +2449,7 @@ class Generator:
         if isinstance(expr, (ast.FieldAccess, ast.Conditional, ast.Variable, ast.FunctionReference, ast.ArrayExpr,
                              ast.Lambda, ast.BinaryOp)) and ret_type == self.bt_factory.get_void_type():
             var_decl = ast.VariableDeclaration(
-                f'variableDeclaration_{self.fa.imag}',
+                f'variableDeclaration_{self.fa}',
                 expr=expr,
                 is_final=False,
                 var_type=expr_type)
@@ -2482,7 +2505,7 @@ class Generator:
         prev_inside_java_lamdba = False
         if inside_lambda:
             prev_inside_java_lamdba = self._inside_java_lambda
-            self._inside_java_lambda = True # self.language == "java"
+            self._inside_java_lambda = True  # self.language == "java"
         params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
         if inside_lambda:
             self._inside_java_lambda = prev_inside_java_lamdba
