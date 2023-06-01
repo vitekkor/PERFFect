@@ -148,7 +148,7 @@ class RandomUtils():
     result: typing.Any = None
 
     def __init__(self):
-        self.seed = 410715419934355363 # 2948921078583387197  # rnd.randrange(sys.maxsize)
+        self.seed = 4015963102358583209  # rnd.randrange(sys.maxsize)
         self.r = rnd.Random(self.seed)
         self.WORDS = OrderedSet(self.sample(
             read_lines(os.path.join(self.resource_path, 'words')), self.WORD_POOL_LEN))

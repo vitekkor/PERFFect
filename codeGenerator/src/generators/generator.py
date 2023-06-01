@@ -963,6 +963,14 @@ class Generator:
             only_leaves = True
             exclude_var = False
             sam_coercion = False
+        # if self.depth >= cfg.limits.max_depth:
+        #     if self.builtin_types.__contains__(expr_type):
+        #         generators = self.get_generators(expr_type, only_leaves, subtype,
+        #                                      exclude_var, sam_coercion=sam_coercion)
+        #         expr = ut.randomUtil.choice(generators)(expr_type)
+        #         return expr
+        #     if isinstance(expr_type, tp.SimpleClassifier):
+        #         return ast.BottomConstant(expr_type)
         find_subtype = (
             expr_type and
             subtype and expr_type != self.bt_factory.get_void_type()
@@ -1011,6 +1019,9 @@ class Generator:
         if len(matched_vars) != 0:
             return ut.randomUtil.choice(matched_vars)
         return None
+
+    def get_bt_operation_generators(self, etype: tp.Type):
+        vars_in_context = self.context.get_vars(self.namespace)  # TODO
 
     # pylint: disable=unused-argument
     def gen_assignment(self,
@@ -2076,6 +2087,9 @@ class Generator:
                 lambda x: self.gen_array_expr(x, only_leaves, subtype=subtype)
             ),
         }
+        constant_ops = {
+
+        }
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),
@@ -2310,6 +2324,8 @@ class Generator:
         """Find the class declaration for a given type.
         """
         # Get class declaration based on the given type.
+        if tu.is_builtin(etype, self.bt_factory):
+            return etype.get_class_declaration(), {}
         class_decls = self.context.get_classes(self.namespace).values()
         for c in class_decls:
             cls_type = c.get_type()
@@ -2344,7 +2360,11 @@ class Generator:
         """
         # We are only interested in variables of class types.
         if tu.is_builtin(var_type, self.bt_factory):
-            return None
+            try:
+                var_type.get_class_declaration()
+                return var_type
+            except Exception:
+                return None
         if var_type.is_type_var() or var_type.is_wildcard():
             args = [] if var_type.is_wildcard() else [self.bt_factory]
             bound = var_type.get_bound_rec(*args)
@@ -2449,7 +2469,7 @@ class Generator:
         if isinstance(expr, (ast.FieldAccess, ast.Conditional, ast.Variable, ast.FunctionReference, ast.ArrayExpr,
                              ast.Lambda, ast.BinaryOp)) and ret_type == self.bt_factory.get_void_type():
             var_decl = ast.VariableDeclaration(
-                f'variableDeclaration_{self.fa}',
+                f'variableDeclaration_{self.fa.imag}',
                 expr=expr,
                 is_final=False,
                 var_type=expr_type)

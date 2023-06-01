@@ -7,7 +7,6 @@ from ordered_set import OrderedSet
 import src.ir.type_utils as tu
 import src.ir.types as types
 from src import utils
-from src.ir import BUILTIN_FACTORIES
 from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
 
@@ -38,6 +37,7 @@ class Program(Node):
     def __init__(self, context, language):
         self.context = context
         self.language = language
+        from src.ir import BUILTIN_FACTORIES
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
 
     def children(self):
