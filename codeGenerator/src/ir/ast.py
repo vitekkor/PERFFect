@@ -1463,3 +1463,16 @@ class DoWhileExpr(WhileExprBase):
 
     def children(self):
         return [self.body, self.condition]
+
+
+class ClassCast(Node):
+
+    def __init__(self, expr: Node, cast_type):
+        self.expr = expr
+        self.cast_type = cast_type
+
+    def __str__(self):
+        return "{expr} as {cast}".format(expr=str(self.expr), cast=str(self.cast_type))
+
+    def children(self):
+        return [self.expr]

@@ -7,11 +7,11 @@ def append_to(visit):
         self._nodes_stack.append(node)
         res = visit(self, node)
         self._nodes_stack.pop()
+
     return inner
 
 
 class KotlinTranslator(BaseTranslator):
-
     filename = "program.kt"
     incorrect_filename = "incorrect.kt"
     executable = "program.jar"
@@ -69,7 +69,8 @@ class KotlinTranslator(BaseTranslator):
             return "{}Array".format(self.get_type_name(
                 t.type_args[0]))
         if isinstance(t_constructor, kt.ArrayType):
-            return "{}<out {}>".format(t.name, ", ".join([self.type_arg2str(ta) for ta in t.type_args]).replace('out ', ''))
+            return "{}<out {}>".format(t.name,
+                                       ", ".join([self.type_arg2str(ta) for ta in t.type_args]).replace('out ', ''))
         return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
                                                   for ta in t.type_args]))
 
@@ -133,10 +134,10 @@ class KotlinTranslator(BaseTranslator):
         class_decl = self.context.get_classes(('global',), glob=True)[node.class_type.name]
         res = "{class_type}{children}".format(
             class_type=self.get_type_name(node.class_type),
-            children=("(" + ", ".join(children_res) + ")") if class_decl.class_type != ast.ClassDeclaration.INTERFACE else ""
+            children=("(" + ", ".join(
+                children_res) + ")") if class_decl.class_type != ast.ClassDeclaration.INTERFACE else ""
         )
         self._children_res.append(res)
-
 
     @append_to
     def visit_class_decl(self, node):
@@ -314,9 +315,9 @@ class KotlinTranslator(BaseTranslator):
     def visit_lambda(self, node):
         def inside_block_unit_function():
             if (isinstance(self._nodes_stack[-2], ast.Block) and
-                    isinstance(self._nodes_stack[-3], (ast.Lambda,
-                               ast.FunctionDeclaration)) and
-                    self._nodes_stack[-3].ret_type == kt.Unit):
+                isinstance(self._nodes_stack[-3], (ast.Lambda,
+                                                   ast.FunctionDeclaration)) and
+                self._nodes_stack[-3].ret_type == kt.Unit):
                 return True
             return False
 
@@ -671,7 +672,8 @@ class KotlinTranslator(BaseTranslator):
         elif isinstance(node, ast.WhileExpr):
             res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
         elif isinstance(node, ast.DoWhileExpr):
-            res = "{}do\n{}\n{}while({})".format(" " * old_ident, children_res[0], " " * old_ident, children_res[1][self.ident:])
+            res = "{}do\n{}\n{}while({})".format(" " * old_ident, children_res[0], " " * old_ident,
+                                                 children_res[1][self.ident:])
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
         self.ident = old_ident
@@ -692,3 +694,11 @@ class KotlinTranslator(BaseTranslator):
             raise Exception("{} not supported".format(str(node.__class__)))
         self._children_res.append(res)
 
+    @append_to
+    def visit_class_cast(self, node):
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "(({expr}) as {cast})".format(expr=children_res[0], cast=node.cast_type.name)
+        self._children_res.append(res)

@@ -146,7 +146,7 @@ class NumberType(ObjectType):
         functions = [
             ast.FunctionDeclaration("byteValue", [], ByteType(), None, ast.FunctionDeclaration.CLASS_METHOD),
             ast.FunctionDeclaration("doubleValue", [], DoubleType(), None, ast.FunctionDeclaration.CLASS_METHOD),
-            ast.FunctionDeclaration("floatBalue", [], FloatType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("floatValue", [], FloatType(), None, ast.FunctionDeclaration.CLASS_METHOD),
             ast.FunctionDeclaration("intValue", [], IntegerType(), None, ast.FunctionDeclaration.CLASS_METHOD),
             ast.FunctionDeclaration("shortValue", [], ShortType(), None, ast.FunctionDeclaration.CLASS_METHOD),
             ast.FunctionDeclaration("longValue", [], LongType(), None, ast.FunctionDeclaration.CLASS_METHOD),
@@ -187,6 +187,14 @@ class IntegerType(NumberType):
             functions=self.get_functions()
         )
 
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('-'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('*'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('/'), IntegerType()),
+        ]
+
 
 class ShortType(NumberType):
     def __init__(self, name="Short", primitive=False):
@@ -219,6 +227,14 @@ class ShortType(NumberType):
             class_type=ast.ClassDeclaration.REGULAR,
             functions=self.get_functions()
         )
+
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('-'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('*'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('/'), IntegerType()),
+        ]
 
 
 class LongType(NumberType):
@@ -253,6 +269,15 @@ class LongType(NumberType):
             functions=self.get_functions()
         )
 
+    # noinspection DuplicatedCode
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), LongType()),
+            (ast.ArithExpr, ast.Operator('-'), LongType()),
+            (ast.ArithExpr, ast.Operator('*'), LongType()),
+            (ast.ArithExpr, ast.Operator('/'), LongType()),
+        ]
+
 
 class ByteType(NumberType):
     def __init__(self, name="Byte", primitive=False):
@@ -285,6 +310,15 @@ class ByteType(NumberType):
             class_type=ast.ClassDeclaration.REGULAR,
             functions=self.get_functions()
         )
+
+    # noinspection DuplicatedCode
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('-'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('*'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('/'), IntegerType()),
+        ]
 
 
 class FloatType(NumberType):
@@ -319,6 +353,24 @@ class FloatType(NumberType):
             functions=self.get_functions()
         )
 
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), FloatType()),
+            (ast.ArithExpr, ast.Operator('-'), FloatType()),
+            (ast.ArithExpr, ast.Operator('*'), FloatType()),
+            (ast.ArithExpr, ast.Operator('/'), FloatType()),
+        ]
+
+    def get_functions(self):
+        functions = [
+            ast.FunctionDeclaration("doubleValue", [], DoubleType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("floatValue", [], FloatType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("intValue", [], IntegerType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("longValue", [], LongType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+        ]
+        return functions
+
 
 class DoubleType(NumberType):
     def __init__(self, name="Double", primitive=False):
@@ -351,6 +403,24 @@ class DoubleType(NumberType):
             class_type=ast.ClassDeclaration.REGULAR,
             functions=self.get_functions()
         )
+
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), DoubleType()),
+            (ast.ArithExpr, ast.Operator('-'), DoubleType()),
+            (ast.ArithExpr, ast.Operator('*'), DoubleType()),
+            (ast.ArithExpr, ast.Operator('/'), DoubleType()),
+        ]
+
+    def get_functions(self):
+        functions = [
+            ast.FunctionDeclaration("doubleValue", [], DoubleType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("floatValue", [], FloatType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("intValue", [], IntegerType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("longValue", [], LongType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+        ]
+        return functions
 
 
 class CharType(ObjectType):
@@ -415,10 +485,14 @@ class StringType(ObjectType):
                                                 ast.ParameterDeclaration('newChar', CharType())], StringType(), None,
                                     ast.FunctionDeclaration.CLASS_METHOD),
             ast.FunctionDeclaration("substring", [ast.ParameterDeclaration('beginIndex', IntegerType()),
-                                                  ast.ParameterDeclaration('endIndex', IntegerType())], StringType(), None,
+                                                  ast.ParameterDeclaration('endIndex', IntegerType())], StringType(),
+                                    None,
                                     ast.FunctionDeclaration.CLASS_METHOD),
         ]
         return functions
+
+    def get_binary_ops(self):
+        return [(ast.ArithExpr, ast.Operator('+'), StringType())]
 
 
 class BooleanType(ObjectType):

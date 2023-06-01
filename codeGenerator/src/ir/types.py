@@ -171,6 +171,9 @@ class Builtin(Type):
     def get_functions(self):
         return []
 
+    def get_binary_ops(self):
+        return []
+
 
 # noinspection PyAbstractClass
 class Classifier(Type):

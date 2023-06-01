@@ -44,7 +44,8 @@ class ASTVisitor():
             ast.WhileExpr: self.visit_loop,
             ast.DoWhileExpr: self.visit_loop,
             ast.ForExpr.RangeExpr: self.visit_loop_expr,
-            ast.ForExpr.IterableExpr: self.visit_loop_expr
+            ast.ForExpr.IterableExpr: self.visit_loop_expr,
+            ast.ClassCast: self.visit_class_cast,
         }
         visitor = visitors.get(node.__class__)
         if visitor is None:
@@ -156,6 +157,9 @@ class ASTVisitor():
 
     def visit_loop_expr(self, node):
         raise NotImplementedError('visit_assign() must be implemented')
+
+    def visit_class_cast(self, node):
+        raise NotImplementedError('visit_class_cast() must be implemented')
 
 
 class DefaultVisitor(ASTVisitor):
