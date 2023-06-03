@@ -34,6 +34,7 @@ from src.ir import BUILTIN_FACTORIES
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.builtins import BuiltinFactory
 from src.ir.context import Context
+from src.ir.context import get_decl
 from src.modules.logging import Logger, log
 
 
@@ -193,6 +194,24 @@ class Generator:
             body = self._gen_func_body(self.bt_factory.get_void_type())
         body.is_func_block = False
         body.body = [decl for decl in body.body if decl not in already_in_main and not isinstance(decl, ast.Constant)]
+        etype = self.bt_factory.get_string_type()
+        string_var = self.find_existing_variable(etype)
+        if not string_var:
+            tmp_namespace = self.namespace
+            self.namespace = initial_namespace
+            string_var = self.gen_variable_decl(etype, only_leaves=True)
+            string_var.is_final = False
+            self.namespace = tmp_namespace
+            # self.context.get_parent(self.namespace)
+        if ut.randomUtil.bool(0.69):
+            bin_op = self.get_bt_operation_generators(etype)[0](etype)
+            # if isinstance(bin_op.lexpr, ast.Variable):
+            #     _, lvar_decl = get_decl(self.context, self.namespace, bin_op.lexpr.name)
+            #     body.body.append(lvar_decl)
+            # if isinstance(bin_op.rexpr, ast.Variable):
+            #     _, rvar_decl = get_decl(self.context, self.namespace, bin_op.rexpr.name)
+            #     body.body.append(rvar_decl)
+            body.body.append(ast.Assignment(string_var.name, bin_op))
         # TODO use variables inside loop
         if isinstance(random_type_to_iterate, tp.ParameterizedType):  # generate an iteration loop over an array
             array_expr = self.gen_array_expr(random_type_to_iterate)
@@ -1025,11 +1044,21 @@ class Generator:
                 matched_vars.append(ast.Variable(var.name))
             if isinstance(var, ast.ParameterDeclaration) and var.param_type == expr_type:
                 matched_vars.append(ast.Variable(var.name))
+            if isinstance(var, ast.VariableDeclaration) and var.var_type == expr_type:
+                matched_vars.append(ast.Variable(var.name))
         if len(matched_vars) != 0:
             return ut.randomUtil.choice(matched_vars)
         return None
 
     def get_bt_operation_generators(self, etype: tp.Type):
+        def generate_binary_op(x, et, op_cl, oper, rt, cast):
+            left = self.generate_expr(et)
+            right = self.generate_expr(et)
+            op = op_cl(left, right, oper)
+            if cast:
+                return ast.ClassCast(op, rt)
+            return op
+
         if not hasattr(etype, 'get_binary_ops'):
             return []
         var_in_context = self.find_existing_variable(etype)
@@ -2562,6 +2591,20 @@ class Generator:
             exprs, decls = self._gen_side_effects()
             if ut.randomUtil.bool():
                 loop_expr = self.generate_loop_expr(decls)
+                decls_in_context = {k: v for k, v in self.context.get_vars(self.namespace, only_current=True).items() if
+                                    not isinstance(v, ast.ParameterDeclaration)}
+                decls_in_body = [expr for expr in exprs if isinstance(expr, ast.VariableDeclaration)] + decls + [_var for _var in loop_expr if isinstance(_var, ast.VariableDeclaration)]
+                decls_in_loop = [_var for _var in [_var for _var in loop_expr if isinstance(_var, ast.LoopExpr)][0].body.body if isinstance(_var, ast.VariableDeclaration)]
+
+                decls_in_loop_context = {decl.name: decl for decl, namespace in self.context._namespaces.items() if
+                                  isinstance(decl, ast.VariableDeclaration) and namespace[:-1] == self.namespace and
+                                  namespace[-1].__contains__('loop')}
+                decls_in_loop_to_add = {k:decl for k, decl in decls_in_loop_context.items() if decl not in decls_in_loop and decl not in decls_in_body}
+                decls_in_context.update(decls_in_loop_to_add)
+                decls_to_add = {k: v for k, v in decls_in_context.items() if v not in decls_in_body}
+                print()
+                for var in decls_to_add.values():
+                    decls.append(var)
                 body = ast.Block(decls + exprs + loop_expr + [expr])
             else:
                 body = ast.Block(decls + exprs + [expr])
