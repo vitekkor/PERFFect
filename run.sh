@@ -1,6 +1,7 @@
 #!/bin/bash
 
 trap killGroup SIGINT
+set -e
 
 killGroup(){
   echo killing...

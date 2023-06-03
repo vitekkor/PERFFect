@@ -41,7 +41,7 @@ class TestOracle {
             javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
-                val kotlin = withTimeoutOrNull(Duration.minutes(1)) {
+                val kotlin = withTimeoutOrNull(Duration.minutes(2)) {
                     client.generateKotlin(seed)
                 }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
                 if (kotlin.text.isBlank()) {
@@ -51,7 +51,7 @@ class TestOracle {
                 val kotlinProject = kotlin.toProject(Language.KOTLIN)
                 log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
 
-                val java = withTimeoutOrNull(Duration.minutes(1)) {
+                val java = withTimeoutOrNull(Duration.minutes(2)) {
                     client.generateJava(seed)
                 }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
                 if (java.text.isBlank()) {
