@@ -415,7 +415,12 @@ class JavaTranslator(BaseTranslator):
         self.ident = 0
         children = node.children()
         for c in node.children():
+            if isinstance(c, ast.Lambda):
+                old_cast_lambda = self._cast_labmda
+                self._cast_labmda = True
             c.accept(self)
+            if isinstance(c, ast.Lambda):
+                self._cast_labmda = old_cast_lambda
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         return children_res[0]

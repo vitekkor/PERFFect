@@ -204,13 +204,17 @@ class Generator:
             self.namespace = tmp_namespace
             # self.context.get_parent(self.namespace)
         if ut.randomUtil.bool(0.69):
+            old_vars = self.context.get_vars(self.namespace, glob=False)
             bin_op = self.get_bt_operation_generators(etype)[0](etype)
+            new_vars = self.context.get_vars(self.namespace, glob=False)
             # if isinstance(bin_op.lexpr, ast.Variable):
             #     _, lvar_decl = get_decl(self.context, self.namespace, bin_op.lexpr.name)
             #     body.body.append(lvar_decl)
             # if isinstance(bin_op.rexpr, ast.Variable):
             #     _, rvar_decl = get_decl(self.context, self.namespace, bin_op.rexpr.name)
             #     body.body.append(rvar_decl)
+            new_vars = [v for k,v in new_vars.items() if k not in old_vars]
+            body.body.extend(new_vars)
             body.body.append(ast.Assignment(string_var.name, bin_op))
         # TODO use variables inside loop
         if isinstance(random_type_to_iterate, tp.ParameterizedType):  # generate an iteration loop over an array
