@@ -81,7 +81,7 @@ class JavaTranslator(BaseTranslator):
         self.types = []
         self._generator = None
         self._cast_number = False
-        self._cast_labmda = False
+        self._cast_labmda = True
         # Keep track if a block is in a function that has non-void return type
         self.is_func_non_void_block = False
 
