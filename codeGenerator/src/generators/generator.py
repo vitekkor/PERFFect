@@ -984,7 +984,13 @@ class Generator:
             The generated expression.
         """
         if self.depth >= cfg.limits.max_depth and self.allow_bottom_consts:
-            return ast.BottomConstant(expr_type)
+            if tu.is_builtin(expr_type, self.bt_factory):
+                gen_bottom = False
+                only_leaves = True
+                exclude_var = False
+                sam_coercion = False
+            else:
+                return ast.BottomConstant(expr_type)
         if gen_bottom:
             only_leaves = True
             exclude_var = False
