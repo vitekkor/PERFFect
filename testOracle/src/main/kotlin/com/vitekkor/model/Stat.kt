@@ -7,7 +7,7 @@ data class Stat(
     var totalNumberOfPrograms: Long = 0L,
     var correctPrograms: Long = 0L,
     var percentOfIncorrectPrograms: Double = 0.0,
-    var averageCompileTime: Double = 0.0,
-    var averageGenerationTime: Double = 0.0,
-    var averageExecutionTime: Double = 0.0,
+    var averageCompileTimeMs: Double = 0.0,
+    var averageGenerationTimeMs: Double = 0.0,
+    var averageExecutionTimeMs: Double = 0.0,
 )

@@ -36,13 +36,15 @@ suspend fun main() {
             kotlinStat.percentOfIncorrectPrograms = (kotlinStat.totalNumberOfPrograms - kotlinStat.correctPrograms) /
                 maxOf(kotlinStat.totalNumberOfPrograms.toDouble())
 
-            javaStat.averageGenerationTime /= maxOf(javaStat.totalNumberOfPrograms, 1)
-            kotlinStat.averageGenerationTime /= maxOf(kotlinStat.totalNumberOfPrograms, 1)
+            javaStat.averageGenerationTimeMs /= maxOf(javaStat.totalNumberOfPrograms, 1)
+            kotlinStat.averageGenerationTimeMs /= maxOf(kotlinStat.totalNumberOfPrograms, 1)
 
-            javaStat.averageCompileTime /= maxOf(javaStat.correctPrograms, 1)
-            javaStat.averageExecutionTime /= maxOf(javaStat.correctPrograms, 1)
-            kotlinStat.averageCompileTime /= maxOf(kotlinStat.correctPrograms, 1)
-            kotlinStat.averageExecutionTime /= maxOf(kotlinStat.correctPrograms, 1)
+            javaStat.averageCompileTimeMs /= maxOf(javaStat.correctPrograms, 1)
+            javaStat.averageExecutionTimeMs /= maxOf(javaStat.correctPrograms, 1)
+            kotlinStat.averageCompileTimeMs /= maxOf(kotlinStat.correctPrograms, 1)
+            kotlinStat.averageExecutionTimeMs /= maxOf(kotlinStat.correctPrograms, 1)
+            println(kotlinStat)
+            println(javaStat)
 
             File(CompilerArgs.pathToResultsDir + "/$timestamp", "kotlinStat.json")
                 .apply { parentFile.mkdirs() }
@@ -77,20 +79,20 @@ class TestOracle {
                     measureTimedValue { client.generateKotlin(seed) }
                 }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
                 kotlinStat.totalNumberOfPrograms++
+                kotlinStat.averageGenerationTimeMs += kotlinGenerationTime.inWholeMilliseconds
 
                 val (java, javaGenerationTime) = withTimeoutOrNull(Duration.minutes(2)) {
                     measureTimedValue { client.generateJava(seed) }
                 }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
                 javaStat.totalNumberOfPrograms++
+                javaStat.averageGenerationTimeMs += javaGenerationTime.inWholeMilliseconds
 
                 if (kotlin.text.isBlank()) {
                     log.error { "$KOTLIN_PROGRAM is empty - seed $seed" }
-                    kotlinStat.averageGenerationTime += kotlinGenerationTime.inWholeMilliseconds
                 }
 
                 if (java.text.isBlank()) {
                     log.error { "$JAVA_PROGRAM is empty - seed $seed" }
-                    javaStat.averageGenerationTime += javaGenerationTime.inWholeMilliseconds
                 }
 
                 if (kotlin.text.isBlank() || java.text.isBlank()) {
@@ -111,12 +113,12 @@ class TestOracle {
                 log.info("$JAVA_PROGRAM compileStatus: $javaCompileStatus; compileTime: $javaCompileTime")
 
                 if (kotlinCompileStatus == CompileStatus.OK) {
-                    kotlinStat.averageCompileTime += kotlinCompileTime
+                    kotlinStat.averageCompileTimeMs += kotlinCompileTime
                     kotlinStat.correctPrograms++
                 }
 
                 if (javaCompileStatus == CompileStatus.OK) {
-                    javaStat.averageCompileTime += javaCompileTime
+                    javaStat.averageCompileTimeMs += javaCompileTime
                     javaStat.correctPrograms++
                 }
 
@@ -148,8 +150,8 @@ class TestOracle {
                 log.info("$SEED $seed")
                 log.info("$KOTLIN_PROGRAM average execution time - $kotlinExecTime")
                 log.info("$JAVA_PROGRAM average execution time - $javaExecTime")
-                kotlinStat.averageExecutionTime += kotlinExecTime
-                javaStat.averageExecutionTime += javaExecTime
+                kotlinStat.averageExecutionTimeMs += kotlinExecTime
+                javaStat.averageExecutionTimeMs += javaExecTime
 
                 val measurementResult = MeasurementResult(
                     MeasurementResult.Execution(kotlinExecTime, kotlinProject, compiledKotlin.second),
