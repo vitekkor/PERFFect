@@ -7,6 +7,7 @@ import com.vitekkor.compiler.KotlinJVMCompiler
 import com.vitekkor.compiler.model.CompileStatus
 import com.vitekkor.config.CompilerArgs
 import com.vitekkor.model.MeasurementResult
+import com.vitekkor.model.Stat
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
 import com.vitekkor.project.toProject
@@ -18,11 +19,42 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging.logger
 import src.server.Server
 import java.io.File
+import java.time.Instant
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
+val javaStat = Stat()
+val kotlinStat = Stat()
 suspend fun main() {
+    Runtime.getRuntime().addShutdownHook(
+        Thread {
+            val timestamp = Instant.now()
+            javaStat.percentOfIncorrectPrograms = (javaStat.totalNumberOfPrograms - javaStat.correctPrograms) /
+                maxOf(javaStat.totalNumberOfPrograms.toDouble())
+            kotlinStat.percentOfIncorrectPrograms = (kotlinStat.totalNumberOfPrograms - kotlinStat.correctPrograms) /
+                maxOf(kotlinStat.totalNumberOfPrograms.toDouble())
+
+            javaStat.averageGenerationTime /= maxOf(javaStat.totalNumberOfPrograms, 1)
+            kotlinStat.averageGenerationTime /= maxOf(kotlinStat.totalNumberOfPrograms, 1)
+
+            javaStat.averageCompileTime /= maxOf(javaStat.correctPrograms, 1)
+            javaStat.averageExecutionTime /= maxOf(javaStat.correctPrograms, 1)
+            kotlinStat.averageCompileTime /= maxOf(kotlinStat.correctPrograms, 1)
+            kotlinStat.averageExecutionTime /= maxOf(kotlinStat.correctPrograms, 1)
+
+            File(CompilerArgs.pathToResultsDir + "/$timestamp", "kotlinStat.json")
+                .apply { parentFile.mkdirs() }
+                .bufferedWriter().use {
+                    it.write(Json.encodeToString(kotlinStat))
+                }
+            File(CompilerArgs.pathToResultsDir + "/$timestamp", "javaStat.json")
+                .bufferedWriter().use {
+                    it.write(Json.encodeToString(javaStat))
+                }
+        }
+    )
     TestOracle().run()
 }
 
@@ -41,23 +73,32 @@ class TestOracle {
             javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
-                val kotlin = withTimeoutOrNull(Duration.minutes(2)) {
-                    client.generateKotlin(seed)
+                val (kotlin, kotlinGenerationTime) = withTimeoutOrNull(Duration.minutes(2)) {
+                    measureTimedValue { client.generateKotlin(seed) }
                 }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
+                kotlinStat.totalNumberOfPrograms++
+
+                val (java, javaGenerationTime) = withTimeoutOrNull(Duration.minutes(2)) {
+                    measureTimedValue { client.generateJava(seed) }
+                }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
+                javaStat.totalNumberOfPrograms++
+
                 if (kotlin.text.isBlank()) {
                     log.error { "$KOTLIN_PROGRAM is empty - seed $seed" }
-                    continue
+                    kotlinStat.averageGenerationTime += kotlinGenerationTime.inWholeMilliseconds
                 }
-                val kotlinProject = kotlin.toProject(Language.KOTLIN)
-                log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
 
-                val java = withTimeoutOrNull(Duration.minutes(2)) {
-                    client.generateJava(seed)
-                }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
                 if (java.text.isBlank()) {
                     log.error { "$JAVA_PROGRAM is empty - seed $seed" }
+                    javaStat.averageGenerationTime += javaGenerationTime.inWholeMilliseconds
+                }
+
+                if (kotlin.text.isBlank() || java.text.isBlank()) {
                     continue
                 }
+
+                val kotlinProject = kotlin.toProject(Language.KOTLIN)
+                log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
                 val javaProject = java.toProject(Language.JAVA)
                 log.info("$JAVA_PROGRAM generated code: ${java.text}")
 
@@ -68,6 +109,16 @@ class TestOracle {
                 val (javaCompileStatus, javaCompileTime) =
                     javaCompiler.tryToCompileWithStatusAndExecutionTime(javaProject)
                 log.info("$JAVA_PROGRAM compileStatus: $javaCompileStatus; compileTime: $javaCompileTime")
+
+                if (kotlinCompileStatus == CompileStatus.OK) {
+                    kotlinStat.averageCompileTime += kotlinCompileTime
+                    kotlinStat.correctPrograms++
+                }
+
+                if (javaCompileStatus == CompileStatus.OK) {
+                    javaStat.averageCompileTime += javaCompileTime
+                    javaStat.correctPrograms++
+                }
 
                 if (javaCompileStatus != CompileStatus.OK || kotlinCompileStatus != CompileStatus.OK) {
                     log.error { "One of compilers finished with non-zero status code" }
@@ -97,6 +148,8 @@ class TestOracle {
                 log.info("$SEED $seed")
                 log.info("$KOTLIN_PROGRAM average execution time - $kotlinExecTime")
                 log.info("$JAVA_PROGRAM average execution time - $javaExecTime")
+                kotlinStat.averageExecutionTime += kotlinExecTime
+                javaStat.averageExecutionTime += javaExecTime
 
                 val measurementResult = MeasurementResult(
                     MeasurementResult.Execution(kotlinExecTime, kotlinProject, compiledKotlin.second),
