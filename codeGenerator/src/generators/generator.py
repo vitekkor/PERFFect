@@ -195,7 +195,7 @@ class Generator:
         body.is_func_block = False
         body.body = [decl for decl in body.body if decl not in already_in_main and not isinstance(decl, ast.Constant)]
         etype = self.bt_factory.get_string_type()
-        string_var = self.find_existing_variable(etype)
+        string_var = self.find_existing_variable(etype, allow_final=False)
         if not string_var:
             tmp_namespace = self.namespace
             self.namespace = initial_namespace
@@ -1034,17 +1034,17 @@ class Generator:
             expr = ast.Variable(var_decl.name)
         return expr
 
-    def find_existing_variable(self, expr_type: tp.Type = None):
+    def find_existing_variable(self, expr_type: tp.Type = None, allow_final=True):
         if expr_type is None:
             return None
         _vars = self.context.get_vars(self.namespace, glob=False)
         matched_vars = []
         for key, var in _vars.items():
-            if isinstance(var, ast.FieldDeclaration) and var.field_type == expr_type:
+            if isinstance(var, ast.FieldDeclaration) and var.field_type == expr_type and (not var.is_final or allow_final):
                 matched_vars.append(ast.Variable(var.name))
-            if isinstance(var, ast.ParameterDeclaration) and var.param_type == expr_type:
+            if isinstance(var, ast.ParameterDeclaration) and var.param_type == expr_type and allow_final:
                 matched_vars.append(ast.Variable(var.name))
-            if isinstance(var, ast.VariableDeclaration) and var.var_type == expr_type:
+            if isinstance(var, ast.VariableDeclaration) and var.var_type == expr_type and (not var.is_final or allow_final):
                 matched_vars.append(ast.Variable(var.name))
         if len(matched_vars) != 0:
             return ut.randomUtil.choice(matched_vars)
