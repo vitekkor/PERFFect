@@ -1185,8 +1185,9 @@ class JavaTranslator(BaseTranslator):
 
         receiver += "::" if receiver != "" else ""
 
-        res = "{ident}{receiver}{name}{semicolon}".format(
+        res = "{ident}({signature}){receiver}{name}{semicolon}".format(
             ident=self.get_ident(),
+            signature=self.get_type_name(node.signature),
             receiver=receiver,
             name=node.func,
             semicolon=";" if self._parent_is_block() else ""
