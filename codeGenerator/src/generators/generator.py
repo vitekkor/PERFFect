@@ -1051,10 +1051,15 @@ class Generator:
         matched_vars = []
         for key, var in _vars.items():
             if isinstance(var, ast.FieldDeclaration) and var.field_type == expr_type and (not var.is_final or allow_final):
+                if self._inside_java_lambda and not allow_final:
+                    continue
                 matched_vars.append(ast.Variable(var.name))
             if isinstance(var, ast.ParameterDeclaration) and var.param_type == expr_type and allow_final:
                 matched_vars.append(ast.Variable(var.name))
             if isinstance(var, ast.VariableDeclaration) and var.var_type == expr_type and (not var.is_final or allow_final):
+                if self._inside_java_lambda and not allow_final:
+                    if len(self.context.get_namespaces_decls(self.namespace, var.name, 'vars', glob=False)) == 0:
+                        continue
                 matched_vars.append(ast.Variable(var.name))
         if len(matched_vars) != 0:
             return ut.randomUtil.choice(matched_vars)

@@ -86,7 +86,7 @@ class GenConfig(metaclass=Singleton):
             max_functional_params=1,
             max_top_level=5,
             min_top_level=5,
-            max_depth=6
+            max_depth=3
         )
         self.prob=Probabilities(
                 function_expr=1.0,

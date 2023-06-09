@@ -9,7 +9,7 @@ import traceback
 import grpc
 
 from src import utils
-from src.args import args as cli_args, validate_args
+from src.args import args as cli_args
 from src.generators import Generator
 from src.modules.logging import Logger
 from src.server import server_pb2_grpc, GeneratorImpl
@@ -80,7 +80,6 @@ def run():
 
 
 def main():
-    validate_args(cli_args)
     run()
 
 

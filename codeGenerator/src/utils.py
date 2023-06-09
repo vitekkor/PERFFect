@@ -128,7 +128,7 @@ def random_inspect(random_fun):
         str_ = "caller - {}:{}:{}; method - {}; args - {}, kwargs - {}, result - {}".format(from_, line, caller,
                                                                                             callings, args[1:], kwargs,
                                                                                             result)
-        print(str_)
+        # print(str_)
         return result
 
     return inner
@@ -148,7 +148,7 @@ class RandomUtils():
     result: typing.Any = None
 
     def __init__(self):
-        self.seed = 2948921078583387197  # rnd.randrange(sys.maxsize)
+        self.seed = 9100202880737469383  # rnd.randrange(sys.maxsize)
         self.r = rnd.Random(self.seed)
         self.WORDS = OrderedSet(self.sample(
             read_lines(os.path.join(self.resource_path, 'words')), self.WORD_POOL_LEN))
