@@ -1,0 +1,181 @@
+ package src.smarter;
+
+class Main {
+  static final Function0<Short> maligning = new Shipboard(98).assyrians( 'I');
+
+  static Boolean parenting = false;
+
+  static public final Float selectric() {
+    return (float)-84.642;
+  }
+
+  static public final Double exam(Short louvers, Double woo) {
+    final Double resales = woo;
+    final Short entente = louvers;
+    final String ordeal = "stepped";
+    Long mavis = (long)-49L;
+    Main.maligning.apply();
+    Float tongues = (float)80.826F;
+    Main.triteness(entente, ordeal).travolta.assyrians( 'I');
+    return resales;
+
+  }
+
+  static public final Beauties triteness(Short straggler, String burglars) {
+    final String puckers = burglars;
+    final String betwixt = puckers;
+    final String perjure = (puckers + betwixt);
+    String corral = perjure;
+    return Main.triteness(straggler, perjure);
+
+  }
+
+  static Short dilate = (short)-12;
+
+  static Double angoras = -41.388;
+
+  static Double inventory = ((Main.parenting) ?
+  Main.exam(Main.dilate, Main.angoras) :
+   Main.angoras);
+
+  static final Double frizzle = Main.inventory;
+
+  static public final void main(String[] args) {
+    Main.parenting = Main.parenting;
+
+  }
+}
+
+interface Function0<R> {
+  public R apply();
+}
+
+interface Function1<A1, R> {
+  public R apply(A1 a1);
+}
+
+interface Function2<A1, A2, R> {
+  public R apply(A1 a1, A2 a2);
+}
+
+interface Function3<A1, A2, A3, R> {
+  public R apply(A1 a1, A2 a2, A3 a3);
+}
+
+
+
+interface Footprint {
+  public abstract Function0<Short> assyrians(Character guavas) ;
+
+  public abstract Object rand(Object saltpetre) ;
+}
+
+final class Shipboard implements Footprint {
+  public final Integer frisbee;
+
+  public Shipboard(Integer frisbee) {
+    super();
+    this.frisbee = frisbee;
+  }
+
+  public Function0<Short> assyrians(Character guavas) {
+return (Function0<Short>) () -> {      return frisbee.shortValue();};
+  }
+
+  public Object rand(Object saltpetre) {
+    return frisbee.floatValue();
+  }
+}
+
+abstract class Beauties implements Footprint {
+  public final Shipboard travolta;
+  public final Byte greeted;
+
+  public Beauties(Shipboard travolta,Byte greeted) {
+    super();
+    this.travolta = travolta;
+    this.greeted = greeted;
+  }
+
+  public Function0<Short> assyrians(Character guavas) {
+    final Function0<Short> tomahawks = Main.maligning;
+    Long scrimshaw = (long)66L;
+    final Long aseptic = scrimshaw;
+    String magpie = "veldts";
+    Long vulture = aseptic;
+    Character mcguire = guavas;
+    String foreplay = ((Alsatian) null).skullcaps;
+    Double rushing = ((Main.parenting) ?
+      69.110 :
+       -11.577);
+    Main.exam((short)30, -25.927);
+    Short weakling = (short)-44;
+    for (int       sidebars =       14;       sidebars <=       38;       sidebars++)
+{
+      Short meddlers = (short)-67;;
+      final Character catalyze = 'o';;
+      aseptic.doubleValue();
+      Main.parenting.toString();
+      aseptic.shortValue();
+      magpie = ("denebola" + magpie);;
+    }
+    return tomahawks;
+
+  }
+
+  public Object rand(Object saltpetre) {
+    final Float lopez = ((Chucked) null).stiletto;
+    final Long flouncing = ((Roadshow) null).kuibyshev;
+    String larboards = "sizes";
+    Long unfunny = flouncing;
+    String saintlier = larboards;
+    String anytime = larboards;
+    greeted.doubleValue();
+    Number mayas = 53;
+    return lopez;
+
+  }
+}
+
+abstract class Alsatian implements Footprint {
+  public final String skullcaps;
+
+  public Alsatian(String skullcaps) {
+    super();
+    this.skullcaps = skullcaps;
+  }
+
+  public Function0<Short> assyrians(Character guavas) {
+    return (Function0<Short>) null;
+  }
+
+  public Object rand(Object saltpetre) {
+    return (short)-37;
+  }
+}
+
+abstract class Chucked implements Footprint {
+  public Float stiletto;
+
+  public Chucked(Float stiletto) {
+    super();
+    this.stiletto = stiletto;
+  }
+
+  public Object rand(Object saltpetre) {
+    return saltpetre;
+  }
+}
+
+abstract class Roadshow implements Footprint {
+  public final Long kuibyshev;
+
+  public Roadshow(Long kuibyshev) {
+    super();
+    this.kuibyshev = kuibyshev;
+  }
+
+  public Object rand(Object saltpetre) {
+    return new Object();
+  }
+}

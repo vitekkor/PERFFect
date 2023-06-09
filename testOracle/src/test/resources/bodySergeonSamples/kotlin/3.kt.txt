@@ -1,0 +1,117 @@
+interface Footprint {
+  open abstract fun assyrians(guavas: Char): Function0<Short>
+
+  open abstract fun rand(saltpetre: Any): Any
+}
+
+class Shipboard(val frisbee: Int): Footprint {
+open override fun assyrians(guavas: Char): Function0<Short> =
+{ -> frisbee.toShort()}
+
+open override fun rand(saltpetre: Any): Any =
+  frisbee.toFloat()
+}
+
+val maligning: Function0<Short> = Shipboard(98).assyrians('I')
+
+var parenting: Boolean = false
+
+fun selectric(): Float =
+  -84.642f
+
+fun exam(louvers: Short, woo: Double = 87.21): Double
+{
+  val resales: Double = woo
+  val entente: Short = louvers
+  val ordeal: String = "stepped"
+  var mavis: Long = -49
+  maligning()
+  var tongues: Float = 80.826f
+  triteness(entente).travolta.assyrians('I')
+  return   resales
+  }
+
+open abstract class Beauties(val travolta: Shipboard, val greeted: Byte): Footprint {
+open override fun assyrians(guavas: Char): Function0<Short>
+{
+  val tomahawks: Function0<Short> = maligning
+  var scrimshaw: Long = 66
+  val aseptic: Long = scrimshaw
+  var magpie: String = "veldts"
+  var vulture: Long = aseptic
+  var mcguire: Char = guavas
+  var foreplay: String = ((TODO() as Alsatian)).skullcaps
+  var rushing: Double = (if (parenting)
+  69.110
+else
+  -11.577)
+  exam(30)
+  var weakling: Short = -44
+  for (sidebars in     14..    38)
+{
+    var meddlers: Short = (-67).toShort()
+    val catalyze: Char = 'o'
+    aseptic.toDouble()
+    parenting.toString()
+    aseptic.toShort()
+        magpie = ("denebola" + magpie)
+    }
+  return   tomahawks
+  }
+
+open override fun rand(saltpetre: Any): Any
+{
+  val lopez: Float = ((TODO() as Chucked)).stiletto
+  val flouncing: Long = ((TODO() as Roadshow)).kuibyshev
+  var larboards: String = "sizes"
+  var unfunny: Long = flouncing
+  var saintlier: String = larboards
+  var anytime: String = larboards
+  greeted.toDouble()
+  var mayas: Number = 53
+  return   lopez
+  }
+}
+
+open abstract class Alsatian(open val skullcaps: String): Footprint {
+open override fun assyrians(guavas: Char): Function0<Short> =
+  (TODO() as Function0<Short>)
+
+open override fun rand(saltpetre: Any): Any =
+  (-37).toShort()
+}
+
+open abstract class Chucked(var stiletto: Float): Footprint {
+open override fun rand(saltpetre: Any): Any =
+  saltpetre
+}
+
+open abstract class Roadshow(open val kuibyshev: Long): Footprint {
+open override fun rand(saltpetre: Any): Any =
+  Any()
+}
+
+fun triteness(straggler: Short, burglars: String = "congruity"): Beauties
+{
+  val puckers: String = burglars
+  val betwixt: String = puckers
+  val perjure: String = (puckers + betwixt)
+  var corral: String = perjure
+  return   triteness(straggler)
+  }
+
+var dilate: Short = -12
+
+var angoras: Double = -41.388
+
+var inventory: Double = (if (parenting)
+  exam(dilate)
+else
+  angoras)
+
+val frizzle: Double = inventory
+
+fun main(args: Array<out String>): Unit
+{
+    parenting = parenting
+  }

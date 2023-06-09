@@ -5,8 +5,8 @@ import com.vitekkor.compiler.model.InvokeStatus
 import com.vitekkor.compiler.model.KotlincInvokeStatus
 import com.vitekkor.compiler.util.MessageCollectorImpl
 import com.vitekkor.config.CompilerArgs
+import com.vitekkor.perffect.util.WithLogger
 import com.vitekkor.project.Project
-import com.vitekkor.util.WithLogger
 import org.apache.commons.io.FileUtils
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation

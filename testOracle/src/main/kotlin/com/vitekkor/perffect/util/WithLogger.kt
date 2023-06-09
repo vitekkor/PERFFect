@@ -1,4 +1,4 @@
-package com.vitekkor.util
+package com.vitekkor.perffect.util
 
 import mu.KLogger
 import mu.KotlinLogging.logger

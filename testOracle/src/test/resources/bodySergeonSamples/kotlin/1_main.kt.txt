@@ -1,0 +1,39 @@
+fun main(args: Array<out String>): Unit
+{
+    val shabbier: Char = 'E'
+    val nitrogen: Double = -73.907
+    val atkinson: Focal = Lodge(shabbier, nitrogen)
+    var legged: Char = '7'
+    var mart: Double = nitrogen
+    var coulter: Function0<Int> = (if (armagnac)
+        chaste::toInt
+    else
+        fun (): Int {
+            var burdening: Int = reeve
+            val applauds: Short = -44
+            var athlete: String = "luggage"
+            var concocts: Long = 89
+            var spumed: Any = applauds
+            var organelle: Byte = 50
+            var civilians: Int = 71
+            var decisive: Int = 0
+            do
+            {
+                burdening.toByte()
+                chaste.toByte()
+                nitrogen.toLong()
+                val vampires: String = athlete
+                athlete = (vampires + athlete)
+                (decisive++)
+            }
+            while((decisive > 90))
+            return     burdening
+        })
+    var banneker: Float = 68.425f
+    var lingering: Number = -49.514f
+    armagnac.toString()
+    var variableDeclaration_0: Function1<Short, Boolean> = (if (armagnac)
+        atkinson::norberto
+    else
+        {refit: Short -> armagnac})
+}

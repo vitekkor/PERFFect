@@ -1,0 +1,4 @@
+  static public final void main(String[] args) {
+    Main.parenting = Main.parenting;
+
+  }
