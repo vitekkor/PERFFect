@@ -34,7 +34,6 @@ from src.ir import BUILTIN_FACTORIES
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.builtins import BuiltinFactory
 from src.ir.context import Context
-from src.ir.context import get_decl
 from src.modules.logging import Logger, log
 
 
@@ -196,27 +195,20 @@ class Generator:
         body.body = [decl for decl in body.body if decl not in already_in_main and not isinstance(decl, ast.Constant)]
         etype = self.bt_factory.get_string_type()
         string_var = self.find_existing_variable(etype, allow_final=False)
-        if not string_var:
+        if not string_var:  # if not string var in context found generate a new one
             tmp_namespace = self.namespace
             self.namespace = initial_namespace
             string_var = self.gen_variable_decl(etype, only_leaves=True)
             string_var.is_final = False
             self.namespace = tmp_namespace
-            # self.context.get_parent(self.namespace)
-        if ut.randomUtil.bool(0.69):
+        if ut.randomUtil.bool(0.69):  # generate string concat inside loop
             old_vars = self.context.get_vars(self.namespace, glob=False)
             bin_op = self.get_bt_operation_generators(etype)[0](etype)
             new_vars = self.context.get_vars(self.namespace, glob=False)
-            # if isinstance(bin_op.lexpr, ast.Variable):
-            #     _, lvar_decl = get_decl(self.context, self.namespace, bin_op.lexpr.name)
-            #     body.body.append(lvar_decl)
-            # if isinstance(bin_op.rexpr, ast.Variable):
-            #     _, rvar_decl = get_decl(self.context, self.namespace, bin_op.rexpr.name)
-            #     body.body.append(rvar_decl)
-            new_vars = [v for k,v in new_vars.items() if k not in old_vars]
+            new_vars = [v for k, v in new_vars.items() if k not in old_vars]
             body.body.extend(new_vars)
             body.body.append(ast.Assignment(string_var.name, bin_op))
-        # TODO use variables inside loop
+
         if isinstance(random_type_to_iterate, tp.ParameterizedType):  # generate an iteration loop over an array
             array_expr = self.gen_array_expr(random_type_to_iterate)
             if ut.randomUtil.bool(0.43):  # for loop
@@ -1001,14 +993,6 @@ class Generator:
             sam_coercion = False
             if self.allow_bottom_consts:
                 return ast.BottomConstant(expr_type)
-        # if self.depth >= cfg.limits.max_depth:
-        #     if self.builtin_types.__contains__(expr_type):
-        #         generators = self.get_generators(expr_type, only_leaves, subtype,
-        #                                      exclude_var, sam_coercion=sam_coercion)
-        #         expr = ut.randomUtil.choice(generators)(expr_type)
-        #         return expr
-        #     if isinstance(expr_type, tp.SimpleClassifier):
-        #         return ast.BottomConstant(expr_type)
         find_subtype = (
             expr_type and
             subtype and expr_type != self.bt_factory.get_void_type()
@@ -1045,18 +1029,26 @@ class Generator:
         return expr
 
     def find_existing_variable(self, expr_type: tp.Type = None, allow_final=True):
+        """
+        Find existing variable in context with expr_type
+        :param expr_type: type of variable
+        :param allow_final: if false returns only non-final variables
+        :return: variable with type expr_type
+        """
         if expr_type is None:
             return None
         _vars = self.context.get_vars(self.namespace, glob=False)
         matched_vars = []
         for key, var in _vars.items():
-            if isinstance(var, ast.FieldDeclaration) and var.field_type == expr_type and (not var.is_final or allow_final):
+            if isinstance(var, ast.FieldDeclaration) and var.field_type == expr_type and (
+                not var.is_final or allow_final):
                 if self._inside_java_lambda and not allow_final:
                     continue
                 matched_vars.append(ast.Variable(var.name))
             if isinstance(var, ast.ParameterDeclaration) and var.param_type == expr_type and allow_final:
                 matched_vars.append(ast.Variable(var.name))
-            if isinstance(var, ast.VariableDeclaration) and var.var_type == expr_type and (not var.is_final or allow_final):
+            if isinstance(var, ast.VariableDeclaration) and var.var_type == expr_type and (
+                not var.is_final or allow_final):
                 if self._inside_java_lambda and not allow_final:
                     if len(self.context.get_namespaces_decls(self.namespace, var.name, 'vars', glob=False)) == 0:
                         continue
@@ -1066,14 +1058,11 @@ class Generator:
         return None
 
     def get_bt_operation_generators(self, etype: tp.Type):
-        def generate_binary_op(x, et, op_cl, oper, rt, cast):
-            left = self.generate_expr(et)
-            right = self.generate_expr(et)
-            op = op_cl(left, right, oper)
-            if cast:
-                return ast.ClassCast(op, rt)
-            return op
-
+        """
+        Get generators for builtins
+        :param etype: builtin type
+        :return: list of lambda expressions that return a binary operation on built-in types
+        """
         if not hasattr(etype, 'get_binary_ops'):
             return []
         var_in_context = self.find_existing_variable(etype)
@@ -1091,7 +1080,13 @@ class Generator:
                 generators.append(binary_op_generator)
         return generators
 
-    def gen_loop_body_from_existing(self):
+    def gen_loop_body_from_existing(self) -> ast.Block:
+        """
+        Generate loop body from existing variable declarations.
+        May generate new varDecl with builtin types.
+        Body contains only func calls.
+        :return: ast.Block - new loop body
+        """
         _vars = self.context.get_vars(self.namespace, glob=False)
         new_vars = []
         for _ in ut.randomUtil.range(0, cfg.limits.max_var_decls):
@@ -1106,28 +1101,40 @@ class Generator:
         for _, var in _vars.items():
             if isinstance(var, ast.FieldDeclaration):
                 etype = var.field_type
-                func_calls.extend(self.process_etype(etype, ast.Variable(var.name), var))
+                func_calls.extend(self.process_etype(etype, ast.Variable(var.name)))
             if isinstance(var, ast.VariableDeclaration):
                 etype = var.var_type
-                func_calls.extend(self.process_etype(etype, ast.Variable(var.name), var))
+                func_calls.extend(self.process_etype(etype, ast.Variable(var.name)))
             if isinstance(var, ast.ParameterDeclaration):
                 etype = var.param_type
-                func_calls.extend(self.process_etype(etype, ast.Variable(var.name), var))
+                func_calls.extend(self.process_etype(etype, ast.Variable(var.name)))
         func_calls = ut.randomUtil.sample(func_calls, min(len(func_calls), cfg.limits.max_var_decls))
         return ast.Block(body=new_vars + func_calls)
 
-    def process_etype(self, etype, receiver, var):
+    def process_etype(self, etype, receiver):
+        """
+        Get function calls for target etype
+        :param etype: function's type-carrier
+        :param receiver: function reciever
+        :return: list of func calls
+        """
         if isinstance(etype, tp.SimpleClassifier):
             decl_type = self.context.get_classes(('global',)).get(etype.name, None)
             if decl_type is None:
                 return []
-            return self.get_class_functions_calls(decl_type, receiver, var)
+            return self.get_class_functions_calls(decl_type, receiver)
         if tu.is_builtin(etype, self.bt_factory):
             decl_type = etype.get_class_declaration()
-            return self.get_class_functions_calls(decl_type, receiver, var)
+            return self.get_class_functions_calls(decl_type, receiver)
         return []
 
-    def get_class_functions_calls(self, class_decl, receiver, var):
+    def get_class_functions_calls(self, class_decl, receiver):
+        """
+        Get function calls for target class_decl
+        :param class_decl: function's class_decl-carrier
+        :param receiver: function reciever
+        :return: list of func calls
+        """
         func_calls = []
         for func in class_decl.functions:
             if all([p.default is not None for p in func.params]):
@@ -2608,13 +2615,24 @@ class Generator:
                 loop_expr = self.generate_loop_expr(decls)
                 decls_in_context = {k: v for k, v in self.context.get_vars(self.namespace, only_current=True).items() if
                                     not isinstance(v, ast.ParameterDeclaration)}
-                decls_in_body = [expr for expr in exprs if isinstance(expr, ast.VariableDeclaration)] + decls + [_var for _var in loop_expr if isinstance(_var, ast.VariableDeclaration)]
-                decls_in_loop = [_var for _var in [_var for _var in loop_expr if isinstance(_var, ast.LoopExpr)][0].body.body if isinstance(_var, ast.VariableDeclaration)]
+                decls_in_body = [expr for expr in exprs if isinstance(expr, ast.VariableDeclaration)] + decls + [_var
+                                                                                                                 for
+                                                                                                                 _var in
+                                                                                                                 loop_expr
+                                                                                                                 if
+                                                                                                                 isinstance(
+                                                                                                                     _var,
+                                                                                                                     ast.VariableDeclaration)]
+                decls_in_loop = [_var for _var in
+                                 [_var for _var in loop_expr if isinstance(_var, ast.LoopExpr)][0].body.body if
+                                 isinstance(_var, ast.VariableDeclaration)]
 
                 decls_in_loop_context = {decl.name: decl for decl, namespace in self.context._namespaces.items() if
-                                  isinstance(decl, ast.VariableDeclaration) and namespace[:-1] == self.namespace and
-                                  namespace[-1].__contains__('loop')}
-                decls_in_loop_to_add = {k:decl for k, decl in decls_in_loop_context.items() if decl not in decls_in_loop and decl not in decls_in_body}
+                                         isinstance(decl, ast.VariableDeclaration) and namespace[
+                                                                                       :-1] == self.namespace and
+                                         namespace[-1].__contains__('loop')}
+                decls_in_loop_to_add = {k: decl for k, decl in decls_in_loop_context.items() if
+                                        decl not in decls_in_loop and decl not in decls_in_body}
                 decls_in_context.update(decls_in_loop_to_add)
                 decls_to_add = {k: v for k, v in decls_in_context.items() if v not in decls_in_body}
                 print()
