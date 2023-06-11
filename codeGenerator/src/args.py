@@ -1,9 +1,5 @@
 import argparse
 import os
-import sys
-
-from src.generators.config import cfg
-from src.utils import randomUtil
 
 cwd = os.getcwd()
 
@@ -19,6 +15,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+args.test_directory = os.path.join(cwd, "logs")
 
 args.options = {
     "Generator": {
