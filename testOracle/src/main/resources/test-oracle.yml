@@ -3,3 +3,4 @@ compilerArgs:
   jvmStdLibBasePath: files/lib
   pathToResultsDir: files/results
   percentageDelta: 3.0
+  saveStat: true

@@ -5,7 +5,8 @@ data class CompilerArgs(
     val jvmStdLibBasePath: String,
     val kotlinVersion: String,
     val percentageDelta: Double = 5.0,
-    val pathToResultsDir: String
+    val pathToResultsDir: String,
+    val saveStat: Boolean,
 ) {
     val jvmStdLibPaths: List<String> = listOf(
         "kotlin-stdlib",

@@ -152,6 +152,12 @@ tasks.withType<KotlinCompile> {
     dependsOn(provideKotlinVersion)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(project.property("jvmTarget") as String))
+    }
+}
+
 tasks["clean"].finalizedBy(cleanUpStdLib).finalizedBy(cleanKotlinVersion)
 
 tasks.jar {

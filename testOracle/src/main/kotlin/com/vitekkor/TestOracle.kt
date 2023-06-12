@@ -23,7 +23,7 @@ import src.server.Server
 import java.io.File
 import java.time.Instant
 import kotlin.random.Random
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
@@ -32,6 +32,7 @@ val kotlinStat = Stat()
 suspend fun main() {
     Runtime.getRuntime().addShutdownHook(
         Thread {
+            if (!CompilerArgs.saveStat) return@Thread
             val timestamp = Instant.now()
             javaStat.percentOfIncorrectPrograms = (javaStat.totalNumberOfPrograms - javaStat.correctPrograms) /
                 maxOf(javaStat.totalNumberOfPrograms.toDouble())
@@ -72,18 +73,19 @@ class TestOracle {
         val kotlinCompiler = KotlinJVMCompiler()
         val javaCompiler = JavaCompiler()
         while (true) {
-            val seed = Random.nextLong()
+            val seed = 9038241929329895581
+            Random.nextLong()
             kotlinCompiler.cleanUp()
             javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
-                val (kotlin, kotlinGenerationTime) = withTimeoutOrNull(Duration.minutes(2)) {
+                val (kotlin, kotlinGenerationTime) = withTimeoutOrNull(2.minutes) {
                     measureTimedValue { client.generateKotlin(seed) }
                 }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
                 kotlinStat.totalNumberOfPrograms++
                 kotlinStat.averageGenerationTimeMs += kotlinGenerationTime.inWholeMilliseconds
 
-                val (java, javaGenerationTime) = withTimeoutOrNull(Duration.minutes(2)) {
+                val (java, javaGenerationTime) = withTimeoutOrNull(2.minutes) {
                     measureTimedValue { client.generateJava(seed) }
                 }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
                 javaStat.totalNumberOfPrograms++
