@@ -951,6 +951,30 @@ class ArrayExpr(Expr):
         return False
 
 
+class ArrayListExpr(Expr):
+    def __init__(self, array_type: types.Type, length: int, exprs: List[Expr]):
+        self.length = length
+        self.array_type = array_type
+        self.exprs = exprs
+
+    def children(self):
+        return self.exprs
+
+    def update_children(self, children):
+        super().update_children(children)
+        self.exprs = children
+
+    def __str__(self):
+        return "ArrayList<{}>".format(str(self.array_type))
+
+    def is_equal(self, other):
+        if isinstance(other, ArrayListExpr):
+            return (self.array_type == other.array_type and
+                    self.length == other.length and
+                    self.exprs == other.exprs)
+        return False
+
+
 class Variable(Expr):
     def __init__(self, name: str):
         self.name = name

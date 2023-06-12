@@ -57,6 +57,9 @@ class KotlinBuiltinFactory(bt.BuiltinFactory):
     def get_array_type(self):
         return ArrayType()
 
+    def get_array_list_type(self):
+        return ArrayListType()
+
     def get_iterator_type(self):
         return IteratorType()
 
@@ -408,6 +411,12 @@ class ArrayType(tp.TypeConstructor, AnyType):
 
 class IteratorType(tp.TypeConstructor, AnyType):
     def __init__(self, name="Iterator"):
+        super().__init__(name, [tp.TypeParameter("T")])
+        self.supertypes.append(AnyType())
+
+
+class ArrayListType(tp.TypeConstructor, AnyType):
+    def __init__(self, name="ArrayList"):
         super().__init__(name, [tp.TypeParameter("T")])
         self.supertypes.append(AnyType())
 

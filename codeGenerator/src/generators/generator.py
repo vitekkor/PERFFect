@@ -210,7 +210,7 @@ class Generator:
             body.body.append(ast.Assignment(string_var.name, bin_op))
 
         if isinstance(random_type_to_iterate, tp.ParameterizedType):  # generate an iteration loop over an array
-            array_expr = self.gen_array_expr(random_type_to_iterate)
+            array_expr = self.gen_array_expr(random_type_to_iterate, array_list=True)
             if ut.randomUtil.bool(0.43):  # for loop
                 loop_expr = ast.ForExpr.IterableExpr(array_expr, ast.Variable(gu.gen_identifier('lower')))
                 loop = ast.ForExpr(body, loop_expr)
@@ -259,7 +259,7 @@ class Generator:
 
     def _get_iterable_types(self) -> list[tp.Type]:
         builtin_types: list[tp.Type] = [x for x in self.get_types() if hasattr(x, 'type_args')]
-        usr_types = []
+        usr_types = \
         [
             c.get_type()
             for c in self.context.get_classes(self.namespace).values()
@@ -267,7 +267,7 @@ class Generator:
         primitives = [
             self.bt_factory.get_integer_type()
         ]
-        iterable_types: list[tp.Type] = [tp.ParameterizedType(self.bt_factory.get_array_type(), [t]) for t in usr_types]
+        iterable_types: list[tp.Type] = [tp.ParameterizedType(self.bt_factory.get_array_list_type(), [t]) for t in usr_types]
         iterable_types = iterable_types + builtin_types + primitives
         return iterable_types
 
@@ -927,6 +927,10 @@ class Generator:
         # the following code does not compile
         # fun interface FI { fun foo(p: Int): Long }
         # var v: FI = {x: Int -> x.toLong()}
+        old_allow_bottom_const = self.allow_bottom_consts
+        if self.namespace == ast.GLOBAL_NAMESPACE:
+            self.allow_bottom_consts = False
+
         expr = expr or self.generate_expr(var_type, only_leaves,
                                           sam_coercion=True)
         self.depth = initial_depth
@@ -942,6 +946,7 @@ class Generator:
             var_type=vtype,
             inferred_type=var_type)
         self._add_node_to_parent(self.namespace, var_decl)
+        self.allow_bottom_consts = old_allow_bottom_const
         return var_decl
 
     ##### Expressions #####
@@ -1349,7 +1354,8 @@ class Generator:
     def gen_array_expr(self,
                        expr_type: tp.Type,
                        only_leaves=False,
-                       subtype=True) -> ast.ArrayExpr:
+                       subtype=True,
+                       array_list=False) -> ast.ArrayExpr:
         """Generate an array expression
 
         Args:
@@ -1360,10 +1366,14 @@ class Generator:
         """
         arr_len = ut.randomUtil.integer(0, 3)
         etype = expr_type.type_args[0]
+        # if tu.is_builtin(etype, self.bt_factory) and ut.randomUtil.bool():
+        #     arr_len = ut.randomUtil.integer(3, 10)
         exprs = [
             self.generate_expr(etype, only_leaves=only_leaves, subtype=subtype)
             for _ in range(arr_len)
         ]
+        if array_list:
+            return ast.ArrayListExpr(expr_type.to_variance_free(), arr_len, exprs)
         # An array expression (i.e., emptyArray<T>(), arrayOf<T>) cannot
         # take wildcards.
         return ast.ArrayExpr(expr_type.to_variance_free(), arr_len, exprs)
@@ -2284,11 +2294,12 @@ class Generator:
         Returns:
             A list of available types.
         """
-        # usr_types = [
-        #     c.get_type()
-        #     for c in self.context.get_classes(self.namespace).values()
-        # ]
-        usr_types = []
+        usr_types = [
+            c.get_type()
+            for c in self.context.get_classes(self.namespace).values()
+        ]
+        if self.depth >= cfg.limits.max_depth:
+            usr_types = []
         type_params = []
         if not exclude_type_vars:
             for t_param in self.context.get_types(self.namespace).values():

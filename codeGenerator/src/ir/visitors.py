@@ -25,6 +25,7 @@ class ASTVisitor():
             ast.CharConstant: self.visit_char_constant,
             ast.StringConstant: self.visit_string_constant,
             ast.ArrayExpr: self.visit_array_expr,
+            ast.ArrayListExpr: self.visit_array_list_expr,
             ast.BooleanConstant: self.visit_boolean_constant,
             ast.Variable: self.visit_variable,
             ast.LogicalExpr: self.visit_logical_expr,
@@ -108,6 +109,10 @@ class ASTVisitor():
             'visit_string_constant() must be implemented')
 
     def visit_array_expr(self, node):
+        raise NotImplementedError(
+            'visit_array_expr() must be implemented')
+
+    def visit_array_list_expr(self, node):
         raise NotImplementedError(
             'visit_array_expr() must be implemented')
 

@@ -57,6 +57,9 @@ class JavaBuiltinFactory(bt.BuiltinFactory):
     def get_array_type(self):
         return ArrayType()
 
+    def get_array_list_type(self):
+        return ArrayListType()
+
     def get_iterator_type(self):
         return IteratorType()
 
@@ -537,6 +540,12 @@ class ArrayType(tp.TypeConstructor, ObjectType):
 
 class IteratorType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="java.util.Iterator"):
+        super().__init__(name, [tp.TypeParameter("T")])
+        self.supertypes.append(ObjectType())
+
+
+class ArrayListType(tp.TypeConstructor, ObjectType):
+    def __init__(self, name="java.util.ArrayList"):
         super().__init__(name, [tp.TypeParameter("T")])
         self.supertypes.append(ObjectType())
 

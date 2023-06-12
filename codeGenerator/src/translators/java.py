@@ -943,6 +943,32 @@ class JavaTranslator(BaseTranslator):
         )
 
     @append_to
+    def visit_array_list_expr(self, node):
+        if not node.length:
+            res = "new java.util.ArrayList<{etype}>(){semicolon}".format(
+                etype=self.get_type_name(node.array_type),
+                semicolon=";" if self._parent_is_block() else ""
+            )
+            return res
+        old_ident = self.ident
+        prev_cast_number = self._cast_number
+        self._cast_number = True
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "new java.util.ArrayList<{etype}>(java.util.Arrays.asList({exprs})){semicolon}".format(
+            etype=self.get_type_name(node.array_type.type_args[0]),
+            exprs=", ".join(children_res),
+            semicolon=";" if self._parent_is_block() else ""
+        )
+        self._cast_number = prev_cast_number
+        self.ident = old_ident
+        return res
+
+
+    @append_to
     def visit_variable(self, node):
         return "{ident}{main_prefix}{name}{is_prefix}{semicolon}".format(
             ident=self.get_ident(),
@@ -1318,7 +1344,11 @@ class JavaTranslator(BaseTranslator):
         body = node.body
         loop_expr = [child for child in node.children() if child != body][0]
         children_res = self._visit_loop_body(body)
-        loop_expr_res = self._visit_loop_expr(loop_expr)
+        if isinstance(loop_expr, ast.FunctionCall):
+            loop_expr.accept(self)
+            loop_expr_res = self.pop_children_res([loop_expr])[0]
+        else:
+            loop_expr_res = self._visit_loop_expr(loop_expr)
         children_res = [loop_expr_res, children_res]
         if isinstance(node, ast.ForExpr):
             res = "{}for ({})\n{}".format(" " * old_ident, children_res[0], children_res[1])

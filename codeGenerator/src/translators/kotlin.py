@@ -462,6 +462,27 @@ class KotlinTranslator(BaseTranslator):
             ", ".join(children_res)))
 
     @append_to
+    def visit_array_list_expr(self, node):
+        if not node.length:
+            self._children_res.append("{}emptyList<{}>()".format(
+                " " * self.ident,
+                self.get_type_name(node.array_type.type_args[0])))
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        self.ident = old_ident
+
+        template = "{}arrayListOf<{}>({})"
+        t_arg = self.get_type_name(node.array_type.type_args[0])
+        return self._children_res.append(template.format(
+            " " * self.ident,
+            t_arg,
+            ", ".join(children_res)))
+
+    @append_to
     def visit_variable(self, node):
         self._children_res.append(" " * self.ident + node.name)
 
