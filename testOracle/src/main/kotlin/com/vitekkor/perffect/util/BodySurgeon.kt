@@ -59,17 +59,22 @@ object BodySurgeon {
 
     fun extractJavaMainFunction(code: String): String {
         var mainFunFound = false
+        var curlyBraces = 0
         val currentMainFun = code.split("\n").filter {
             if (it.contains("static public final void main(String[] args)")) {
                 mainFunFound = true
                 true
-            } else if (it.contains("interface Function0<R>")) {
-                mainFunFound = false
-                false
+            } else if (mainFunFound) {
+                curlyBraces += it.count { char -> char == '{' }
+                curlyBraces -= it.count { char -> char == '}' }
+                if (curlyBraces == -1) {
+                    mainFunFound = false
+                }
+                true
             } else {
-                mainFunFound
+                false
             }
-        }.dropLast(2).joinToString("\n")
+        }.joinToString("\n")
         return currentMainFun
     }
 

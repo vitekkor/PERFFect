@@ -73,8 +73,7 @@ class TestOracle {
         val kotlinCompiler = KotlinJVMCompiler()
         val javaCompiler = JavaCompiler()
         while (true) {
-            val seed = -5693031933835041984
-            Random.nextLong()
+            val seed = Random.nextLong()
             kotlinCompiler.cleanUp()
             javaCompiler.cleanUp()
             try {
