@@ -9,7 +9,7 @@ import java.io.File
 import kotlin.system.exitProcess
 
 fun main() {
-    val seed = 459416852774387161
+    val seed = 2444720093877148376
     val kotlinCompiler = KotlinJVMCompiler()
     val javaCompiler = JavaCompiler()
     kotlinCompiler.cleanUp()
