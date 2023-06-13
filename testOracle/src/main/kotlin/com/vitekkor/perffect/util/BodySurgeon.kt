@@ -5,9 +5,16 @@ object BodySurgeon {
         val currentMainFun = extractKotlinMainFunction(code)
         val firstCurlyBracket = currentMainFun.indexOf('{')
         val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
-        newMainFun.append("\n    repeat($repeat) {\n        try {\n")
+        val iter = getRepeatCountList(repeat)
+        for (i in iter.size - 1 downTo 0) {
+            newMainFun.append("\n    repeat(${iter[i]}) {\n")
+        }
+        newMainFun.append("        try {\n")
         newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
-        newMainFun.append(" catch(t: Throwable) {}\n    }\n}")
+        newMainFun.append(" catch(t: Throwable) {}\n    }")
+        for (i in iter) {
+            newMainFun.append("\n}")
+        }
         return code.replace(currentMainFun, newMainFun.toString())
     }
 
@@ -15,9 +22,17 @@ object BodySurgeon {
         val currentMainFun = extractJavaMainFunction(code)
         val firstCurlyBracket = currentMainFun.indexOf('{')
         val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
-        newMainFun.append("\n    for (int javaIterationVariable = 1; javaIterationVariable <= $repeat; javaIterationVariable++) {\n    try {\n")
+        val iter = getRepeatCountList(repeat)
+        for (i in iter.size - 1 downTo 0) {
+            val iterationVariableName = "javaIterationVariable_$i"
+            newMainFun.append("\n    for (int $iterationVariableName = 1; $iterationVariableName <= ${iter[i]}; $iterationVariableName++) {\n")
+        }
+        newMainFun.append("    try {\n")
         newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
-        newMainFun.append(" catch(Throwable t) {}\n}\n}")
+        newMainFun.append(" catch(Throwable t) {}\n}")
+        for (i in iter) {
+            newMainFun.append("\n}")
+        }
         return code.replace(currentMainFun, newMainFun.toString())
     }
 
@@ -56,5 +71,20 @@ object BodySurgeon {
             }
         }.dropLast(2).joinToString("\n")
         return currentMainFun
+    }
+
+    private fun getRepeatCountList(repeat: Long): List<Long> {
+        val iter = mutableListOf<Long>()
+        var repeatCount = repeat
+        do {
+            val iteration = repeatCount / 1000000000
+            if (iteration > 0) {
+                iter.add(1000000000)
+            } else if (repeatCount != 0L && repeatCount != 1L) {
+                iter.add(repeatCount)
+            }
+            repeatCount /= 1000000000
+        } while (repeatCount != 0L)
+        return iter
     }
 }

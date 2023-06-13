@@ -12,6 +12,7 @@ import com.vitekkor.perffect.util.BodySurgeon.replaceJavaMainFun
 import com.vitekkor.perffect.util.BodySurgeon.replaceKotlinMainFun
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
+import com.vitekkor.project.text
 import com.vitekkor.project.toProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -72,7 +73,8 @@ class TestOracle {
         val kotlinCompiler = KotlinJVMCompiler()
         val javaCompiler = JavaCompiler()
         while (true) {
-            val seed = Random.nextLong()
+            val seed = -5693031933835041984
+            Random.nextLong()
             kotlinCompiler.cleanUp()
             javaCompiler.cleanUp()
             try {
@@ -182,8 +184,9 @@ class TestOracle {
                     break
                 }
                 repeatCount *= 10L
-            } while (executionTime.second < 1000 || repeatCount <= 100_000_000L)
+            } while (executionTime.second < 1000 && repeatCount > 0L)
             repeatCount /= 10L
+            if (repeatCount < 0L) repeatCount = 9000000000000000000L
             log.info("$KOTLIN_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
@@ -200,8 +203,9 @@ class TestOracle {
                     break
                 }
                 repeatCount *= 10L
-            } while (executionTime.second < 1000 || repeatCount <= 100_000_000L)
+            } while (executionTime.second < 1000 && repeatCount > 0L)
             repeatCount /= 10L
+            if (repeatCount < 0L) repeatCount = 9000000000000000000L
             log.info("$JAVA_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
