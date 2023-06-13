@@ -235,11 +235,7 @@ class TestOracle {
         private const val JAVA_PROGRAM = "[JAVA]"
 
         fun measureAverageExecutionTime(compiler: BaseCompiler, mainClass: String): Double {
-            val path = File(compiler.pathToCompiled)
-                .walkTopDown()
-                .maxDepth(mainClass.split(".").size)
-                .filter { it.isFile }
-                .joinToString(":") { it.path }
+            val path = compiler.pathToCompiled
             val totalTime = compiler.getExecutionTime(path, mainClass = mainClass).second
             return totalTime.toDouble()
         }

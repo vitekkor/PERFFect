@@ -54,9 +54,8 @@ class JavaCompiler(override val arguments: String = "") : BaseCompiler() {
         val diagnostics = DiagnosticCollector<JavaFileObject>()
         val manager = compiler.getStandardFileManager(diagnostics, null, null)
         val sources = manager.getJavaFileObjectsFromFiles(javaFiles)
-        val classPath =
-            (CompilerArgs.jvmStdLibPaths + CompilerArgs.getAnnotationsPath("13.0")).joinToString(":")
-        val options = mutableListOf("-classpath", classPath, "-d", pathToCompiled)
+        File(pathToCompiled).mkdirs()
+        val options = mutableListOf("-d", pathToCompiled)
         val task = compiler.getTask(null, manager, diagnostics, options, null, sources)
 
         val futureExitCode = threadPool.submit {
