@@ -1,4 +1,6 @@
 compilerArgs:
+  kotlinVersion: "1.5.31"
   pathToTmpDir: ../files/tmp
   jvmStdLibBasePath: ../files/lib
   pathToResultsDir: ../files/results
+  percentageDelta: 5.0
