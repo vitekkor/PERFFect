@@ -10,4 +10,4 @@ data class MainConfig(val compilerArgs: CompilerArgs)
 
 private val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
 
-val CompilerArgs = mapper.readValue(Util.getResource("test-oracle.yml"), MainConfig::class.java).compilerArgs
+val CompilerArgs = mapper.readValue(Util.getResourceAsStream("test-oracle.yml"), MainConfig::class.java).compilerArgs
