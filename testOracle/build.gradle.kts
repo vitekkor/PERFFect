@@ -49,7 +49,7 @@ dependencies {
     implementation("org.apache.commons:commons-exec:1.3")
     implementation("commons-io:commons-io:2.7")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
-    implementation("ch.qos.logback:logback-classic:1.4.6")
+    implementation("ch.qos.logback:logback-classic:1.3.7")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
 

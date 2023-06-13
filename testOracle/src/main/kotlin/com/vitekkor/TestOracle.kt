@@ -34,9 +34,9 @@ suspend fun main() {
         Thread {
             val timestamp = Instant.now()
             javaStat.percentOfIncorrectPrograms = (javaStat.totalNumberOfPrograms - javaStat.correctPrograms) /
-                maxOf(javaStat.totalNumberOfPrograms.toDouble())
+                maxOf(javaStat.totalNumberOfPrograms.toDouble(), 1.0)
             kotlinStat.percentOfIncorrectPrograms = (kotlinStat.totalNumberOfPrograms - kotlinStat.correctPrograms) /
-                maxOf(kotlinStat.totalNumberOfPrograms.toDouble())
+                maxOf(kotlinStat.totalNumberOfPrograms.toDouble(), 1.0)
 
             javaStat.averageGenerationTimeMs /= maxOf(javaStat.totalNumberOfPrograms, 1)
             kotlinStat.averageGenerationTimeMs /= maxOf(kotlinStat.totalNumberOfPrograms, 1)
