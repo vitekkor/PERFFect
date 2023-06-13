@@ -464,9 +464,10 @@ class KotlinTranslator(BaseTranslator):
     @append_to
     def visit_array_list_expr(self, node):
         if not node.length:
-            self._children_res.append("{}emptyList<{}>()".format(
+            self._children_res.append("{}ArrayList<{}>()".format(
                 " " * self.ident,
                 self.get_type_name(node.array_type.type_args[0])))
+            return
         old_ident = self.ident
         self.ident = 0
         children = node.children()

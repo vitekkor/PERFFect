@@ -946,7 +946,7 @@ class JavaTranslator(BaseTranslator):
     def visit_array_list_expr(self, node):
         if not node.length:
             res = "new java.util.ArrayList<{etype}>(){semicolon}".format(
-                etype=self.get_type_name(node.array_type),
+                etype=self.get_type_name(node.array_type.type_args[0]),
                 semicolon=";" if self._parent_is_block() else ""
             )
             return res
