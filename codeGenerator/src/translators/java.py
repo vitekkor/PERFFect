@@ -1368,8 +1368,11 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if isinstance(node, ast.ForExpr.IterableExpr):
-            # TODO
-            res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
+            res = "{type} {var}: {array}".format(
+                type=self.get_type_name(node.arrayExpr.array_type.type_args[0]),
+                var=str(children_res[0]),
+                array=str(children_res[1])
+            )
         elif isinstance(node, ast.ForExpr.RangeExpr):
             var = str(children_res[0])
             start = str(children_res[1])
