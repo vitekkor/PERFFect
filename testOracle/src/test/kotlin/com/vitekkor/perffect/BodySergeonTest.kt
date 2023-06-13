@@ -1,6 +1,7 @@
 package com.vitekkor.perffect
 
 import com.vitekkor.perffect.util.BodySurgeon
+import com.vitekkor.perffect.util.Util
 import com.vitekkor.project.Language
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -9,7 +10,7 @@ import kotlin.test.assertEquals
 internal class BodySergeonTest {
     @Test
     fun `should extract kotlin main funs properly`() {
-        val samplesDir = File(checkNotNull(this::class.java.getResource("/bodySergeonSamples/kotlin")).path)
+        val samplesDir = Util.getResource("bodySergeonSamples/kotlin")
         val original = samplesDir.walkTopDown().filter { it.isFile && !it.name.contains("_main") }.toList()
 
         for (originalFile in original) {
@@ -21,7 +22,7 @@ internal class BodySergeonTest {
 
     @Test
     fun `should extract java main funs properly`() {
-        val samplesDir = File(checkNotNull(this::class.java.getResource("/bodySergeonSamples/java")).path)
+        val samplesDir = Util.getResource("bodySergeonSamples/java")
         val original = samplesDir.walkTopDown().filter { it.isFile && !it.name.contains("_main") }.toList()
 
         for (originalFile in original) {
@@ -36,12 +37,12 @@ internal class BodySergeonTest {
     private fun getMainFun(language: Language, name: String): File {
         return when (language) {
             Language.JAVA -> File(
-                checkNotNull(this::class.java.getResource("/bodySergeonSamples/java")).path,
+                Util.getResource("bodySergeonSamples/java").path,
                 "${name.removeSuffix(".java")}_main.java.txt"
             )
 
             Language.KOTLIN -> File(
-                checkNotNull(this::class.java.getResource("/bodySergeonSamples/kotlin")).path,
+                Util.getResource("bodySergeonSamples/kotlin").path,
                 "${name.removeSuffix(".kt")}_main.kt.txt"
             )
 
