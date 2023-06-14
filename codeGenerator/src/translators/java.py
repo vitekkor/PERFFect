@@ -1,6 +1,5 @@
 # pylint: disable=protected-access,too-many-instance-attributes,too-many-locals
 # pylint: disable=too-many-statements
-import random
 import re
 from collections import OrderedDict
 
@@ -39,8 +38,8 @@ def append_to(visit):
         res = visit(self, node)
         self._nodes_stack.pop()
         if (self._namespace == ast.GLOBAL_NAMESPACE and
-                isinstance(node, ast.FunctionDeclaration) and
-                node.name == "main"):
+            isinstance(node, ast.FunctionDeclaration) and
+            node.name == "main"):
             # If we want to run the program we must replace main() with
             # main(String[] args)
             self._main_method = res
@@ -82,6 +81,7 @@ class JavaTranslator(BaseTranslator):
         self.types = []
         self._generator = None
         self._cast_number = False
+        self._cast_labmda = True
         # Keep track if a block is in a function that has non-void return type
         self.is_func_non_void_block = False
 
@@ -229,6 +229,13 @@ class JavaTranslator(BaseTranslator):
         res = "\n\n" + res if res != "" else ""
         return res
 
+    @staticmethod
+    def _get_todo_fun():
+        res = "\n    public static Object todo() {\n" + \
+              "        throw new IllegalArgumentException();" + \
+              "    }\n"
+        return res
+
     def _parent_is_block(self):
         # The second node is the parent node
         return isinstance(self._nodes_stack[-2], ast.Block)
@@ -258,9 +265,10 @@ class JavaTranslator(BaseTranslator):
             for d in self._main_children]
         main_method = self.get_ident() + "static " + \
                       self._main_method.lstrip() if self._main_method else None
-        main_cls = "class Main {{\n{main_decls}{main_method}\n}}".format(
+        main_cls = "class Main {{\n{main_decls}{main_method}{todo_fun}\n}}".format(
             main_decls="\n\n".join(main_decls),
-            main_method="\n\n" + main_method if main_method else ""
+            main_method="\n\n" + main_method if main_method else "",
+            todo_fun=self._get_todo_fun()
         )
         other_classes = "\n\n".join(self.pop_children_res(children))
         self.program = "{package}{main}{f_interfaces}{other_classes}".format(
@@ -328,10 +336,10 @@ class JavaTranslator(BaseTranslator):
             # If return type is void, then we assign the last statement (except
             # var decl calls) in a variable x and then we use return_stmt.
             if (children and
-                    not isinstance(children[-1],
-                                   (ast.VariableDeclaration,
-                                    ast.FunctionCall,
-                                    ast.Assignment, ast.LoopExpr))):
+                not isinstance(children[-1],
+                               (ast.VariableDeclaration,
+                                ast.FunctionCall,
+                                ast.Assignment, ast.LoopExpr))):
                 is_bottom = children[-1].is_bottom()
                 type_hint = tu.get_type_hint(children[-1],
                                              self.context,
@@ -358,7 +366,8 @@ class JavaTranslator(BaseTranslator):
                     var_prefix = sig if sig else 'var'
                 else:
                     var_prefix = 'Object'
-                if not isinstance(children[-1], ast.Conditional) or (isinstance(children[-1], ast.Conditional) and self.sugar_cond):
+                if not isinstance(children[-1], ast.Conditional) or (
+                    isinstance(children[-1], ast.Conditional) and self.sugar_cond):
                     sugar = "{p} x_{x} = ".format(p=var_prefix, x=self._x_counter)
                     return_stmt += ';' if is_lambda and not return_stmt.strip() \
                         else ''
@@ -414,14 +423,19 @@ class JavaTranslator(BaseTranslator):
         self.ident = 0
         children = node.children()
         for c in node.children():
+            if isinstance(c, ast.Lambda):
+                old_cast_lambda = self._cast_labmda
+                self._cast_labmda = True
             c.accept(self)
+            if isinstance(c, ast.Lambda):
+                self._cast_labmda = old_cast_lambda
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         return children_res[0]
 
     @append_to
     def visit_bottom_constant(self, node):
-        return self.get_ident() + "{}{}null{}{}".format(
+        return self.get_ident() + "{}{}Main.todo(){}{}".format(
             '(' if self._parent_is_func_ref() else '',
             (
                 '(' + self.get_type_name(node.t) + ') '
@@ -596,9 +610,9 @@ class JavaTranslator(BaseTranslator):
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
         if isinstance(children[0], ast.Constant):
-            if var_type == "Long":
+            if var_type == "Long" and not str(expr).__contains__('null'):
                 expr += "L"
-            elif var_type == "Float":
+            elif var_type == "Float" and not str(expr).__contains__('null'):
                 expr += "F"
         res = "{ident}{final}{var_type} {main_prefix}{name} = {expr};".format(
             ident=self.get_ident(),
@@ -720,10 +734,13 @@ class JavaTranslator(BaseTranslator):
             )
             if len(node.params) != 0 and all(param.default is not None for param in node.params):
                 old_cast_number = self._cast_number
+                old_cast_lambda = self._cast_labmda
                 self._cast_number = True
+                self._cast_labmda = True
                 for param in node.params:
                     param.default.accept(self)
                 self._cast_number = old_cast_number
+                self._cast_labmda = old_cast_lambda
                 default_param_res = self.pop_children_res(node.params)
                 body_call_with_defaults = '{\n' + "{start_indent}{return_word}{name}({default_params});\n{indent}".format(
                     start_indent=self.get_ident(),
@@ -804,6 +821,11 @@ class JavaTranslator(BaseTranslator):
             params=", ".join(param_res),
             body=body
         )
+        if self._cast_labmda:
+            res = "({cast}) {lmd}".format(
+                cast=self.get_type_name(node.signature),
+                lmd=res
+            )
 
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
@@ -909,8 +931,8 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
 
-        if (isinstance(node.array_type, tp.ParameterizedType) and
-                not node.array_type.type_args[0].is_primitive()):
+        if False and (isinstance(node.array_type, tp.ParameterizedType) and
+                      not node.array_type.type_args[0].is_primitive()):
             new_stmt = "({etype}) new Object[]".format(
                 etype=self.get_type_name(node.array_type)
             )
@@ -927,6 +949,31 @@ class JavaTranslator(BaseTranslator):
             new=new_stmt,
             semicolon=";" if self._parent_is_block() else ""
         )
+
+    @append_to
+    def visit_array_list_expr(self, node):
+        if not node.length:
+            res = "new java.util.ArrayList<{etype}>(){semicolon}".format(
+                etype=self.get_type_name(node.array_type.type_args[0]),
+                semicolon=";" if self._parent_is_block() else ""
+            )
+            return res
+        old_ident = self.ident
+        prev_cast_number = self._cast_number
+        self._cast_number = True
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "new java.util.ArrayList<{etype}>(java.util.Arrays.asList({exprs})){semicolon}".format(
+            etype=self.get_type_name(node.array_type.type_args[0]),
+            exprs=", ".join(children_res),
+            semicolon=";" if self._parent_is_block() else ""
+        )
+        self._cast_number = prev_cast_number
+        self.ident = old_ident
+        return res
 
     @append_to
     def visit_variable(self, node):
@@ -1032,7 +1079,7 @@ class JavaTranslator(BaseTranslator):
                             if_condition=children_res[0].lstrip(),
                             body=children_res[1],
                             else_body=children_res[2]
-                    )
+                        )
         self.ident = old_ident
         self._inside_is = prev_inside_is
         self._namespace = prev_namespace
@@ -1171,13 +1218,14 @@ class JavaTranslator(BaseTranslator):
             if decl:
                 namespace, decl = decl
                 if namespace == ast.GLOBAL_NAMESPACE and isinstance(
-                        decl, ast.FunctionDeclaration):
+                    decl, ast.FunctionDeclaration):
                     receiver = "Main"
 
         receiver += "::" if receiver != "" else ""
 
-        res = "{ident}{receiver}{name}{semicolon}".format(
+        res = "{ident}({signature}){receiver}{name}{semicolon}".format(
             ident=self.get_ident(),
+            signature=self.get_type_name(node.signature),
             receiver=receiver,
             name=node.func,
             semicolon=";" if self._parent_is_block() else ""
@@ -1227,7 +1275,7 @@ class JavaTranslator(BaseTranslator):
         # In case of a nested class with vararg as the last parameter,
         # we have to create an array with the vararg arguments.
         if (is_nested_func() and len(fdecl[1].params) > 0 and
-                fdecl[1].params[-1].vararg):
+            fdecl[1].params[-1].vararg):
             varargs = args[len(fdecl[1].params) - 1:]
             varargs_type = fdecl[1].params[-1].param_type
             if not varargs_type.type_args[0].is_primitive():
@@ -1303,7 +1351,11 @@ class JavaTranslator(BaseTranslator):
         body = node.body
         loop_expr = [child for child in node.children() if child != body][0]
         children_res = self._visit_loop_body(body)
-        loop_expr_res = self._visit_loop_expr(loop_expr)
+        if isinstance(loop_expr, ast.FunctionCall):
+            loop_expr.accept(self)
+            loop_expr_res = self.pop_children_res([loop_expr])[0]
+        else:
+            loop_expr_res = self._visit_loop_expr(loop_expr)
         children_res = [loop_expr_res, children_res]
         if isinstance(node, ast.ForExpr):
             res = "{}for ({})\n{}".format(" " * old_ident, children_res[0], children_res[1])
@@ -1311,7 +1363,7 @@ class JavaTranslator(BaseTranslator):
             res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
         elif isinstance(node, ast.DoWhileExpr):
             res = "{}do\n{}\n{}while({});".format(" " * old_ident, children_res[1], " " * old_ident,
-                                                 children_res[0][self.ident:])
+                                                  children_res[0][self.ident:])
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
         self.ident = old_ident
@@ -1323,8 +1375,11 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if isinstance(node, ast.ForExpr.IterableExpr):
-            # TODO
-            res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
+            res = "{type} {var}: {array}".format(
+                type=self.get_type_name(node.arrayExpr.array_type.type_args[0]),
+                var=str(children_res[0]),
+                array=str(children_res[1])
+            )
         elif isinstance(node, ast.ForExpr.RangeExpr):
             var = str(children_res[0])
             start = str(children_res[1])
@@ -1370,4 +1425,13 @@ class JavaTranslator(BaseTranslator):
             res = self.pop_children_res([node])
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
+        return res
+
+    @append_to
+    def visit_class_cast(self, node):
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "(({cast}) ({expr}))".format(expr=children_res[0], cast=node.cast_type.name)
         return res

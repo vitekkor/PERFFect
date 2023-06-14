@@ -2,10 +2,10 @@
 # pylint: disable=too-few-public-methods
 from ordered_set import OrderedSet
 
-from src.ir.types import Builtin
-
+import src.ir.ast as ast
 import src.ir.builtins as bt
 import src.ir.types as tp
+from src.ir.types import Builtin
 
 
 class JavaBuiltinFactory(bt.BuiltinFactory):
@@ -57,6 +57,9 @@ class JavaBuiltinFactory(bt.BuiltinFactory):
     def get_array_type(self):
         return ArrayType()
 
+    def get_array_list_type(self):
+        return ArrayListType()
+
     def get_iterator_type(self):
         return IteratorType()
 
@@ -100,6 +103,13 @@ class ObjectType(JavaBuiltin):
     def box_type(self):
         return self
 
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[],
+            class_type=ast.ClassDeclaration.REGULAR,
+        )
+
 
 class VoidType(JavaBuiltin):
     def __init__(self, name="void", primitive=False):
@@ -127,6 +137,26 @@ class NumberType(ObjectType):
     def box_type(self):
         return self
 
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=ObjectType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_functions(self):
+        functions = [
+            ast.FunctionDeclaration("byteValue", [], ByteType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("doubleValue", [], DoubleType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("floatValue", [], FloatType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("intValue", [], IntegerType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("shortValue", [], ShortType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("longValue", [], LongType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+        ]
+        return functions
+
 
 class IntegerType(NumberType):
     def __init__(self, name="Integer", primitive=False):
@@ -151,6 +181,22 @@ class IntegerType(NumberType):
         if self.is_primitive():
             return "int"
         return super().get_name()
+
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=NumberType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('-'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('*'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('/'), IntegerType()),
+        ]
 
 
 class ShortType(NumberType):
@@ -177,6 +223,22 @@ class ShortType(NumberType):
             return "short"
         return super().get_name()
 
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=NumberType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('-'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('*'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('/'), IntegerType()),
+        ]
+
 
 class LongType(NumberType):
     def __init__(self, name="Long", primitive=False):
@@ -201,6 +263,23 @@ class LongType(NumberType):
         if self.is_primitive():
             return "long"
         return super().get_name()
+
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=NumberType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    # noinspection DuplicatedCode
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), LongType()),
+            (ast.ArithExpr, ast.Operator('-'), LongType()),
+            (ast.ArithExpr, ast.Operator('*'), LongType()),
+            (ast.ArithExpr, ast.Operator('/'), LongType()),
+        ]
 
 
 class ByteType(NumberType):
@@ -227,6 +306,23 @@ class ByteType(NumberType):
             return "byte"
         return super().get_name()
 
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=NumberType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    # noinspection DuplicatedCode
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('-'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('*'), IntegerType()),
+            (ast.ArithExpr, ast.Operator('/'), IntegerType()),
+        ]
+
 
 class FloatType(NumberType):
     def __init__(self, name="Float", primitive=False):
@@ -251,6 +347,32 @@ class FloatType(NumberType):
         if self.is_primitive():
             return "float"
         return super().get_name()
+
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=NumberType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), FloatType()),
+            (ast.ArithExpr, ast.Operator('-'), FloatType()),
+            (ast.ArithExpr, ast.Operator('*'), FloatType()),
+            (ast.ArithExpr, ast.Operator('/'), FloatType()),
+        ]
+
+    def get_functions(self):
+        functions = [
+            ast.FunctionDeclaration("doubleValue", [], DoubleType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("floatValue", [], FloatType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("intValue", [], IntegerType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("longValue", [], LongType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+        ]
+        return functions
 
 
 class DoubleType(NumberType):
@@ -277,6 +399,32 @@ class DoubleType(NumberType):
             return "double"
         return super().get_name()
 
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=NumberType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_binary_ops(self):
+        return [
+            (ast.ArithExpr, ast.Operator('+'), DoubleType()),
+            (ast.ArithExpr, ast.Operator('-'), DoubleType()),
+            (ast.ArithExpr, ast.Operator('*'), DoubleType()),
+            (ast.ArithExpr, ast.Operator('/'), DoubleType()),
+        ]
+
+    def get_functions(self):
+        functions = [
+            ast.FunctionDeclaration("doubleValue", [], DoubleType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("floatValue", [], FloatType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("intValue", [], IntegerType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("longValue", [], LongType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+        ]
+        return functions
+
 
 class CharType(ObjectType):
     def __init__(self, name="Character", primitive=False):
@@ -298,6 +446,17 @@ class CharType(ObjectType):
             return "char"
         return super().get_name()
 
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=ObjectType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_functions(self):
+        return [ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD)]
+
 
 class StringType(ObjectType):
     def __init__(self, name="String"):
@@ -309,6 +468,34 @@ class StringType(ObjectType):
 
     def box_type(self):
         return self
+
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=ObjectType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_functions(self):
+        functions = [
+            ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("toLowerCase", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("toUpperCase", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("contains", [ast.ParameterDeclaration('other', StringType())], BooleanType(), None,
+                                    ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("replace", [ast.ParameterDeclaration('oldChar', CharType()),
+                                                ast.ParameterDeclaration('newChar', CharType())], StringType(), None,
+                                    ast.FunctionDeclaration.CLASS_METHOD),
+            ast.FunctionDeclaration("substring", [ast.ParameterDeclaration('beginIndex', IntegerType()),
+                                                  ast.ParameterDeclaration('endIndex', IntegerType())], StringType(),
+                                    None,
+                                    ast.FunctionDeclaration.CLASS_METHOD),
+        ]
+        return functions
+
+    def get_binary_ops(self):
+        return [(ast.ArithExpr, ast.Operator('+'), StringType())]
 
 
 class BooleanType(ObjectType):
@@ -331,6 +518,17 @@ class BooleanType(ObjectType):
             return "boolean"
         return super().get_name()
 
+    def get_class_declaration(self):
+        return ast.ClassDeclaration(
+            name=self.name,
+            superclasses=[ast.SuperClassInstantiation(class_type=ObjectType())],
+            class_type=ast.ClassDeclaration.REGULAR,
+            functions=self.get_functions()
+        )
+
+    def get_functions(self):
+        return [ast.FunctionDeclaration("toString", [], StringType(), None, ast.FunctionDeclaration.CLASS_METHOD)]
+
 
 class ArrayType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="Array"):
@@ -342,6 +540,12 @@ class ArrayType(tp.TypeConstructor, ObjectType):
 
 class IteratorType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="java.util.Iterator"):
+        super().__init__(name, [tp.TypeParameter("T")])
+        self.supertypes.append(ObjectType())
+
+
+class ArrayListType(tp.TypeConstructor, ObjectType):
+    def __init__(self, name="java.util.ArrayList"):
         super().__init__(name, [tp.TypeParameter("T")])
         self.supertypes.append(ObjectType())
 

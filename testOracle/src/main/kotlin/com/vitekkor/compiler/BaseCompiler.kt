@@ -130,12 +130,12 @@ abstract class BaseCompiler {
     }
 
     fun exec(path: String, streamType: Stream = Stream.INPUT, mainClass: String = ""): String {
-        val mc =
-            mainClass.ifEmpty { JarInputStream(File(path).inputStream()).manifest.mainAttributes.getValue("Main-class") }
-        return commonExec(
-            "java -classpath ${CompilerArgs.jvmStdLibPaths.joinToString(":")}:$path $mc",
-            streamType
-        )
+        val cp = if (this is JavaCompiler) {
+            path
+        } else {
+            "${CompilerArgs.jvmStdLibPaths.joinToString(":")}:$path"
+        }
+        return commonExec("java -classpath $cp $mainClass", streamType)
     }
 
     fun cleanUp() {

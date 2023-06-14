@@ -49,9 +49,9 @@ dependencies {
     implementation("org.apache.commons:commons-exec:1.3")
     implementation("commons-io:commons-io:2.7")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
-    implementation("ch.qos.logback:logback-classic:1.4.6")
-    implementation("com.sksamuel.hoplite:hoplite-core:2.7.1")
-    implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.1")
+    implementation("ch.qos.logback:logback-classic:1.3.7")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
@@ -129,10 +129,11 @@ val provideKotlinVersion: Task by tasks.creating {
     outputs.upToDateWhen { false }
     doLast {
         project.sourceSets.main {
-            File(resources.srcDirs.first().path + "/kotlin.yml").apply {
-                if (exists()) delete()
-                createNewFile()
-                writeText("compilerArgs:\n  kotlinVersion: \"$kotlinVersion\"")
+            File(resources.srcDirs.first().path + "/test-oracle.yml").apply {
+                check(exists())
+                val config = readText().replace("  kotlinVersion: \".*\"".toRegex(), "")
+                    .replace("compilerArgs:\n", "compilerArgs:\n  kotlinVersion: \"$kotlinVersion\"")
+                writeText(config)
             }
         }
     }
@@ -147,9 +148,16 @@ val cleanKotlinVersion by tasks.creating(Task::class.java) {
     }
 }
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = project.property("jvmTarget") as String
+    val jvmTarget = project.property("jvmTarget") as String
+    kotlinOptions.jvmTarget = if (jvmTarget == "8") "1.8" else jvmTarget
     dependsOn(downloadStdLib)
     dependsOn(provideKotlinVersion)
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(project.property("jvmTarget") as String))
+    }
 }
 
 tasks["clean"].finalizedBy(cleanUpStdLib).finalizedBy(cleanKotlinVersion)

@@ -1,0 +1,138 @@
+class Main {
+  static Object adolfo = new Object();
+
+  static final Object colleague = Main.adolfo;
+
+  static final Boolean armagnac = true;
+
+  static final Integer reeve = ((Main.armagnac) ?
+  58 :
+   -29);
+
+  static final Integer stunned = Main.reeve;
+
+  static public final Integer angelia(Integer spiking, Number breached) {
+    return spiking;
+  }
+
+  static Number chaste = Main.stunned;
+
+  static public final void main(String[] args) {
+    final Character shabbier = 'E';
+    final Double nitrogen = -73.907;
+    final Focal atkinson = new Lodge(shabbier, nitrogen);
+    Character legged = '7';
+    Double mart = nitrogen;
+    Function0<Integer> coulter = ((Main.armagnac) ?
+      (Function0<Integer>)Main.chaste::intValue :
+ (Function0<Integer>) () -> {
+        Integer burdening = Main.reeve;
+        final Short applauds = (short)-44;
+        String athlete = "luggage";
+        Long concocts = (long)89L;
+        Object spumed = applauds;
+        Byte organelle = (byte)50;
+        Integer civilians = 71;
+        Integer decisive = 0;
+        do
+{
+          burdening.byteValue();
+          Main.chaste.byteValue();
+          nitrogen.longValue();
+          final String vampires = athlete;;
+          athlete = (vampires + athlete);;
+          decisive++;;
+        }
+        while((decisive > 90));
+        return burdening;
+
+      });
+    Float banneker = (float)68.425F;
+    Number lingering = (float)-49.514;
+    Main.armagnac.toString();
+    Function1<Short, Boolean> variableDeclaration_0 = ((Main.armagnac) ?
+      (Function1<Short, Boolean>)atkinson::norberto :
+ (Function1<Short, Boolean>) (Short refit) -> {        return Main.armagnac;});
+
+  }
+}
+
+interface Function0<R> {
+  public R apply();
+}
+
+interface Function1<A1, R> {
+  public R apply(A1 a1);
+}
+
+interface Function2<A1, A2, R> {
+  public R apply(A1 a1, A2 a2);
+}
+
+interface Function3<A1, A2, A3, R> {
+  public R apply(A1 a1, A2 a2, A3 a3);
+}
+
+
+
+interface Watchful {
+  public abstract Byte schools() ;
+
+  public abstract Double savaging() ;
+}
+
+abstract class Focal implements Watchful {
+  public Double semesters;
+  public final Character smidgeon;
+
+  public Focal(Double semesters,Character smidgeon) {
+    super();
+    this.semesters = semesters;
+    this.smidgeon = smidgeon;
+  }
+
+  public abstract Boolean norberto(Short zapping) ;
+}
+
+final class Lodge extends Focal {
+  public Character lolling;
+  public Double entente;
+
+  public Lodge(Character lolling,Double entente) {
+    super(-3.133, 'l');
+    this.lolling = lolling;
+    this.entente = entente;
+  }
+
+  public Boolean norberto(Short zapping) {
+    final Boolean stropping = Main.armagnac;
+    final Character ares = lolling;
+    Long gumdrop = (long)65L;
+    String potemkin = "modals";
+    Character foresees = ares;
+    Byte rabbiting = (byte)51;
+    Long eucharist = gumdrop;
+    Double paramecia = entente;
+    Integer cols = 72;
+    do
+{
+      final Double wittily = 2.934;;
+      final Number travelled = (Number) new Long(-51);;
+      Main.reeve.doubleValue();
+      gumdrop.shortValue();
+      wittily.doubleValue();
+      cols++;;
+    }
+    while((cols <= 84));
+    return stropping;
+
+  }
+
+  public Byte schools() {
+    return (byte)44;
+  }
+
+  public Double savaging() {
+    return entente;
+  }
+}

@@ -7,7 +7,6 @@ from ordered_set import OrderedSet
 import src.ir.type_utils as tu
 import src.ir.types as types
 from src import utils
-from src.ir import BUILTIN_FACTORIES
 from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
 
@@ -38,6 +37,7 @@ class Program(Node):
     def __init__(self, context, language):
         self.context = context
         self.language = language
+        from src.ir import BUILTIN_FACTORIES
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
 
     def children(self):
@@ -951,6 +951,30 @@ class ArrayExpr(Expr):
         return False
 
 
+class ArrayListExpr(Expr):
+    def __init__(self, array_type: types.Type, length: int, exprs: List[Expr]):
+        self.length = length
+        self.array_type = array_type
+        self.exprs = exprs
+
+    def children(self):
+        return self.exprs
+
+    def update_children(self, children):
+        super().update_children(children)
+        self.exprs = children
+
+    def __str__(self):
+        return "ArrayList<{}>".format(str(self.array_type))
+
+    def is_equal(self, other):
+        if isinstance(other, ArrayListExpr):
+            return (self.array_type == other.array_type and
+                    self.length == other.length and
+                    self.exprs == other.exprs)
+        return False
+
+
 class Variable(Expr):
     def __init__(self, name: str):
         self.name = name
@@ -1463,3 +1487,16 @@ class DoWhileExpr(WhileExprBase):
 
     def children(self):
         return [self.body, self.condition]
+
+
+class ClassCast(Node):
+
+    def __init__(self, expr: Node, cast_type):
+        self.expr = expr
+        self.cast_type = cast_type
+
+    def __str__(self):
+        return "{expr} as {cast}".format(expr=str(self.expr), cast=str(self.cast_type))
+
+    def children(self):
+        return [self.expr]

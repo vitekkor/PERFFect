@@ -1,7 +1,8 @@
 # pylint: disable=abstract-method
 from __future__ import annotations
-from copy import deepcopy, copy
+
 from collections import defaultdict
+from copy import deepcopy, copy
 from typing import List, Dict
 
 from ordered_set import OrderedSet
@@ -41,8 +42,8 @@ class Variance(object):
 
     def __eq__(self, other):
         return (
-                self.__class__ == other.__class__ and
-                self.value == other.value
+            self.__class__ == other.__class__ and
+            self.value == other.value
         )
 
 
@@ -164,6 +165,15 @@ class Builtin(Type):
     def get_builtin_type(self):
         raise NotImplementedError("You have to implement get_builtin_type")
 
+    def get_class_declaration(self):
+        raise NotImplementedError("You have to implement get_class_declaration")
+
+    def get_functions(self):
+        return []
+
+    def get_binary_ops(self):
+        return []
+
 
 # noinspection PyAbstractClass
 class Classifier(Type):
@@ -216,8 +226,8 @@ class SimpleClassifier(Classifier):
         """
         tconst = defaultdict(list)  # Type Constructors
         for supertype in filter(
-                lambda x: x.is_parameterized(),
-                self.get_supertypes()):
+            lambda x: x.is_parameterized(),
+            self.get_supertypes()):
             tconst[supertype.t_constructor] = \
                 tconst[supertype.t_constructor] + [supertype]
         for t_class in tconst.values():
@@ -316,7 +326,7 @@ class WildCardType(Type):
         if isinstance(other, WildCardType):
             if other.bound is not None:
                 if self.variance.is_covariant() and (
-                        other.variance.is_covariant()):
+                    other.variance.is_covariant()):
                     return self.bound.is_subtype(other.bound)
         return False
 
@@ -379,6 +389,10 @@ class WildCardType(Type):
 
 def _get_type_substitution(etype, type_map,
                            cond=lambda t: t.has_type_variables()):
+    try:
+        etype.is_parameterized()
+    except Exception:
+        pass
     if etype.is_parameterized():
         return substitute_type_args(etype, type_map, cond)
     if etype.is_wildcard() and etype.bound is not None:
@@ -616,7 +630,7 @@ class ParameterizedType(SimpleClassifier):
     def has_wildcards(self):
         return any(
             t_arg.is_wildcard() or (
-                    t_arg.is_parameterized() and t_arg.has_wildcards()
+                t_arg.is_parameterized() and t_arg.has_wildcards()
             )
             for t_arg in self.type_args
         )
@@ -729,15 +743,15 @@ class ParameterizedType(SimpleClassifier):
         # We should handle Java primitive arrays
         # In Java Byte[] is not assignable to byte[] and vice versa.
         if (self.t_constructor == jt.Array and
-                other.is_parameterized() and
-                other.t_constructor == jt.Array):
+            other.is_parameterized() and
+            other.t_constructor == jt.Array):
             self_t = self.type_args[0]
             other_t = other.type_args[0]
             self_is_primitive = getattr(self_t, 'primitive', False)
             other_is_primitive = getattr(other_t, 'primitive', False)
             if self_is_primitive or other_is_primitive:
                 if (self_t == other_t and
-                        self_is_primitive and other_is_primitive):
+                    self_is_primitive and other_is_primitive):
                     return True
                 return False
         return self.is_subtype(other)

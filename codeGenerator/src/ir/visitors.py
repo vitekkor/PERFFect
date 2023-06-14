@@ -25,6 +25,7 @@ class ASTVisitor():
             ast.CharConstant: self.visit_char_constant,
             ast.StringConstant: self.visit_string_constant,
             ast.ArrayExpr: self.visit_array_expr,
+            ast.ArrayListExpr: self.visit_array_list_expr,
             ast.BooleanConstant: self.visit_boolean_constant,
             ast.Variable: self.visit_variable,
             ast.LogicalExpr: self.visit_logical_expr,
@@ -44,7 +45,8 @@ class ASTVisitor():
             ast.WhileExpr: self.visit_loop,
             ast.DoWhileExpr: self.visit_loop,
             ast.ForExpr.RangeExpr: self.visit_loop_expr,
-            ast.ForExpr.IterableExpr: self.visit_loop_expr
+            ast.ForExpr.IterableExpr: self.visit_loop_expr,
+            ast.ClassCast: self.visit_class_cast,
         }
         visitor = visitors.get(node.__class__)
         if visitor is None:
@@ -110,6 +112,10 @@ class ASTVisitor():
         raise NotImplementedError(
             'visit_array_expr() must be implemented')
 
+    def visit_array_list_expr(self, node):
+        raise NotImplementedError(
+            'visit_array_expr() must be implemented')
+
     def visit_boolean_constant(self, node):
         raise NotImplementedError(
             'visit_boolean_constant() must be implemented')
@@ -156,6 +162,9 @@ class ASTVisitor():
 
     def visit_loop_expr(self, node):
         raise NotImplementedError('visit_assign() must be implemented')
+
+    def visit_class_cast(self, node):
+        raise NotImplementedError('visit_class_cast() must be implemented')
 
 
 class DefaultVisitor(ASTVisitor):

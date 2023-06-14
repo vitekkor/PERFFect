@@ -7,6 +7,9 @@ import com.vitekkor.compiler.KotlinJVMCompiler
 import com.vitekkor.compiler.model.CompileStatus
 import com.vitekkor.config.CompilerArgs
 import com.vitekkor.model.MeasurementResult
+import com.vitekkor.model.Stat
+import com.vitekkor.perffect.util.BodySurgeon.replaceJavaMainFun
+import com.vitekkor.perffect.util.BodySurgeon.replaceKotlinMainFun
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
 import com.vitekkor.project.toProject
@@ -18,11 +21,45 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging.logger
 import src.server.Server
 import java.io.File
+import java.time.Duration
+import java.time.Instant
 import kotlin.random.Random
-import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
+import kotlin.time.toKotlinDuration
 
+val javaStat = Stat()
+val kotlinStat = Stat()
 suspend fun main() {
+    Runtime.getRuntime().addShutdownHook(
+        Thread {
+            val timestamp = Instant.now()
+            javaStat.percentOfIncorrectPrograms = (javaStat.totalNumberOfPrograms - javaStat.correctPrograms) /
+                maxOf(javaStat.totalNumberOfPrograms.toDouble(), 1.0)
+            kotlinStat.percentOfIncorrectPrograms = (kotlinStat.totalNumberOfPrograms - kotlinStat.correctPrograms) /
+                maxOf(kotlinStat.totalNumberOfPrograms.toDouble(), 1.0)
+
+            javaStat.averageGenerationTimeMs /= maxOf(javaStat.totalNumberOfPrograms, 1)
+            kotlinStat.averageGenerationTimeMs /= maxOf(kotlinStat.totalNumberOfPrograms, 1)
+
+            javaStat.averageCompileTimeMs /= maxOf(javaStat.correctPrograms, 1)
+            javaStat.averageExecutionTimeMs /= maxOf(javaStat.correctPrograms, 1)
+            kotlinStat.averageCompileTimeMs /= maxOf(kotlinStat.correctPrograms, 1)
+            kotlinStat.averageExecutionTimeMs /= maxOf(kotlinStat.correctPrograms, 1)
+            println(kotlinStat)
+            println(javaStat)
+
+            File(CompilerArgs.pathToResultsDir + "/$timestamp", "kotlinStat.json")
+                .apply { parentFile.mkdirs() }
+                .bufferedWriter().use {
+                    it.write(Json.encodeToString(kotlinStat))
+                }
+            File(CompilerArgs.pathToResultsDir + "/$timestamp", "javaStat.json")
+                .bufferedWriter().use {
+                    it.write(Json.encodeToString(javaStat))
+                }
+        }
+    )
     TestOracle().run()
 }
 
@@ -41,23 +78,32 @@ class TestOracle {
             javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
-                val kotlin = withTimeoutOrNull(Duration.minutes(1)) {
-                    client.generateKotlin(seed)
+                val (kotlin, kotlinGenerationTime) = withTimeoutOrNull(Duration.ofMinutes(2).toKotlinDuration()) {
+                    measureTimedValue { client.generateKotlin(seed) }
                 }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
+                kotlinStat.totalNumberOfPrograms++
+                kotlinStat.averageGenerationTimeMs += kotlinGenerationTime.inWholeMilliseconds
+
+                val (java, javaGenerationTime) = withTimeoutOrNull(Duration.ofMinutes(2).toKotlinDuration()) {
+                    measureTimedValue { client.generateJava(seed) }
+                }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
+                javaStat.totalNumberOfPrograms++
+                javaStat.averageGenerationTimeMs += javaGenerationTime.inWholeMilliseconds
+
                 if (kotlin.text.isBlank()) {
                     log.error { "$KOTLIN_PROGRAM is empty - seed $seed" }
-                    continue
                 }
-                val kotlinProject = kotlin.toProject(Language.KOTLIN)
-                log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
 
-                val java = withTimeoutOrNull(Duration.minutes(1)) {
-                    client.generateJava(seed)
-                }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
                 if (java.text.isBlank()) {
                     log.error { "$JAVA_PROGRAM is empty - seed $seed" }
+                }
+
+                if (kotlin.text.isBlank() || java.text.isBlank()) {
                     continue
                 }
+
+                val kotlinProject = kotlin.toProject(Language.KOTLIN)
+                log.info("$KOTLIN_PROGRAM generated code: ${kotlin.text}")
                 val javaProject = java.toProject(Language.JAVA)
                 log.info("$JAVA_PROGRAM generated code: ${java.text}")
 
@@ -68,6 +114,16 @@ class TestOracle {
                 val (javaCompileStatus, javaCompileTime) =
                     javaCompiler.tryToCompileWithStatusAndExecutionTime(javaProject)
                 log.info("$JAVA_PROGRAM compileStatus: $javaCompileStatus; compileTime: $javaCompileTime")
+
+                if (kotlinCompileStatus == CompileStatus.OK) {
+                    kotlinStat.averageCompileTimeMs += kotlinCompileTime
+                    kotlinStat.correctPrograms++
+                }
+
+                if (javaCompileStatus == CompileStatus.OK) {
+                    javaStat.averageCompileTimeMs += javaCompileTime
+                    javaStat.correctPrograms++
+                }
 
                 if (javaCompileStatus != CompileStatus.OK || kotlinCompileStatus != CompileStatus.OK) {
                     log.error { "One of compilers finished with non-zero status code" }
@@ -97,6 +153,8 @@ class TestOracle {
                 log.info("$SEED $seed")
                 log.info("$KOTLIN_PROGRAM average execution time - $kotlinExecTime")
                 log.info("$JAVA_PROGRAM average execution time - $javaExecTime")
+                kotlinStat.averageExecutionTimeMs += kotlinExecTime
+                javaStat.averageExecutionTimeMs += javaExecTime
 
                 val measurementResult = MeasurementResult(
                     MeasurementResult.Execution(kotlinExecTime, kotlinProject, compiledKotlin.second),
@@ -125,8 +183,9 @@ class TestOracle {
                     break
                 }
                 repeatCount *= 10L
-            } while (executionTime.second < 1000 || repeatCount <= 100_000_000L)
+            } while (executionTime.second < 1000 && repeatCount > 0L)
             repeatCount /= 10L
+            if (repeatCount < 0L) repeatCount = 9000000000000000000L
             log.info("$KOTLIN_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
@@ -143,8 +202,9 @@ class TestOracle {
                     break
                 }
                 repeatCount *= 10L
-            } while (executionTime.second < 1000 || repeatCount <= 100_000_000L)
+            } while (executionTime.second < 1000 && repeatCount > 0L)
             repeatCount /= 10L
+            if (repeatCount < 0L) repeatCount = 9000000000000000000L
             log.info("$JAVA_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
@@ -178,63 +238,9 @@ class TestOracle {
         private const val JAVA_PROGRAM = "[JAVA]"
 
         fun measureAverageExecutionTime(compiler: BaseCompiler, mainClass: String): Double {
-            val path = File(compiler.pathToCompiled)
-                .walkTopDown()
-                .maxDepth(mainClass.split(".").size)
-                .filter { it.isFile }
-                .joinToString(":") { it.path }
+            val path = compiler.pathToCompiled
             val totalTime = compiler.getExecutionTime(path, mainClass = mainClass).second
             return totalTime.toDouble()
-        }
-
-        fun replaceKotlinMainFun(code: String, repeat: Long): String {
-            var mainFunFound = false
-            var curlyBraces = 0
-            val currentMainFun = code.split("\n").filter {
-                if (it.contains("fun main(args: Array<out String>)")) {
-                    mainFunFound = true
-                    true
-                } else if (mainFunFound) {
-                    if (it.contains("{")) {
-                        curlyBraces++
-                    } else if (it.contains("}")) {
-                        curlyBraces--
-                    }
-                    if (curlyBraces == 0) {
-                        mainFunFound = false
-                    }
-                    true
-                } else {
-                    false
-                }
-            }.joinToString("\n")
-            val firstCurlyBracket = currentMainFun.indexOf('{')
-            val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
-            newMainFun.append("\n    repeat($repeat) {\n        try {\n")
-            newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
-            newMainFun.append(" catch(t: Throwable) {}\n    }\n}")
-            return code.replace(currentMainFun, newMainFun.toString())
-        }
-
-        fun replaceJavaMainFun(code: String, repeat: Long): String {
-            var mainFunFound = false
-            val currentMainFun = code.split("\n").filter {
-                if (it.contains("static public final void main(String[] args)")) {
-                    mainFunFound = true
-                    true
-                } else if (it.contains("interface Function0<R>")) {
-                    mainFunFound = false
-                    false
-                } else {
-                    mainFunFound
-                }
-            }.dropLast(2).joinToString("\n")
-            val firstCurlyBracket = currentMainFun.indexOf('{')
-            val newMainFun = StringBuilder(currentMainFun.substring(0..firstCurlyBracket))
-            newMainFun.append("\n    for (int javaIterationVariable = 1; javaIterationVariable <= $repeat; javaIterationVariable++) {\n    try {\n")
-            newMainFun.append(currentMainFun.substring(firstCurlyBracket + 1))
-            newMainFun.append(" catch(Throwable t) {}\n}\n}")
-            return code.replace(currentMainFun, newMainFun.toString())
         }
     }
 }

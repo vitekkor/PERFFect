@@ -1,7 +1,11 @@
 package com.vitekkor.model.serializer
 
 import com.vitekkor.model.MeasurementResult
+import com.vitekkor.project.Language
+import com.vitekkor.project.Project
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.descriptors.element
@@ -10,13 +14,25 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.encodeStructure
 
 object ExecutionSerializer : KSerializer<MeasurementResult.Execution> {
+    @Serializable
+    @SerialName("Execution")
+    private data class ExecutionSurrogate(
+        val time: Double,
+        val compileTime: Long,
+    )
+
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Execution") {
         element<Double>("time")
         element<Long>("compileTime")
     }
 
     override fun deserialize(decoder: Decoder): MeasurementResult.Execution {
-        TODO("Not yet implemented")
+        val surrogate = decoder.decodeSerializableValue(ExecutionSurrogate.serializer())
+        return MeasurementResult.Execution(
+            surrogate.time,
+            Project.createFromCode("package src\n", Language.KOTLIN),
+            surrogate.compileTime
+        )
     }
 
     override fun serialize(encoder: Encoder, value: MeasurementResult.Execution) {

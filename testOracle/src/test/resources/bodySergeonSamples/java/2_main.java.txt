@@ -1,0 +1,11 @@
+  static public final void main(String[] args) {
+    final Boolean foxhound = Main.emulator;
+    Character detain = Main.pillages;
+    final Character whinny = ((foxhound) ?
+      Main.pillages :
+       detain);
+    Double moused = 99.971;
+    Boolean assent = foxhound;
+    Character variableDeclaration_6 = whinny;
+
+  }

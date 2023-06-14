@@ -1,0 +1,38 @@
+  static public final void main(String[] args) {
+    final Character shabbier = 'E';
+    final Double nitrogen = -73.907;
+    final Focal atkinson = new Lodge(shabbier, nitrogen);
+    Character legged = '7';
+    Double mart = nitrogen;
+    Function0<Integer> coulter = ((Main.armagnac) ?
+      (Function0<Integer>)Main.chaste::intValue :
+ (Function0<Integer>) () -> {
+        Integer burdening = Main.reeve;
+        final Short applauds = (short)-44;
+        String athlete = "luggage";
+        Long concocts = (long)89L;
+        Object spumed = applauds;
+        Byte organelle = (byte)50;
+        Integer civilians = 71;
+        Integer decisive = 0;
+        do
+{
+          burdening.byteValue();
+          Main.chaste.byteValue();
+          nitrogen.longValue();
+          final String vampires = athlete;;
+          athlete = (vampires + athlete);;
+          decisive++;;
+        }
+        while((decisive > 90));
+        return burdening;
+
+      });
+    Float banneker = (float)68.425F;
+    Number lingering = (float)-49.514;
+    Main.armagnac.toString();
+    Function1<Short, Boolean> variableDeclaration_0 = ((Main.armagnac) ?
+      (Function1<Short, Boolean>)atkinson::norberto :
+ (Function1<Short, Boolean>) (Short refit) -> {        return Main.armagnac;});
+
+  }

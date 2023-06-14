@@ -1,7 +1,7 @@
 package com.vitekkor.project
 
 import com.vitekkor.config.CompilerArgs
-import com.vitekkor.util.WithLogger
+import com.vitekkor.perffect.util.WithLogger
 
 // TODO rename
 data class KJFile(val name: String, var text: String) {

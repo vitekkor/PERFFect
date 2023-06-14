@@ -1,0 +1,607 @@
+package src.inquirers;
+
+class Main {
+  static public final Object obtruded(Character ankhs) {
+    final Character monroe = ankhs;
+    final Integer oyster = 77;
+    String testable = "stones";
+    Integer retooling = oyster;
+    String scads = testable;
+    Object mystify = new Limit().possibles().swastikas;
+    Function0<Boolean> sander = new Conveying((byte)49).victrola;
+    Number rancor = ((true) ?
+      (float)64.752 :
+       (float)67.246);
+    oyster.shortValue();
+    Integer rubbing = 76;
+    do
+{
+      Short reins = (short)75;;
+      final Short kuwait = reins;;
+      final Long rosebud = ((true) ?
+        (long)-2 :
+         (long)96);;
+      Long pissaro = rosebud;;
+      Integer spasms = 75;;
+      while ((spasms < 100))
+{
+        Object rerunning = ((Empathize) null).founded.spiking;;
+        Integer squeezing = 100;;
+        while ((squeezing >= 100))
+{
+          final Function1<? super Double, ? extends Float> plains = (Function1<Double, ? extends Float>) (Double fauna) -> {            return (Float) null;};;
+          Integer sitars = 37;;
+          do
+{
+            final Float trammed = (float)-98.295F;;
+            Integer resident = -82;;
+            Double crease = -23.733;;
+            testable.toString();
+            reins.toString();
+            oyster.longValue();
+            sitars++;;
+          }
+          while((sitars <= 59));;
+          Object variableDeclaration_3 = plains;;
+          squeezing++;;
+        };
+        Function1<String, Double> variableDeclaration_2 = (Function1<String, Double>) (String jigsaws) -> {
+          Double effaces = ((Bulkhead) null).free;
+          final Long alfalfa = rosebud;
+          Long twitted = alfalfa;
+          return effaces;
+
+        };;
+        final String illogical = ((false) ?
+          "via" :
+           "dropouts");;
+        testable = (illogical +   ((false) ?
+  illogical :
+   illogical));;
+        spasms++;;
+      };
+      Short[] variableDeclaration_1 = new Short[]{kuwait, reins, kuwait};;
+      testable = (testable + testable.toString());;
+      rubbing++;;
+    }
+    while((rubbing > 98));
+    return monroe;
+
+  }
+
+  static public final Boolean sahel() {
+    Boolean traits = (  ((true) ?
+  true :
+   false) || (false && true));
+    final Integer glycogen = new Aniseed(-85).whitefish;
+    Function1<Short, Object> jeering = ((traits) ?
+      (Function1<Short, Object>) null :
+       (Function1<Short, Object>) null);
+    Integer ladling = glycogen;
+    Function1<Short, Object> skips = jeering;
+    glycogen.shortValue();
+    Integer hatteras = glycogen;
+    Float upscale = (float)-64.391F;
+    for (int       nerves =       67;       nerves <=       90;       nerves++)
+{
+      final Byte rumble = ((Subtly) null).vagabond;;
+      final Function0<Integer> prettying = ((true) ?
+        (Function0<Integer>) null :
+         (Function0<Integer>) null);;
+      String tiff = "contact";;
+      Function0<Integer> terraria = prettying;;
+      Function1<Integer, String> acrobats = (Function1<Integer, String>) (Integer dyes) -> {        return "auk";};;
+      Object squished = ((Course) null).swastikas;;
+      for (int         ignition =         51;         ignition <=         95;         ignition++)
+{
+        glycogen.floatValue();
+        glycogen.intValue();
+        rumble.longValue();
+        tiff = (tiff + tiff);;
+      };
+      Byte variableDeclaration_0 = rumble;;
+      String digressed = tiff;;
+      tiff = (digressed + (digressed + digressed));;
+    }
+    return traits;
+
+  }
+
+  static public final Inkling lycurgus(Short glasses) {
+    Inkling suitcase = new Inkling(73.503);
+    String shame = "atoned";
+    Double toynbee = ((false) ?
+      23.197 :
+       -57.29);
+    String[] machinery = new String[]{"spackle", "ernesto", "steuben"};
+    Function1<Short, Float> endless = (Function1<Short, Float>) (Short creighton) -> {      return (float)-76.434;};
+    glasses.toString();
+    Double strewed = suitcase.jovially;
+    Integer flex = 93;
+    while ((flex > 100))
+{
+      final Byte jowls = (byte)-87;;
+      final Integer roominess = -51;;
+      final Integer mimetic = 34;;
+      jowls.floatValue();
+      roominess.longValue();
+      jowls.shortValue();
+      shame = (shame + shame);;
+      flex++;;
+    }
+    return suitcase;
+
+  }
+static   public final Inkling lycurgus() {
+    return lycurgus(    (short)-24);
+  }
+
+  static public final Character helen() {
+     return '2';
+  }
+
+  static Intercept afforest = new Sedan((byte)-81);
+
+  static public final Function1<Float, Float> tamp() {
+    return ((false) ?
+      (Function1<Float, Float>) null :
+       (Function1<Float, Float>) null);
+  }
+
+  static final Function0<Integer> curate = (Function0<Integer>) () -> {
+    final Integer zionists = -83;
+    final Integer lipton = zionists;
+    Character gift = 'b';
+    String baling = "borneo";
+    Character aldan = gift;
+    Main.tamp();
+    Integer tug = 90;
+    while ((tug <= 96))
+{
+      Function0<Short> peaceable = (Function0<Short>)lipton::shortValue;;
+      Function0<Short> variableDeclaration_5 = peaceable;;
+      baling = (baling + baling);;
+      tug++;;
+    }
+    return lipton;
+
+  };
+
+  static final Short comedy = (short)32;
+
+  static final Integer properest = Main.afforest.levelling(Main.curate, Main.comedy).mingus();
+
+  static Character pillages = Main.helen();
+
+  static final Long erie = (long)72L;
+
+  static Boolean emulator = new Deprive(new Deprive("edict", 100.957).plum, 42.988).tassels;
+
+  static public final void main(String[] args) {
+    final Boolean foxhound = Main.emulator;
+    Character detain = Main.pillages;
+    final Character whinny = ((foxhound) ?
+      Main.pillages :
+       detain);
+    Double moused = 99.971;
+    Boolean assent = foxhound;
+    Character variableDeclaration_6 = whinny;
+
+  }
+}
+
+interface Function0<R> {
+  public R apply();
+}
+
+interface Function1<A1, R> {
+  public R apply(A1 a1);
+}
+
+interface Function2<A1, A2, R> {
+  public R apply(A1 a1, A2 a2);
+}
+
+interface Function3<A1, A2, A3, R> {
+  public R apply(A1 a1, A2 a2, A3 a3);
+}
+
+
+
+class Course {
+  public Object swastikas;
+  public Double[] pacifist;
+
+  public Course(Object swastikas,Double[] pacifist) {
+    this.swastikas = swastikas;
+    this.pacifist = pacifist;
+  }
+
+  public final Number stateroom(Object owl, Float musings) {
+    return musings;
+  }
+}
+
+class Limit extends Course {
+  public Limit() {
+    super(90, new Double[]{34.602});
+}
+
+  public Course possibles() {
+    final Course fores = possibles();
+    final Byte cheviot = ((false) ?
+      (byte)83 :
+       (byte)33);
+    String pension = "xanthippe";
+    Boolean ballsy = false;
+    Short trollies = ((Magnifies) null).imp;
+    Byte meddlers = cheviot;
+    cheviot.doubleValue();
+    for (int       strangler =       75;       strangler <=       95;       strangler++)
+{
+      Byte llamas = (byte)25;;
+      llamas.longValue();
+      llamas.intValue();
+      llamas.toString();
+      pension = (pension + pension);;
+    }
+    return fores;
+
+  }
+}
+
+class Magnifies extends Course {
+  public Short imp;
+
+  public Magnifies(Short imp) {
+    super(new Object(), new Double[]{-22.510, 62.559});
+    this.imp = imp;
+  }
+}
+
+abstract class Edgier extends Limit {
+  public Function0<Boolean> victrola;
+
+  public Edgier(Function0<Boolean> victrola) {
+    super();
+    this.victrola = victrola;
+  }
+
+  public final Course possibles() {
+    return new Course(new Object(), new Double[0]);
+  }
+
+  public Long accosting(Boolean orizaba, Long entitles) {
+    return entitles;
+  }
+  public Long accosting() {
+    return accosting(    false,     (long)-73);
+  }
+}
+
+final class Conveying extends Edgier {
+  public Byte memorable;
+
+  public Conveying(Byte memorable) {
+    super((Function0<Boolean>) (Function0<Boolean>) () -> { Boolean symptoms = Main.sahel(); final Double abstracts = -96.323; Double assign = abstracts; return symptoms; });
+    this.memorable = memorable;
+  }
+
+  public final Long accosting(Boolean orizaba, Long entitles) {
+    return entitles;
+  }
+
+  public final Integer mingus() {
+    Integer plushy = ((false) ?
+      19 :
+       51);
+    return plushy;
+
+  }
+}
+
+final class Aniseed extends Magnifies {
+  public final Integer whitefish;
+
+  public Aniseed(Integer whitefish) {
+    super((short)12);
+    this.whitefish = whitefish;
+  }
+}
+
+class Subtly extends Limit {
+  public final Byte vagabond;
+  public final Object name;
+
+  public Subtly(Byte vagabond,Object name) {
+    super();
+    this.vagabond = vagabond;
+    this.name = name;
+  }
+
+  public Course possibles() {
+    return (Course) null;
+  }
+
+  public Number denounces(Long mime, Number snuggle) {
+    return (float)59.899;
+  }
+}
+
+abstract class Bulkhead extends Subtly {
+  public Double free;
+  public final Object name;
+
+  public Bulkhead(Double free,Object name) {
+    super((byte)91, new Object());
+    this.free = free;
+    this.name = name;
+  }
+
+  public abstract Number earthward(Number varmint) ;
+}
+
+abstract class Incisors extends Course {
+  public final Function1<? super Character, Integer> spiking;
+  public Byte gaines;
+
+  public Incisors(Function1<? super Character, Integer> spiking,Byte gaines) {
+    super(22.697, new Double[]{-91.911, -19.873});
+    this.spiking = spiking;
+    this.gaines = gaines;
+  }
+
+  public abstract Object ear(Long adorable, Long[] fireman) ;
+
+  public abstract Object until(Object texturing, Number[] prides) ;
+}
+
+class Empathize extends Subtly {
+  public final Incisors founded;
+  public final Object name;
+
+  public Empathize(Incisors founded,Object name) {
+    super((byte)1, new Object());
+    this.founded = founded;
+    this.name = name;
+  }
+
+  public final Number denounces(Long mime, Number snuggle) {
+    return snuggle;
+  }
+}
+
+class Coveys extends Subtly {
+  public final Object name;
+
+  public Coveys(Object name) {
+    super((byte)41, new Object());
+    this.name = name;
+  }
+
+  public final Float doggiest(Double gerunds) {
+    return (Float) null;
+  }
+}
+
+abstract class Intercept extends Edgier {
+  public final Short penitents;
+
+  public Intercept(Short penitents) {
+    super((Function0<Boolean>) (Function0<Boolean>) () -> { Float guying = (float)-33.363F; final Short tally = (short)-48; Boolean moribund = (guying <= tally); Integer forestall = new Aniseed(-35).whitefish; Short upstage = (short)-12; Boolean[] herded = new Boolean[0]; Function1<Double, Long> vaccinate = (Function1<Double, Long>) (Double pilaws) -> { Long planner = tally.longValue(); String clunky = "addams"; Integer lose = 71; do { final Integer deathbeds = 35;; final Boolean laundries = true;; Boolean geocaches = false;; pilaws.toString(); planner.floatValue(); planner.intValue(); clunky = (clunky + clunky);; lose++;; } while((lose <= 97)); return planner; }; Main.lycurgus(tally).behaving(); Double chandon = 28.618; return moribund; });
+    this.penitents = penitents;
+  }
+
+  public Conveying levelling(Function0<Integer> prowls, Short rashers) {
+    return new Conveying((byte)-10);
+  }
+
+  public Long accosting(Boolean orizaba, Long entitles) {
+    return entitles;
+  }
+}
+
+final class Inkling extends Magnifies {
+  public final Double jovially;
+
+  public Inkling(Double jovially) {
+    super((short)74);
+    this.jovially = jovially;
+  }
+
+  public final Function0<Long> behaving() {
+    return (Function0<Long>) null;
+  }
+}
+
+final class Sedan extends Intercept {
+  public final Byte moroni;
+
+  public Sedan(Byte moroni) {
+    super((short)-10);
+    this.moroni = moroni;
+  }
+
+  public final Long accosting(Boolean orizaba, Long entitles) {
+    return entitles;
+  }
+
+  public final Conveying levelling(Function0<Integer> prowls, Short rashers) {
+    Conveying califs = new Conveying(moroni);
+    Function0<Double> listless = (Function0<Double>) () -> {
+      final Bulkhead inexpert = new Aspartame(-48,  'v');
+      Double brisket = inexpert.free;
+      Float moore = (float)83.770F;
+      Float lbj = moore;
+      moore.toString();
+      for (int         dominoes =         67;         dominoes <=         100;         dominoes++)
+{
+        final Character crudest = Main.helen();;
+        String arbitrate = "musky";;
+        String palpated = "represent";;
+        Integer digits = 21;;
+        do
+{
+          Integer rankles = -24;;
+          rankles.toString();
+          brisket.longValue();
+          rashers.toString();
+          arbitrate = (arbitrate + "celli");;
+          digits++;;
+        }
+        while((digits < 92));;
+        Character variableDeclaration_4 = crudest;;
+        String likeness = arbitrate;;
+        String typing = likeness;;
+        arbitrate = (likeness + typing);;
+      }
+      return brisket;
+
+    };
+    final Double abases = 24.822;
+    String idiots = "lobbying";
+    Function0<Double> doweled = listless;
+    Double bodegas = abases;
+    Integer linkages = 62;
+    while ((linkages >= 75))
+{
+      rashers.floatValue();
+      String gestapos = idiots;;
+      String satirical = idiots;;
+      idiots = (gestapos + satirical);;
+      linkages++;;
+    }
+    return califs;
+
+  }
+}
+
+class Aspartame extends Bulkhead {
+  public Integer drooping;
+  public Character rearward;
+
+  public Aspartame(Integer drooping,Character rearward) {
+    super(-77.57, new Object());
+    this.drooping = drooping;
+    this.rearward = rearward;
+  }
+
+  public Number earthward(Number varmint) {
+    final Short slicing = (short)67;
+    final String gains = "huygens";
+    final String imply = gains;
+    Integer radio = drooping;
+    String galbraith = imply;
+    Byte glenlivet = ((false) ?
+      (byte)60 :
+       (byte)62);
+    Number hygienist = new Willingly(  ((true) ?
+  (long)-91 :
+   (long)2)).free;
+    Number dockets = varmint;
+    new Object();
+    return slicing;
+
+  }
+}
+
+final class Willingly extends Aspartame {
+  public final Long ruinously;
+
+  public Willingly(Long ruinously) {
+    super(-69, 'T');
+    this.ruinously = ruinously;
+  }
+
+  public final Integer blame(Double lampshade, Character surfacing) {
+    Integer suharto = -10;
+    Double nasal = lampshade;
+    final Boolean superiors = ((true) ?
+      true :
+       false);
+    Double nonprofit = nasal;
+    Boolean gallantly = superiors;
+    Object outlaying = nasal;
+    new Object();
+    return suharto;
+
+  }
+}
+
+abstract class Cope extends Subtly {
+  public Boolean tassels;
+  public final Object name;
+
+  public Cope(Boolean tassels,Object name) {
+    super((byte)-70, new Object());
+    this.tassels = tassels;
+    this.name = name;
+  }
+
+  public Number denounces(Long mime, Number snuggle) {
+    return new Ointment(new Byte[]{(byte)85}).attar;
+  }
+}
+
+abstract class Blueprint extends Edgier {
+  public final Float attar;
+  public Byte gonzalo;
+
+  public Blueprint(Float attar,Byte gonzalo) {
+    super((Function0<Boolean>) (Function0<Boolean>) () -> { final Boolean habit = false; Function0<Float> furies = (Function0<Float>) () -> { Float rudest = (float)62.456F; return rudest; }; final Function0<Float> mercator = furies; String tying = "turret"; Function0<Float> building = mercator; for (int chip = 94; chip <= 100; chip++) { final Double trawling = 29.977;; Main.comedy.toString(); Main.pillages.toString(); Main.properest.doubleValue(); String enamoring = tying;; tying = ("response" + enamoring);; } return habit; });
+    this.attar = attar;
+    this.gonzalo = gonzalo;
+  }
+
+  public Long accosting(Boolean orizaba, Long entitles) {
+    return entitles;
+  }
+}
+
+final class Ointment extends Blueprint {
+  public final Byte[] geocached;
+
+  public Ointment(Byte[] geocached) {
+    super((float)-54.174, (byte)71);
+    this.geocached = geocached;
+  }
+
+  public final Long accosting(Boolean orizaba, Long entitles) {
+    return (Main.erie * entitles);
+  }
+
+  public final Double zukor() {
+    final Double chowing = Main.comedy.doubleValue();
+    final Double spacesuit = chowing;
+    final Double kindred = chowing;
+    Double soiled = (kindred * chowing);
+    Short provision = Main.comedy;
+    Number capes = Main.properest;
+    Double hewitt = chowing;
+    Double horrible = chowing;
+    return spacesuit;
+
+  }
+}
+
+final class Deprive extends Cope {
+  public final String plum;
+  public Double insane;
+
+  public Deprive(String plum,Double insane) {
+    super(false, new Object());
+    this.plum = plum;
+    this.insane = insane;
+  }
+
+  public final Number denounces(Long mime, Number snuggle) {
+    final Boolean barbarous = false;
+    final Byte startling = (byte)-22;
+    final Byte tool = ((barbarous) ?
+      startling :
+       startling);
+    insane.floatValue();
+    return tool;
+
+  }
+}

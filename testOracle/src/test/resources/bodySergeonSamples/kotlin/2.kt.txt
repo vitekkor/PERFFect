@@ -1,0 +1,356 @@
+package src.exorcized
+fun bestowing(): Double
+{
+    val courteous: Double = bestowing()
+    val variance: Boolean = (if (false)
+        (TODO() as Loiter)
+    else
+        (TODO() as Loiter)).chaparral
+    val fuzzy: Underdog = Loiter((if (true)
+        -6
+    else
+        87), variance)
+    var usual: Double = courteous
+    var lampreys: Byte = fuzzy.reek
+    var blaster: Int = -94
+    var frizzle: Float = brenner(variance).pension.port
+    var gemstone: Int = fuzzy.wallowing
+    return   courteous
+}
+
+open abstract class Underdog(open val reek: Byte, open var wallowing: Int) {
+    open fun clamped(): Int =
+        wallowing
+}
+
+class Loiter(override val reek: Byte, val chaparral: Boolean): Underdog(-60, 19) {
+    override fun clamped(): Int
+    {
+        var unclean: Int = -37
+        return   unclean
+    }
+
+    fun niggled(average: Float = -89.878f): Float =
+        average
+}
+
+class Foamed(val port: Float, override val reek: Byte): Underdog(96, 70) {
+    override fun clamped(): Int =
+        reek.toInt()
+}
+
+open abstract class Hohenlohe(val pension: Foamed, override var wallowing: Int): Underdog(4, 44) {
+    open override fun clamped(): Int =
+        -95
+
+    open fun midstream(): Double =
+        -40.620
+}
+
+fun brenner(superman: Boolean): Hohenlohe =
+    ((TODO() as Mayas)).fabricate
+
+open class Mayas(open var fabricate: Hohenlohe, val bounden: Boolean): Hohenlohe((TODO() as Foamed), 27)
+
+interface Hettie
+
+val slapped: Int = 1
+
+open abstract class Moussed(var necklaces: Double, var reis: Double): Hettie
+
+open class Overthink: Hohenlohe(Foamed(-75.66f, 4), slapped) {
+    override fun midstream(): Double
+    {
+        val hookey: Double = (if (true)
+            98.230
+        else
+            94.847)
+        var imposters: Double = hookey
+        var musician: String = "joaquin"
+        for (degree in     49..    79)
+        {
+            val lemonade: Any = Any()
+            val abetting: Any = Any()
+            val mantras: Boolean = (lemonade != abetting)
+            var besot: Boolean = mantras
+            musician = (musician + musician)
+        }
+        return   imposters
+    }
+
+    override fun clamped(): Int
+    {
+        val attunes: Int = slapped
+        val earthen: Byte = attunes.toByte()
+        val coverts: Byte = earthen
+        var valuable: String = "cheesy"
+        var furthest: Array<out Byte> = arrayOf<Byte>(earthen, earthen, coverts)
+        var dogmatist: Double = 26.851
+        attunes.toString()
+        var caraway: Int = 98
+        do
+        {
+            val melons: Int = slapped
+            var buntings: Char = encased()
+            var prowled: Char = buntings
+            var anime: Char = prowled
+            var variableDeclaration_0: Int = melons
+            valuable = (valuable + valuable)
+            (caraway++)
+        }
+        while((caraway <= 99))
+        return   attunes
+    }
+}
+
+fun encased(): Char
+{
+    val sponge: Char = (if (true)
+        'o'
+    else
+        'g')
+    val hate: Boolean = ("dignitary" <= "joints")
+    val psalter: Byte = ((TODO() as Foamed)).reek
+    var gasoline: Boolean = hate
+    var obsoletes: Any = psalter
+    var bareback: Array<out Short> = arrayOf<Short>(7)
+    var dampen: Char = sponge
+    var stud: Function0<Double> = { -> 4.282}
+    var stepped: Byte = psalter
+    return   sponge
+}
+
+fun main(args: Array<out String>): Unit
+{
+    repeat(100000000) {
+        try {
+
+            var singeing: Boolean = true
+            var quark: Function0<String> = ((TODO() as Rockwell)).wodehouse
+            var subjoins: Boolean = singeing
+            (if (subjoins)
+                ((TODO() as Consumer)).phosphors
+            else
+                Macdonald(slapped)).sternum(-82.561, (if (false)
+                'X'
+            else
+                'W'))
+            Cavorts(Warder(-14, 15.645), 26).shoulder.scapula(encased(), Rockwell(quark, 'S').hondurans)
+            var spacewalk: String = "mercedes"
+            var borneo: Number = 39
+            var oratories: Int = slapped
+            var variableDeclaration_1: Function0<String> = (if (singeing)
+                ((TODO() as Rockwell)).wodehouse
+            else
+                quark)
+        } catch(t: Throwable) {}
+    }
+}
+
+class Rockwell(var wodehouse: Function0<String>, val hondurans: Char): Hettie
+
+interface Auger: Hettie {
+    open abstract fun sternum(caesurae: Double, wandered: Char): Array<out Number>
+}
+
+open class Consumer(open val phosphors: Auger, open override var wallowing: Int, override val reek: Byte): Underdog(-90, -4) {
+    open override fun clamped(): Int =
+        wallowing
+}
+
+class Macdonald(var leotards: Int): Auger {
+    open override fun sternum(caesurae: Double, wandered: Char): Array<out Number>
+    {
+        var reunited: Array<out Number> = arrayOf<Long>(-57, 60, 52)
+        return   reunited
+    }
+
+    fun stored(): Int
+    {
+        val sodden: Int = slapped
+        val slalomed: Int = ((if (false)
+            leotards
+        else
+            leotards) / sodden)
+        var rourke: String = "meanness"
+        var plato: Int = 65
+        do
+        {
+            val carolyn: Float = quick(26.toLong()).port
+            val sanchez: Float = (if (true)
+                -0.41f
+            else
+                -52.566f)
+            val violates: Float = (sanchez + carolyn)
+            var wishes: Byte = (if (true)
+                24.toByte()
+            else
+                (-78).toByte())
+            slapped.toDouble()
+            var abrading: Float = violates
+            var observant: Function1<String, Byte> = Schmaltz()::hereby
+            (if (false)
+                (TODO() as Ernesto)
+            else
+                (TODO() as Ernesto)).zanzibar(((TODO() as Undone)).befall, slapped)
+            Fixatives(76 as Number).craved('z', ((TODO() as Foamed)).port)
+            var variableDeclaration_2: Float = carolyn
+            rourke = (rourke + rourke.toLowerCase())
+            (plato++)
+        }
+        while((plato <= 99))
+        return   slalomed
+    }
+}
+
+fun quick(spines: Long, roisterer: Int = slapped): Foamed =
+    (TODO() as Foamed)
+
+open class Schmaltz: Hettie {
+    fun hereby(suspends: String): Byte =
+        (-46).toByte()
+
+    open fun macedonia(cotes: Double): Int =
+        slapped
+}
+
+interface Ernesto: Hettie {
+    open abstract fun zanzibar(guiyang: Array<out Double>, trysting: Int): Array<out Double>
+
+    open abstract fun well(audible: Array<out Char>): Number
+}
+
+open class Undone(val befall: Array<out Double>, open var launches: Char): Moussed(-78.959, 100.148) {
+    fun lacquers(maim: Int = slapped, ponytails: Char = launches): Int =
+        94
+
+    fun frosts(resigning: Any = Any()): Any =
+        { -> "artists"}
+}
+
+interface Performs: Ernesto {
+    open abstract fun craved(nowadays: Char, gauzy: Float): Function0<Int>
+}
+
+class Fixatives(var bustled: Number): Performs {
+    open override fun craved(nowadays: Char, gauzy: Float): Function0<Int> =
+        bustled::toInt
+
+    open override fun zanzibar(guiyang: Array<out Double>, trysting: Int): Array<out Double> =
+        guiyang
+
+    open override fun well(audible: Array<out Char>): Number =
+        bustled
+}
+
+interface Melanomas: Performs {
+    open abstract fun scapula(pashas: Char, flourish: Char): Function1<Float, Char>
+
+    open abstract fun snot(gasping: Long): Long
+}
+
+class Cavorts(var shoulder: Melanomas, var spill: Short): Overthink() {
+    fun caravans(plethora: Double, aria: Double): Function0<Int> =
+        ((TODO() as Mullion)).mocker
+}
+
+open class Mullion(val mocker: Function0<Int>): Moussed(10.856, 65.741)
+
+class Warder(val eurasians: Short, var tasman: Double): Melanomas {
+    open override fun scapula(pashas: Char, flourish: Char): Function1<Float, Char>
+    {
+        val minibuses: Function1<Float, Char> = scapula(pashas, pashas)
+        val scorn: Float = -49.1000f
+        val torch: Float = scorn
+        var powers: Double = -52.973
+        var altar: Array<out Float> = arrayOf<Float>(scorn, torch, torch)
+        var wading: Int = 92
+        while ((wading < 93))
+        {
+            val sidebars: Char = flourish
+            var absolve: String = (if (false)
+                "raul"
+            else
+                "steak")
+            var kickapoo: String = absolve
+            var calamine: Function0<Float> = (if (false)
+                (TODO() as Function0<Float>)
+            else
+                (TODO() as Function0<Float>))
+            var variableDeclaration_3: Char = sidebars
+            (wading++)
+        }
+        return   minibuses
+    }
+
+    open override fun snot(gasping: Long): Long =
+        gasping
+
+    open override fun craved(nowadays: Char, gauzy: Float): Function0<Int>
+    {
+        var nostalgic: Function0<Int> = fun (): Int {
+            val grumbled: Int = slapped
+            for (verges in     33..    54)
+            {
+                var salaaming: Int = slapped
+                val miaows: Boolean = (true && true)
+                var altaic: Short = eurasians
+                var scriabin: String = "prancers"
+                var herdsman: Boolean = miaows
+                var macaroni: Short = altaic
+                eurasians.toByte()
+                var seeming: Int = 61
+                do
+                {
+                    var cleanest: Long = (-79).toLong()
+                    val heck: Float = -56.474f
+                    val algae: Double = -27.651
+                    gauzy.toInt()
+                    altaic.toShort()
+                    salaaming.toString()
+                    scriabin = ("absences" + "puccini")
+                    (seeming++)
+                }
+                while((seeming < 72))
+                var variableDeclaration_4: Int = salaaming
+                scriabin = (scriabin + scriabin)
+            }
+            return   grumbled
+        }
+        var cotters: Function0<Int> = nostalgic
+        var smocks: String = (if (true)
+            "lakeisha"
+        else
+            "dicta")
+        var chanukahs: String = smocks
+        var agnew: Function1<Boolean, Int> = {galleys: Boolean -> slapped}
+        var onuses: Short = eurasians
+        return   cotters
+    }
+
+    open override fun zanzibar(guiyang: Array<out Double>, trysting: Int): Array<out Double>
+    {
+        var pairwise: Array<out Double> = guiyang
+        var palladium: Boolean = true
+        var surefire: Disfigure = (if (false)
+            (TODO() as Disfigure)
+        else
+            (TODO() as Disfigure))
+        slapped.toInt()
+        var silicon: Boolean = palladium
+        var florins: Function0<Double> = surefire.marty.sparsely
+        return   pairwise
+    }
+
+    open override fun well(audible: Array<out Char>): Number =
+        eurasians
+}
+
+open abstract class Scythes(open val sparsely: Function0<Double>, open val surplice: Float): Hohenlohe(Foamed(-84.957f, 51), slapped) {
+    open abstract fun ripping(): Array<out Any>
+}
+
+open abstract class Disfigure(open var marty: Scythes): Overthink() {
+    open fun theorists(): Long =
+        36.toLong()
+}
