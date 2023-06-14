@@ -229,6 +229,13 @@ class JavaTranslator(BaseTranslator):
         res = "\n\n" + res if res != "" else ""
         return res
 
+    @staticmethod
+    def _get_todo_fun():
+        res = "\n    public static Object todo() {\n" + \
+              "        throw new IllegalArgumentException();" + \
+              "    }\n"
+        return res
+
     def _parent_is_block(self):
         # The second node is the parent node
         return isinstance(self._nodes_stack[-2], ast.Block)
@@ -258,9 +265,10 @@ class JavaTranslator(BaseTranslator):
             for d in self._main_children]
         main_method = self.get_ident() + "static " + \
                       self._main_method.lstrip() if self._main_method else None
-        main_cls = "class Main {{\n{main_decls}{main_method}\n}}".format(
+        main_cls = "class Main {{\n{main_decls}{main_method}{todo_fun}\n}}".format(
             main_decls="\n\n".join(main_decls),
-            main_method="\n\n" + main_method if main_method else ""
+            main_method="\n\n" + main_method if main_method else "",
+            todo_fun=self._get_todo_fun()
         )
         other_classes = "\n\n".join(self.pop_children_res(children))
         self.program = "{package}{main}{f_interfaces}{other_classes}".format(
@@ -427,7 +435,7 @@ class JavaTranslator(BaseTranslator):
 
     @append_to
     def visit_bottom_constant(self, node):
-        return self.get_ident() + "{}{}null{}{}".format(
+        return self.get_ident() + "{}{}Main.todo(){}{}".format(
             '(' if self._parent_is_func_ref() else '',
             (
                 '(' + self.get_type_name(node.t) + ') '
@@ -966,7 +974,6 @@ class JavaTranslator(BaseTranslator):
         self._cast_number = prev_cast_number
         self.ident = old_ident
         return res
-
 
     @append_to
     def visit_variable(self, node):

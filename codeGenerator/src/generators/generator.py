@@ -195,6 +195,7 @@ class Generator:
         body.body = [decl for decl in body.body if decl not in already_in_main and not isinstance(decl, ast.Constant)]
         etype = self.bt_factory.get_string_type()
         string_var = self.find_existing_variable(etype, allow_final=False)
+        string_concat = False
         if not string_var:  # if not string var in context found generate a new one
             tmp_namespace = self.namespace
             self.namespace = initial_namespace
@@ -202,6 +203,7 @@ class Generator:
             string_var.is_final = False
             self.namespace = tmp_namespace
         if ut.randomUtil.bool(0.69):  # generate string concat inside loop
+            string_concat = True
             old_vars = self.context.get_vars(self.namespace, glob=False)
             bin_op = self.get_bt_operation_generators(etype)[0](etype)
             new_vars = self.context.get_vars(self.namespace, glob=False)
@@ -255,6 +257,9 @@ class Generator:
         res.append(loop)
         self.depth = initial_depth
         self.namespace = initial_namespace
+        if string_concat:
+            length = ".length" if self.language == 'kotlin' else '.length()'
+            res.append(ast.FunctionCall('System.out.println', [ast.CallArgument(ast.Variable(string_var.name + length))]))
         return res
 
     def _get_iterable_types(self) -> list[tp.Type]:

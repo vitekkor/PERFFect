@@ -91,8 +91,15 @@ class KotlinTranslator(BaseTranslator):
             package_str = 'package ' + self.package + '\n'
         else:
             package_str = ''
-        self.program = package_str + '\n\n'.join(
+        self.program = package_str + self._get_todo_fun() + '\n\n'.join(
             self.pop_children_res(children))
+
+    @staticmethod
+    def _get_todo_fun():
+        res = "\nfun todo(): Any {\n" + \
+            "    throw IllegalArgumentException()\n" + \
+            "}\n"
+        return res
 
     @append_to
     def visit_block(self, node):
@@ -375,7 +382,7 @@ class KotlinTranslator(BaseTranslator):
 
     @append_to
     def visit_bottom_constant(self, node):
-        bottom = "{}TODO(){}".format(
+        bottom = "{}(todo()){}".format(
             "(" if node.t else "",
             " as " + self.get_type_name(node.t) + ")" if node.t else ""
         )
