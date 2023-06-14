@@ -12,7 +12,6 @@ import com.vitekkor.perffect.util.BodySurgeon.replaceJavaMainFun
 import com.vitekkor.perffect.util.BodySurgeon.replaceKotlinMainFun
 import com.vitekkor.project.Language
 import com.vitekkor.project.Project
-import com.vitekkor.project.text
 import com.vitekkor.project.toProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
