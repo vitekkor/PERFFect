@@ -176,6 +176,7 @@ class Generator:
         t_constructor = self.bt_factory.get_array_type()
         type_arg = self.bt_factory.get_string_type()
         args = ast.ParameterDeclaration('args', tp.ParameterizedType(t_constructor, [type_arg]))
+        self.allow_bottom_consts = False
         return self.gen_func_decl(self.bt_factory.get_void_type(), class_is_final=True, func_name='main', params=[args])
 
     def generate_loop_expr(self, already_in_main: list):
@@ -233,7 +234,7 @@ class Generator:
         else:  # generate an iteration loop over a variable
             if ut.randomUtil.bool(0.43):  # for loop
                 left_bound = gens.gen_integer_constant(left_bound=0, expr_type=random_type_to_iterate)
-                right_bound = gens.gen_integer_constant(left_bound=ut.randomUtil.integer(int(left_bound.literal), 100),
+                right_bound = gens.gen_integer_constant(left_bound=1000000, right_bound=10000000,  # ut.randomUtil.integer(int(left_bound.literal), 100)
                                                         expr_type=random_type_to_iterate)
                 loop_expr = ast.ForExpr.RangeExpr(ast.Variable(gu.gen_identifier('lower')), left_bound, right_bound)
                 loop = ast.ForExpr(body, loop_expr)
