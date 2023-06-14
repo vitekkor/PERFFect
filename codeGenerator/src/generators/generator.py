@@ -187,7 +187,7 @@ class Generator:
         self.namespace = self.namespace + (f'loop_{self.loopExpr}',)
         self.loopExpr += 1
         self.depth += 1
-        if self.depth >= cfg.limits.max_depth:
+        if self.depth >= cfg.limits.max_depth:  # gen simple body for loop
             body = self.gen_loop_body_from_existing()
         else:
             body = self._gen_func_body(self.bt_factory.get_void_type())
@@ -216,7 +216,7 @@ class Generator:
             if ut.randomUtil.bool(0.43):  # for loop
                 loop_expr = ast.ForExpr.IterableExpr(array_expr, ast.Variable(gu.gen_identifier('lower')))
                 loop = ast.ForExpr(body, loop_expr)
-            else:
+            else:  # generate while or do-while loop
                 array_ = self.gen_variable_decl(random_type_to_iterate, expr=array_expr)
                 iterator_call = ast.FunctionCall("iterator", [])
                 iterator = self.gen_variable_decl(
@@ -230,14 +230,14 @@ class Generator:
                     loop = ast.DoWhileExpr(body, cond)
                 res.append(array_)
                 res.append(iterator)
-        else:
-            if ut.randomUtil.bool(0.43):
+        else:  # generate an iteration loop over a variable
+            if ut.randomUtil.bool(0.43):  # for loop
                 left_bound = gens.gen_integer_constant(left_bound=0, expr_type=random_type_to_iterate)
                 right_bound = gens.gen_integer_constant(left_bound=ut.randomUtil.integer(int(left_bound.literal), 100),
                                                         expr_type=random_type_to_iterate)
                 loop_expr = ast.ForExpr.RangeExpr(ast.Variable(gu.gen_identifier('lower')), left_bound, right_bound)
                 loop = ast.ForExpr(body, loop_expr)
-            else:
+            else:  # generate while or do-while loop
                 i = self.gen_variable_decl(random_type_to_iterate, expr=gens.gen_integer_constant(left_bound=0,
                                                                                                   expr_type=random_type_to_iterate))
                 i.is_final = False
@@ -257,22 +257,24 @@ class Generator:
         res.append(loop)
         self.depth = initial_depth
         self.namespace = initial_namespace
-        if string_concat:
+        if string_concat:  # prevent the compiler from optimizing string concatenation
             length = ".length" if self.language == 'kotlin' else '.length()'
-            res.append(ast.FunctionCall('System.out.println', [ast.CallArgument(ast.Variable(string_var.name + length))]))
+            res.append(
+                ast.FunctionCall('System.out.println', [ast.CallArgument(ast.Variable(string_var.name + length))]))
         return res
 
     def _get_iterable_types(self) -> list[tp.Type]:
         builtin_types: list[tp.Type] = [x for x in self.get_types() if hasattr(x, 'type_args')]
         usr_types = \
-        [
-            c.get_type()
-            for c in self.context.get_classes(self.namespace).values()
-        ]
+            [
+                c.get_type()
+                for c in self.context.get_classes(self.namespace).values()
+            ]
         primitives = [
             self.bt_factory.get_integer_type()
         ]
-        iterable_types: list[tp.Type] = [tp.ParameterizedType(self.bt_factory.get_array_list_type(), [t]) for t in usr_types]
+        iterable_types: list[tp.Type] = [tp.ParameterizedType(self.bt_factory.get_array_list_type(), [t]) for t in
+                                         usr_types]
         iterable_types = iterable_types + builtin_types + primitives
         return iterable_types
 
