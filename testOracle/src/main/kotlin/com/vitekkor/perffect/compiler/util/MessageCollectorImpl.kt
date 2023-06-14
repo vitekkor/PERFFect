@@ -1,4 +1,4 @@
-package com.vitekkor.compiler.util
+package com.vitekkor.perffect.compiler.util
 
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation

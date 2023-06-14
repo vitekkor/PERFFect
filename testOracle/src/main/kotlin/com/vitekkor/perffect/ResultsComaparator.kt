@@ -1,12 +1,12 @@
-package com.vitekkor
+package com.vitekkor.perffect
 
-import com.vitekkor.compiler.JavaCompiler
-import com.vitekkor.compiler.KotlinJVMCompiler
-import com.vitekkor.config.CompilerArgs
-import com.vitekkor.model.MeasurementResult
+import com.vitekkor.perffect.compiler.JavaCompiler
+import com.vitekkor.perffect.compiler.KotlinJVMCompiler
+import com.vitekkor.perffect.config.CompilerArgs
+import com.vitekkor.perffect.model.MeasurementResult
+import com.vitekkor.perffect.project.Language
+import com.vitekkor.perffect.project.toProject
 import com.vitekkor.perffect.util.BodySurgeon
-import com.vitekkor.project.Language
-import com.vitekkor.project.toProject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File

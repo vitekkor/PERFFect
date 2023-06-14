@@ -1,6 +1,6 @@
-package com.vitekkor.project
+package com.vitekkor.perffect.project
 
-import com.vitekkor.config.CompilerArgs
+import com.vitekkor.perffect.config.CompilerArgs
 import java.io.File
 
 class Project(
@@ -22,16 +22,6 @@ class Project(
             val `package` = checkNotNull(packageRegex.find(code)?.value).removePrefix("package").removeSuffix(";")
             return Project(file, language, `package`)
         }
-    }
-
-    fun addFile(file: KJFile): List<KJFile> {
-        files = files + listOf(file)
-        return files
-    }
-
-    fun removeFile(file: KJFile): List<KJFile> {
-        files = files.getAllWithout(file)
-        return files
     }
 
     fun saveOrRemoveToDirectory(trueSaveFalseDelete: Boolean, directory: String): String {

@@ -1,8 +1,8 @@
 package com.vitekkor.perffect
 
+import com.vitekkor.perffect.project.Language
 import com.vitekkor.perffect.util.BodySurgeon
 import com.vitekkor.perffect.util.Util
-import com.vitekkor.project.Language
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals

@@ -1,4 +1,4 @@
-package com.vitekkor.compiler.model
+package com.vitekkor.perffect.compiler.model
 
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 

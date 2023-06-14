@@ -1,3 +1,3 @@
-package com.vitekkor.compiler.model
+package com.vitekkor.perffect.compiler.model
 
 data class CompilationResult(val status: Int, val pathToCompiled: String)

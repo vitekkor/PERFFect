@@ -1,18 +1,10 @@
-package com.vitekkor.project
+package com.vitekkor.perffect.project
 
-import com.vitekkor.config.CompilerArgs
+import com.vitekkor.perffect.config.CompilerArgs
 import com.vitekkor.perffect.util.WithLogger
 
 // TODO rename
 data class KJFile(val name: String, var text: String) {
-
-    fun getLanguage(): Language {
-        return when {
-            name.endsWith(".java") -> Language.JAVA
-            name.endsWith(".kt") -> Language.KOTLIN
-            else -> Language.UNKNOWN
-        }
-    }
 
     override fun toString(): String =
         "// FILE: ${name.substringAfter(CompilerArgs.pathToTmpDir).substring(1)}\n\n$text"

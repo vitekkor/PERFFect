@@ -1,8 +1,8 @@
-package com.vitekkor.model.serializer
+package com.vitekkor.perffect.model.serializer
 
-import com.vitekkor.model.MeasurementResult
-import com.vitekkor.project.Language
-import com.vitekkor.project.Project
+import com.vitekkor.perffect.model.MeasurementResult
+import com.vitekkor.perffect.project.Language
+import com.vitekkor.perffect.project.Project
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

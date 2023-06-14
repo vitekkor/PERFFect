@@ -1,7 +1,7 @@
-package com.vitekkor.model
+package com.vitekkor.perffect.model
 
-import com.vitekkor.model.serializer.ExecutionSerializer
-import com.vitekkor.project.Project
+import com.vitekkor.perffect.model.serializer.ExecutionSerializer
+import com.vitekkor.perffect.project.Project
 import kotlinx.serialization.Serializable
 
 @Serializable
