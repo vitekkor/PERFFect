@@ -1,10 +1,10 @@
-package com.vitekkor.compiler
+package com.vitekkor.perffect.compiler
 
-import com.vitekkor.compiler.model.CompilationResult
-import com.vitekkor.compiler.model.InvokeStatus
-import com.vitekkor.compiler.model.JavacInvokeStatus
-import com.vitekkor.config.CompilerArgs
-import com.vitekkor.project.Project
+import com.vitekkor.perffect.compiler.model.CompilationResult
+import com.vitekkor.perffect.compiler.model.InvokeStatus
+import com.vitekkor.perffect.compiler.model.JavacInvokeStatus
+import com.vitekkor.perffect.config.CompilerArgs
+import com.vitekkor.perffect.project.Project
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import java.io.File

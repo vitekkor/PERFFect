@@ -1,4 +1,4 @@
-package com.vitekkor.client
+package com.vitekkor.perffect.client
 
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder

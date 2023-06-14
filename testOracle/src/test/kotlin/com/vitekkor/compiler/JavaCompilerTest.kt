@@ -1,7 +1,8 @@
 package com.vitekkor.compiler
 
-import com.vitekkor.project.Language
-import com.vitekkor.project.Project
+import com.vitekkor.perffect.compiler.JavaCompiler
+import com.vitekkor.perffect.project.Language
+import com.vitekkor.perffect.project.Project
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals

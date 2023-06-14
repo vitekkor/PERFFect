@@ -1,11 +1,6 @@
-package com.vitekkor.project
+package com.vitekkor.perffect.project
 
 import src.server.Server
-
-internal fun getCommentSection(text: String) =
-    text.lineSequence()
-        .takeWhile { it.startsWith("//") || it.trim().isEmpty() }
-        .joinToString("\n")
 
 fun Server.Program.toProject(language: Language): Project {
     return Project.createFromCode(text, language)

@@ -1,4 +1,4 @@
-package com.vitekkor.model
+package com.vitekkor.perffect.model
 
 import kotlinx.serialization.Serializable
 

@@ -1,4 +1,4 @@
-rootProject.name = "diploma"
+rootProject.name = "perffect"
 include("testOracle")
 include("codeGenerator")
 

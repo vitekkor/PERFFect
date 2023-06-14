@@ -1,4 +1,4 @@
-package com.vitekkor.config.properties
+package com.vitekkor.perffect.config.properties
 
 data class CompilerArgs(
     val pathToTmpDir: String,
