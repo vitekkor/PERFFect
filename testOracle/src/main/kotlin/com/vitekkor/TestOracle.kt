@@ -21,11 +21,12 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging.logger
 import src.server.Server
 import java.io.File
+import java.time.Duration
 import java.time.Instant
 import kotlin.random.Random
-import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
+import kotlin.time.toKotlinDuration
 
 val javaStat = Stat()
 val kotlinStat = Stat()
@@ -77,13 +78,13 @@ class TestOracle {
             javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
-                val (kotlin, kotlinGenerationTime) = withTimeoutOrNull(Duration.minutes(2)) {
+                val (kotlin, kotlinGenerationTime) = withTimeoutOrNull(Duration.ofMinutes(2).toKotlinDuration()) {
                     measureTimedValue { client.generateKotlin(seed) }
                 }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
                 kotlinStat.totalNumberOfPrograms++
                 kotlinStat.averageGenerationTimeMs += kotlinGenerationTime.inWholeMilliseconds
 
-                val (java, javaGenerationTime) = withTimeoutOrNull(Duration.minutes(2)) {
+                val (java, javaGenerationTime) = withTimeoutOrNull(Duration.ofMinutes(2).toKotlinDuration()) {
                     measureTimedValue { client.generateJava(seed) }
                 }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
                 javaStat.totalNumberOfPrograms++
