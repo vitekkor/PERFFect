@@ -1296,14 +1296,20 @@ class JavaTranslator(BaseTranslator):
         old_ident = self.ident
         self.ident += 2
         body = node.body
+        # Find the loop expression (e.g. the condition for a while loop)
+        # by filtering out the body from the children of the node.
         loop_expr = [child for child in node.children() if child != body][0]
         children_res = self._visit_loop_body(body)
+        # If the loop expression is a function call, visit the function call and pop its result off the stack.
+        # Otherwise, visit the loop expression.
         if isinstance(loop_expr, ast.FunctionCall):
             loop_expr.accept(self)
             loop_expr_res = self.pop_children_res([loop_expr])[0]
         else:
             loop_expr_res = self._visit_loop_expr(loop_expr)
         children_res = [loop_expr_res, children_res]
+
+        # Determine the type of loop node and format the result string accordingly.
         if isinstance(node, ast.ForExpr):
             res = "{}for ({})\n{}".format(" " * old_ident, children_res[0],
                                           children_res[1])
@@ -1326,11 +1332,13 @@ class JavaTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
+        # If the node is an IterableExpr, create a string representation of the for-loop expression
         if isinstance(node, ast.ForExpr.IterableExpr):
             res = "{type} {var}: {array}".format(type=self.get_type_name(
                 node.arrayExpr.array_type.type_args[0]),
                                                  var=str(children_res[0]),
                                                  array=str(children_res[1]))
+        # If the node is a RangeExpr, create a string representation of the range for-loop expression
         elif isinstance(node, ast.ForExpr.RangeExpr):
             var = str(children_res[0])
             start = str(children_res[1])
@@ -1338,6 +1346,7 @@ class JavaTranslator(BaseTranslator):
             res = "{} = {}; {} <= {}; {}++".format(
                 _handle_range_expression(var, children[1]), start, var, end,
                 var)
+        # If the node is a ComparisonExpr, visit the binary operation and get the result
         elif isinstance(node, ast.ComparisonExpr):
             self.visit_binary_op(node)
             res = self.pop_children_res([node])[0]

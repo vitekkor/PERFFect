@@ -39,7 +39,7 @@ from src.modules.logging import Logger, log
 
 # noinspection PyUnresolvedReferences,PyTypeChecker,PyArgumentList
 class Generator:
-    # TODO document
+
     def __init__(self, language=None, options=None, logger=None):
         assert language is not None, "You must specify the language"
         self.language = language
@@ -56,7 +56,6 @@ class Generator:
 
         # This flag is used for Java lambdas where local variables references
         # must be final.
-        # FIXME: may affect
         self._inside_java_lambda = False
         self._inside_func_body = False
 
@@ -177,6 +176,12 @@ class Generator:
                                   params=[args])
 
     def generate_loop_expr(self, already_in_main: list):
+        """
+        Generate a new loop. One of the three is for, while, do-while.
+        Iterations can be either using a variable or iterating through a collection.
+        :param already_in_main: a list of declarations that already exist in the parent block
+        :return: ast.LoopExpr
+        """
         res = []
         iterable_types = self._get_iterable_types()
         random_type_to_iterate = ut.randomUtil.choice(iterable_types)
@@ -285,6 +290,10 @@ class Generator:
         return res
 
     def _get_iterable_types(self) -> list[tp.Type]:
+        """
+        Returns a list of iterable types that includes built-in types, user-defined types, and primitive data types
+        :return: a list of iterable types
+        """
         builtin_types: list[tp.Type] = [
             x for x in self.get_types() if hasattr(x, 'type_args')
         ]
@@ -2715,14 +2724,18 @@ class Generator:
                 ast.Block([expr])
         else:
             exprs, decls = self._gen_side_effects()
-            if ut.randomUtil.bool():
+            if ut.randomUtil.bool(
+            ):  # probabilistic choice whether to generate a cycle in the body of this function
                 loop_expr = self.generate_loop_expr(decls)
+
+                # Get all variable declarations in current context, excluding parameter declarations
                 decls_in_context = {
                     k: v
                     for k, v in self.context.get_vars(
                         self.namespace, only_current=True).items()
                     if not isinstance(v, ast.ParameterDeclaration)
                 }
+                # Get all variable declarations in func body, including those declared in loop_expr and decls
                 decls_in_body = [
                     expr for expr in exprs
                     if isinstance(expr, ast.VariableDeclaration)
@@ -2730,6 +2743,8 @@ class Generator:
                     _var for _var in loop_expr
                     if isinstance(_var, ast.VariableDeclaration)
                 ]
+
+                # Get all variable declarations in loop
                 decls_in_loop = [
                     _var for _var in [
                         _var for _var in loop_expr
@@ -2737,6 +2752,7 @@ class Generator:
                     ][0].body.body if isinstance(_var, ast.VariableDeclaration)
                 ]
 
+                #  Get all variable declarations in loop context (i.e., variables defined in a parent loop)
                 decls_in_loop_context = {
                     decl.name: decl
                     for decl, namespace in self.context._namespaces.items()
@@ -2744,20 +2760,24 @@ class Generator:
                     and namespace[:-1] == self.namespace
                     and namespace[-1].__contains__('loop')
                 }
+
+                # Get all variable declarations in loop context that are not already in decls_in_body or decls_in_loop
                 decls_in_loop_to_add = {
                     k: decl
                     for k, decl in decls_in_loop_context.items()
                     if decl not in decls_in_loop and decl not in decls_in_body
                 }
                 decls_in_context.update(decls_in_loop_to_add)
+                # Get all variable declarations in decls_in_context that are not already in decls_in_body
                 decls_to_add = {
                     k: v
                     for k, v in decls_in_context.items()
                     if v not in decls_in_body
                 }
-                print()
+                # Add new variables to decls
                 for var in decls_to_add.values():
                     decls.append(var)
+                # Create a new Block with updated declarations and expressions
                 body = ast.Block(decls + exprs + loop_expr + [expr])
             else:
                 body = ast.Block(decls + exprs + [expr])

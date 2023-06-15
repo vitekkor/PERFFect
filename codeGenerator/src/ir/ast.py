@@ -1399,6 +1399,10 @@ class Assignment(Expr):
 class LoopExpr(Expr):
 
     def __init__(self, body: Node):
+        """
+        Definition of base class for loop expressions
+        :param body: loop body
+        """
         self.body = body
 
 
@@ -1407,6 +1411,11 @@ class ForExpr(LoopExpr):
     class IterableExpr(Expr):
 
         def __init__(self, array: ArrayExpr, variable: Variable):
+            """
+            Defines IterableExpr. Ex. i in ArrayList<String>()
+            :param variable: variable to iterate through range
+            :param array: array expr
+            """
             self.arrayExpr = array
             self.parameter = variable
 
@@ -1420,6 +1429,12 @@ class ForExpr(LoopExpr):
 
         def __init__(self, variable: Variable, left_bound: Node,
                      right_bound: Node):
+            """
+            Defines RangeExpression. Ex. 1..10
+            :param variable: variable to iterate through range
+            :param left_bound: left bound of range
+            :param right_bound: right bound of range
+            """
             self.parameter = variable
             self.left_bound = left_bound
             self.right_bound = right_bound
@@ -1433,6 +1448,11 @@ class ForExpr(LoopExpr):
             return [self.parameter, self.left_bound, self.right_bound]
 
     def __init__(self, body: Node, loop_expr: IterableExpr | RangeExpr):
+        """
+        Definition of For loop
+        :param body: loop body
+        :param loop_expr: iteration expr
+        """
         super(ForExpr, self).__init__(body)
         self.loop_expr = loop_expr
 
@@ -1450,11 +1470,19 @@ class ForExpr(LoopExpr):
 class WhileExprBase(LoopExpr):
 
     def __init__(self, body: Node, condition: Expr):
+        """
+        Definition of base class for loop expressions
+        :param body: loop body
+        :param condition: exit condition of the loop
+        """
         super(WhileExprBase, self).__init__(body)
         self.condition = condition
 
 
 class WhileExpr(WhileExprBase):
+    """
+    Class definition for a while loop
+    """
 
     def __str__(self):
         return "while ({})\n{}".format(str(self.condition), str(self.body))
@@ -1464,6 +1492,9 @@ class WhileExpr(WhileExprBase):
 
 
 class DoWhileExpr(WhileExprBase):
+    """
+    Class definition for a do-while loop
+    """
 
     def __str__(self):
         return "do\n{}\nwhile ({})".format(str(self.body), str(self.condition))
@@ -1475,6 +1506,11 @@ class DoWhileExpr(WhileExprBase):
 class ClassCast(Node):
 
     def __init__(self, expr: Node, cast_type):
+        """
+        Class cast expr
+        :param expr: expression to cast
+        :param cast_type: cast type
+        """
         self.expr = expr
         self.cast_type = cast_type
 

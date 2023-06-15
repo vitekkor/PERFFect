@@ -63,6 +63,9 @@ suspend fun main() {
     TestOracle().run()
 }
 
+/**
+ * A class that represents the test oracle.
+ */
 class TestOracle {
     private val log = logger {}
 
@@ -78,15 +81,19 @@ class TestOracle {
             javaCompiler.cleanUp()
             try {
                 log.info("$SEED $seed")
+                // Generate Kotlin program and measure generation time. Timeout 2 minutes.
                 val (kotlin, kotlinGenerationTime) = withTimeoutOrNull(Duration.ofMinutes(2).toKotlinDuration()) {
                     measureTimedValue { client.generateKotlin(seed) }
                 }.also { if (it == null) log.warn { "$KOTLIN_PROGRAM timeout exceeded" } } ?: continue
+                // Save stat
                 kotlinStat.totalNumberOfPrograms++
                 kotlinStat.averageGenerationTimeMs += kotlinGenerationTime.inWholeMilliseconds
 
+                // Generate Java program and measure generation time. Timeout 2 minutes.
                 val (java, javaGenerationTime) = withTimeoutOrNull(Duration.ofMinutes(2).toKotlinDuration()) {
                     measureTimedValue { client.generateJava(seed) }
                 }.also { if (it == null) log.warn { "$JAVA_PROGRAM timeout exceeded" } } ?: continue
+                // Save stat
                 javaStat.totalNumberOfPrograms++
                 javaStat.averageGenerationTimeMs += javaGenerationTime.inWholeMilliseconds
 
@@ -107,6 +114,7 @@ class TestOracle {
                 val javaProject = java.toProject(Language.JAVA)
                 log.info("$JAVA_PROGRAM generated code: ${java.text}")
 
+                // Compile and measure time
                 val (kotlinCompileStatus, kotlinCompileTime) =
                     kotlinCompiler.tryToCompileWithStatusAndExecutionTime(kotlinProject)
                 log.info("$KOTLIN_PROGRAM compileStatus: $kotlinCompileStatus; compileTime: $kotlinCompileTime")
@@ -131,6 +139,7 @@ class TestOracle {
                     continue
                 }
 
+                //
                 val javaRepeatCount = chooseNumberOfExecutions(javaCompiler, java)
                 val kotlinRepeatCount = chooseNumberOfExecutions(kotlinCompiler, kotlin)
 
@@ -170,6 +179,12 @@ class TestOracle {
         }
     }
 
+    /**
+     * Chooses the number of executions based on the given program and compiler.
+     * @param compiler the compiler for the program
+     * @param program the program for which to choose the number of executions
+     * @return the chosen number of executions
+     */
     private fun chooseNumberOfExecutions(compiler: BaseCompiler, program: Server.Program): Long {
         if (program.language == Language.KOTLIN.name.lowercase()) {
             var repeatCount = 10L
@@ -182,10 +197,10 @@ class TestOracle {
                 if (executionTime.first.contains("Exception")) {
                     break
                 }
-                repeatCount *= 10L
+                repeatCount *= 10L // increase repeat count until program execution time less than 1s
             } while (executionTime.second < 1000 && repeatCount > 0L)
             repeatCount /= 10L
-            if (repeatCount < 0L) repeatCount = 9000000000000000000L
+            if (repeatCount < 0L) repeatCount = 9000000000000000000L // overflow handling
             log.info("$KOTLIN_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
@@ -201,10 +216,10 @@ class TestOracle {
                 if (executionTime.first.contains("Exception")) {
                     break
                 }
-                repeatCount *= 10L
+                repeatCount *= 10L // increase repeat count until program execution time less than 1s
             } while (executionTime.second < 1000 && repeatCount > 0L)
             repeatCount /= 10L
-            if (repeatCount < 0L) repeatCount = 9000000000000000000L
+            if (repeatCount < 0L) repeatCount = 9000000000000000000L // overflow handling
             log.info("$JAVA_PROGRAM execution time over 1s with $repeatCount. Program text: $project")
             compiler.cleanUp()
             return repeatCount
@@ -212,6 +227,11 @@ class TestOracle {
         throw UnsupportedOperationException("Support only Java and Kotlin")
     }
 
+    /**
+     * Compares the execution times of Java and Kotlin programs based on the given measurement result.
+     * If there is a performance degradation, saves the results to a directory.
+     * @param measurementResult the measurement result containing the execution times of the programs
+     */
     private suspend fun compareExecutionTimes(measurementResult: MeasurementResult) {
         val percentage = measurementResult.kotlin.time / measurementResult.java.time
         if (percentage > CompilerArgs.percentageDelta) {
@@ -225,6 +245,7 @@ class TestOracle {
                 CompilerArgs.pathToResultsDir + "/${measurementResult.seed}"
             )
             withContext(Dispatchers.IO) {
+                // Save meta data about the test results
                 File(CompilerArgs.pathToResultsDir + "/${measurementResult.seed}", "meta.json").bufferedWriter().use {
                     it.write(Json.encodeToString(measurementResult))
                 }

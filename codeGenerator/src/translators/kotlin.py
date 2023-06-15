@@ -657,12 +657,14 @@ class KotlinTranslator(BaseTranslator):
     def visit_loop(self, node: ast.Node):
         old_ident = self.ident
         self.ident += 2
+        # we should cast integers inside loop body to avoid incorrect code
         prev = self._cast_integers
         self._cast_integers = True
         children = node.children()
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
+        # Construct a string representation of the loop based on its type
         if isinstance(node, ast.ForExpr):
             res = "{}for ({})\n{}".format(" " * old_ident,
                                           children_res[0][self.ident:],

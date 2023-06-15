@@ -3,8 +3,7 @@ package com.vitekkor.perffect.project
 import com.vitekkor.perffect.config.CompilerArgs
 import com.vitekkor.perffect.util.WithLogger
 
-// TODO rename
-data class KJFile(val name: String, var text: String) {
+data class PerffectFile(val name: String, var text: String) {
 
     override fun toString(): String =
         "// FILE: ${name.substringAfter(CompilerArgs.pathToTmpDir).substring(1)}\n\n$text"
@@ -15,11 +14,11 @@ internal class KJFileFactory(
     private val language: Language
 ) : WithLogger {
 
-    fun createKJFiles(name: String = "Main"): KJFile {
+    fun createKJFiles(name: String = "Main"): PerffectFile {
         val pathToTmp = CompilerArgs.pathToTmpDir
         return text.let { code ->
             val fileName = "$pathToTmp/$name${language.extension}"
-            KJFile(fileName, code)
+            PerffectFile(fileName, code)
         }
     }
 }

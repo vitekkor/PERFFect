@@ -12,6 +12,11 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
 
+/**
+ * Compare the execution times of Java and Kotlin programs.
+ * Reads the necessary files from the file system, compiles the programs, measures their execution times,
+ * and outputs the results to the console.
+ */
 fun main() {
     val seed = -8497514709130667753
     val kotlinCompiler = KotlinJVMCompiler()

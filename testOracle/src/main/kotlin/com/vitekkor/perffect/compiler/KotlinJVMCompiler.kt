@@ -16,6 +16,10 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
+/**
+ * A compiler that compiles Kotlin code to the JVM.
+ * @param arguments the command line arguments for the compiler
+ */
 open class KotlinJVMCompiler(
     override val arguments: String = ""
 ) : BaseCompiler(), WithLogger {
@@ -38,6 +42,12 @@ open class KotlinJVMCompiler(
         return getCompilationResult(project, includeRuntime)
     }
 
+    /**
+     * Gets the compilation result of the project.
+     * @param projectWithMainFun the project to compile
+     * @param includeRuntime whether to include the runtime in the compilation
+     * @return the result of the compilation
+     */
     private fun getCompilationResult(projectWithMainFun: Project, includeRuntime: Boolean): CompilationResult {
         val path = projectWithMainFun.saveOrRemoveToTmp(true)
         val args = prepareArgs(path, pathToCompiled)
@@ -46,6 +56,12 @@ open class KotlinJVMCompiler(
         return CompilationResult(0, pathToCompiled)
     }
 
+    /**
+     * Prepares the arguments for the compiler.
+     * @param path the path to the project
+     * @param destination the path to the compiled project
+     * @return the arguments for the compiler
+     */
     private fun prepareArgs(path: String, destination: String): K2JVMCompilerArguments {
         val destFile = File(destination)
         if (destFile.isFile) {
@@ -79,17 +95,26 @@ open class KotlinJVMCompiler(
         args as K2JVMCompilerArguments
         val compiler = K2JVMCompiler()
         val services = Services.EMPTY
+
+        // Clear the message collector before compiling
         MessageCollectorImpl.clear()
+
+        // Start the compiler in a new thread
         val futureExitCode = threadPool.submit {
             compiler.exec(MessageCollectorImpl, services, args)
         }
+
+        // Initialize flags for tracking the compilation process
         var hasTimeout = false
         var compilerWorkingTime: Long = -1
+
         try {
+            // Start a timer to keep track of how long the compilation runs for
             val startTime = System.currentTimeMillis()
             futureExitCode.get(10L, TimeUnit.SECONDS)
             compilerWorkingTime = System.currentTimeMillis() - startTime
         } catch (ex: TimeoutException) {
+            // The compilation timed out
             hasTimeout = true
             futureExitCode.cancel(true)
         } finally {
