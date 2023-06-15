@@ -4,7 +4,7 @@ import com.vitekkor.perffect.config.CompilerArgs
 import java.io.File
 
 class Project(
-    var files: List<KJFile>,
+    var files: List<PerffectFile>,
     val language: Language = Language.KOTLIN,
     val `package`: String
 ) {
@@ -12,7 +12,7 @@ class Project(
     val mainClass: String
         get() = `package` + "." + if (language == Language.KOTLIN) "MainKt" else "Main"
 
-    constructor(file: KJFile, language: Language, `package`: String) : this(listOf(file), language, `package`)
+    constructor(file: PerffectFile, language: Language, `package`: String) : this(listOf(file), language, `package`)
 
     companion object {
 

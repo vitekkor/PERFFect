@@ -9,6 +9,3 @@ fun Server.Program.toProject(language: Language): Project {
 fun String.toProject(language: Language): Project {
     return Project.createFromCode(this, language)
 }
-
-val Project.text: String
-    get() = files.joinToString("\n")
