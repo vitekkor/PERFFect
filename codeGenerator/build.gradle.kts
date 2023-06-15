@@ -16,3 +16,8 @@ tasks.register("cleanupPython", Exec::class.java) {
     group = "build"
     commandLine("./clean.sh")
 }
+
+tasks.register("pyFormat", Exec::class.java) {
+    group = "formatting"
+    commandLine("./format.sh")
+}
