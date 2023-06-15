@@ -34,12 +34,20 @@ In addition, the built-in tools for compiling and running programs have greatly 
 
 # Getting Started
 
+## Installation
+```shell
+cd codeGenerator
+pip3 install -r requirements.txt
+python3 setup.py install
+```
+
+
 ## Usage
 
 Set target JVM and Kotlin versions in `gradle.properties` file
 ```properties
 kotlinVersion=1.5.31
-jvmTarget=11
+jvmTarget=8
 ```
 
 Run `run.sh` script
