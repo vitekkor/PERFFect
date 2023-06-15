@@ -8,12 +8,14 @@ from src.ir.visitors import DefaultVisitorUpdate
 
 def timeout_function(log, entity, timeouted):
     log("{}: took too long (timeout)".format(entity))
-    sys.stderr.flush() # Python 3 stderr is likely buffered.
+    sys.stderr.flush()  # Python 3 stderr is likely buffered.
     timeouted[0] = True
 
 
 def visitor_logging_and_timeout_with_args(*args):
+
     def wrap_visitor_func(visitor_func):
+
         def wrapped_visitor(self, node):
             if len(args) > 0:
                 self.log(*args)
@@ -25,9 +27,9 @@ def visitor_logging_and_timeout_with_args(*args):
             timeouted = [False]
             start = time.time()
             try:
-                timer = threading.Timer(
-                    self.timeout, timeout_function,
-                    args=[self.log, entity, timeouted])
+                timer = threading.Timer(self.timeout,
+                                        timeout_function,
+                                        args=[self.log, entity, timeouted])
                 timer.start()
                 new_node = visitor_func(self, node)
             finally:
@@ -38,27 +40,33 @@ def visitor_logging_and_timeout_with_args(*args):
             self.log("{}: {} elapsed time".format(entity, str(end - start)))
             self.log("{}: End".format(entity))
             return new_node
+
         return wrapped_visitor
+
     return wrap_visitor_func
 
 
 def change_namespace(visit):
+
     def inner(self, node):
         initial_namespace = self._namespace
-        self._namespace += (node.name,)
+        self._namespace += (node.name, )
         new_node = visit(self, node)
         self._namespace = initial_namespace
         return new_node
+
     return inner
 
 
 def change_depth(visit):
+
     def inner(self, node):
         initial_depth = self.depth
         self.depth += 1
         new_node = visit(self, node)
         self.depth = initial_depth
         return new_node
+
     return inner
 
 

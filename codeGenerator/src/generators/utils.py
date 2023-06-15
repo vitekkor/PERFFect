@@ -8,8 +8,8 @@ from src.ir import ast
 from src.ir import types as tp
 from src.ir import type_utils as tu
 
-
 ### Data Classes ###
+
 
 @dataclass
 class SuperClassInfo:
@@ -65,6 +65,7 @@ class AttrReceiverInfo:
 
 ### Utility functions ###
 
+
 # NOTE maybe me can create an enum for class types
 def select_class_type(contain_fields: bool):
     """Select class type for a class declaration.
@@ -100,7 +101,7 @@ def init_variance_choices(type_var_map: tu.TypeVarMap) -> tu.VarianceChoices:
     return variance_choices
 
 
-def gen_identifier(ident_type:str=None) -> str:
+def gen_identifier(ident_type: str = None) -> str:
     """Generate an identifier name.
 
     Args:

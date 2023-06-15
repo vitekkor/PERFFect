@@ -37,6 +37,7 @@ def find_gnode_type(gnode, namespace, context, use_graph):
     If gnode is a declaration return its type, otherwise return the type
     of an adjacent node.
     """
+
     def get_adj(gnode):
         return [v for v, e in use_graph.items if gnode in e]
 
@@ -62,23 +63,24 @@ def find_gnode_type(gnode, namespace, context, use_graph):
 def namespaces_reduction(namespace, all_namespaces):
     """Try to find filter out namespaces that cannot be called.
     """
-    declared_inside_namespace = [ns for ns in all_namespaces
-                                 if ut.prefix_lst(namespace, ns)]
+    declared_inside_namespace = [
+        ns for ns in all_namespaces if ut.prefix_lst(namespace, ns)
+    ]
     if len(declared_inside_namespace) > 0:
         return declared_inside_namespace
     tmp_namespace = namespace
     while len(tmp_namespace) > 0:
         tmp_namespace = tmp_namespace[:-1]
-        same_prefix_ns = [ns for ns in all_namespaces
-                          if ut.prefix_lst(tmp_namespace, ns)]
+        same_prefix_ns = [
+            ns for ns in all_namespaces if ut.prefix_lst(tmp_namespace, ns)
+        ]
         if len(same_prefix_ns) > 0:
             # Consider we having those functions:
             # [('global', 'First', 'foo'), ('global', 'foo')]
             # and we have called foo from ('global', 'bar')
             # then the function that will be called is ('global', 'foo')
-            return list(filter(
-                lambda x: len(x) <= len(namespace),
-                same_prefix_ns))
+            return list(
+                filter(lambda x: len(x) <= len(namespace), same_prefix_ns))
     return all_namespaces
 
 
@@ -99,6 +101,7 @@ class CallAnalysis(DefaultVisitor):
     analysis = CallAnalysis(self.program)
     call_graph, calls = analysis.result()
     """
+
     def __init__(self, program):
         # The type of each node is: CNode
         self._call_graph = defaultdict(set)  # namespace => [CNode]
@@ -114,6 +117,7 @@ class CallAnalysis(DefaultVisitor):
         return self._call_graph, self._calls
 
     def _get_func_namespace(self, func: str, receiver: ast.Expr = None):
+
         def get_filtered_or_all(namespace, namespaces):
             res = []
             for ns in namespaces:
@@ -144,21 +148,21 @@ class CallAnalysis(DefaultVisitor):
         # Handle receiver
         if isinstance(receiver, ast.Variable):
             gnode = GNode(self._namespace, receiver.name)
-            gnode_type = find_gnode_type(
-                gnode, self._namespace, self.program.context, self._use_graph)
+            gnode_type = find_gnode_type(gnode, self._namespace,
+                                         self.program.context, self._use_graph)
             if isinstance(gnode_type, tp.Builtin) or gnode_type is None:
                 return all_namespaces
             # Get the namespace of source_type
             # It is not possible to have multiple classes with the same name
-            namespace, _ = list(self.program.context.get_namespaces_decls(
-                self._namespace, gnode_type.name, 'classes'))[0]
+            namespace, _ = list(
+                self.program.context.get_namespaces_decls(
+                    self._namespace, gnode_type.name, 'classes'))[0]
             return get_filtered_or_all(namespace, all_namespaces)
         if isinstance(receiver, ast.New):
             # There should be only one class declaration per name.
-            new_namespace, _ = list(self.program.context.get_namespaces_decls(
-                self._namespace,
-                receiver.class_type.name,
-                'classes'))[0]
+            new_namespace, _ = list(
+                self.program.context.get_namespaces_decls(
+                    self._namespace, receiver.class_type.name, 'classes'))[0]
             return namespaces_reduction(new_namespace, all_namespaces)
         if isinstance(receiver, ast.FunctionCall):
             if receiver.receiver:
@@ -169,20 +173,21 @@ class CallAnalysis(DefaultVisitor):
                 self._namespace, receiver.func, 'funcs')
             function_namespaces = list(zip(*function_decls))[0]
             # FIXME if it has a receiver we must be more precise
-            function_namespace = namespaces_reduction(
-                self._namespace, all_namespaces)
+            function_namespace = namespaces_reduction(self._namespace,
+                                                      all_namespaces)
             # We cannot find the exact function declaration
             if len(function_namespace) != 1:
                 return all_namespaces
             function_namespace = function_namespace[0]
             function_decl = self.program.context.get_decl(
-                    function_namespace[:-1], function_namespace[-1])
+                function_namespace[:-1], function_namespace[-1])
             function_type = function_decl.inferred_type
             if isinstance(function_type, tp.Builtin) or function_type is None:
                 return all_namespaces
             # It is not possible to have multiple classes with the same name
-            namespace, _ = list(self.program.context.get_namespaces_decls(
-                self._namespace, function_type.name, 'classes'))[0]
+            namespace, _ = list(
+                self.program.context.get_namespaces_decls(
+                    self._namespace, function_type.name, 'classes'))[0]
             return get_filtered_or_all(namespace, all_namespaces)
         # TODO
         # if isinstance(receiver, ast.FieldAccess):

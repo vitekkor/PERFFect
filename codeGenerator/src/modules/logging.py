@@ -5,10 +5,14 @@ from src.args import args
 
 FORMAT = "%(asctime)s [%(module)s] %(levelname)s  %(message)s"
 filename = os.path.join(args.test_directory, "codeGenerator.log")
-logging.basicConfig(filename=filename, format=FORMAT, datefmt='%Y-%m-%d %H:%M:%S', level="INFO")
+logging.basicConfig(filename=filename,
+                    format=FORMAT,
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level="INFO")
 
 
 class Logger:
+
     def __init__(self, name, stdout=False):
         self.name = name
         self.stdout = stdout

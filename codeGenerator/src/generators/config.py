@@ -8,9 +8,11 @@ from dataclasses import dataclass
 
 class Singleton(type):
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(Singleton,
+                                        cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -43,23 +45,23 @@ class GenLimits:
     cls: ClassLimits
     fn: FunctionLimits
     max_var_decls: int  # max variable declarations in a scope.
-    max_type_params: int # max type parameters in parameterized classes and functions
-    max_functional_params: int # max number of parameters in functional interfaces
-    max_top_level: int # max number of top-level declarations
-    min_top_level: int # min number of top-level declarations
-    max_depth: int # max depth of leaves in programs
+    max_type_params: int  # max type parameters in parameterized classes and functions
+    max_functional_params: int  # max number of parameters in functional interfaces
+    max_top_level: int  # max number of top-level declarations
+    min_top_level: int  # min number of top-level declarations
+    max_depth: int  # max depth of leaves in programs
 
 
 # In many scenarios like func_ref_call, there may be a slighter change that
 # we will generate the specified expression based on the current program
 @dataclass
 class Probabilities:
-    function_expr: float # functions that their body are expressions
+    function_expr: float  # functions that their body are expressions
     bounded_type_parameters: float
     parameterized_functions: float
-    func_ref_call: float # use function reference call instead of function call
-    func_ref: float # generate func_ref instead of lambda
-    sam_coercion: float # perform sam coercion whenever possible
+    func_ref_call: float  # use function reference call instead of function call
+    func_ref: float  # generate func_ref instead of lambda
+    sam_coercion: float  # perform sam coercion whenever possible
 
 
 # Features that we want to either disable or enable
@@ -71,35 +73,27 @@ class Disabled:
 
 
 class GenConfig(metaclass=Singleton):
+
     def __init__(self):
-        self.limits = GenLimits(
-            cls=ClassLimits(
-                max_fields=2,
-                max_funcs=2
-            ),
-            fn=FunctionLimits(
-                max_side_effects=6,
-                max_params=2
-            ),
-            max_var_decls=3,
-            max_type_params=0,
-            max_functional_params=1,
-            max_top_level=5,
-            min_top_level=5,
-            max_depth=3
+        self.limits = GenLimits(cls=ClassLimits(max_fields=2, max_funcs=2),
+                                fn=FunctionLimits(max_side_effects=6,
+                                                  max_params=2),
+                                max_var_decls=3,
+                                max_type_params=0,
+                                max_functional_params=1,
+                                max_top_level=5,
+                                min_top_level=5,
+                                max_depth=3)
+        self.prob = Probabilities(
+            function_expr=1.0,
+            bounded_type_parameters=0.5,
+            parameterized_functions=0.3,
+            func_ref_call=1.0,
+            func_ref=0.5,
+            sam_coercion=1.0,
         )
-        self.prob=Probabilities(
-                function_expr=1.0,
-                bounded_type_parameters=0.5,
-                parameterized_functions=0.3,
-                func_ref_call=1.0,
-                func_ref=0.5,
-                sam_coercion=1.0,
-        )
-        self.dis=Disabled(
-            use_site_variance=False,
-            use_site_contravariance=False
-        )
+        self.dis = Disabled(use_site_variance=False,
+                            use_site_contravariance=False)
 
     def json_config(self, kwargs):
         for key, value in kwargs.items():

@@ -19,12 +19,15 @@ def gen_string_constant(expr_type=None) -> ast.StringConstant:
 
 
 # pylint: disable=unused-argument
-def gen_integer_constant(expr_type=None, left_bound=-100, right_bound=100) -> ast.IntegerConstant:
+def gen_integer_constant(expr_type=None,
+                         left_bound=-100,
+                         right_bound=100) -> ast.IntegerConstant:
     """Generate an integer constant.
 
     The generated integers are between -100 and 100.
     """
-    return ast.IntegerConstant(utils.randomUtil.integer(left_bound, right_bound), expr_type)
+    return ast.IntegerConstant(
+        utils.randomUtil.integer(left_bound, right_bound), expr_type)
 
 
 def gen_real_constant(expr_type=None) -> ast.RealConstant:

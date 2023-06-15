@@ -37,15 +37,14 @@ def append_to(visit):
         self._nodes_stack.append(node)
         res = visit(self, node)
         self._nodes_stack.pop()
-        if (self._namespace == ast.GLOBAL_NAMESPACE and
-            isinstance(node, ast.FunctionDeclaration) and
-            node.name == "main"):
+        if (self._namespace == ast.GLOBAL_NAMESPACE
+                and isinstance(node, ast.FunctionDeclaration)
+                and node.name == "main"):
             # If we want to run the program we must replace main() with
             # main(String[] args)
             self._main_method = res
-        elif (self._namespace == ast.GLOBAL_NAMESPACE and
-              isinstance(
-                  node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
+        elif (self._namespace == ast.GLOBAL_NAMESPACE and isinstance(
+                node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
             self._main_children.append(res)
         else:
             self._children_res.append(res)
@@ -186,9 +185,10 @@ class JavaTranslator(BaseTranslator):
                 return PRIMITIVES_TO_BOXED.get(t.get_name(), t.get_name())
             return t.get_name()
         if isinstance(t_constructor, jt.ArrayType):
-            return "{}[]".format(self.get_type_name(t.type_args[0], False, True))
-        return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
-                                                  for ta in t.type_args]))
+            return "{}[]".format(
+                self.get_type_name(t.type_args[0], False, True))
+        return "{}<{}>".format(
+            t.name, ", ".join([self.type_arg2str(ta) for ta in t.type_args]))
 
     def pop_children_res(self, children):
         len_c = len(children)
@@ -199,8 +199,9 @@ class JavaTranslator(BaseTranslator):
         return res
 
     def _get_main_prefix(self, decl_type, name):
-        ns_decls = list(self.context.get_namespaces_decls(
-            self._namespace, name, decl_type))
+        ns_decls = list(
+            self.context.get_namespaces_decls(self._namespace, name,
+                                              decl_type))
         if len(ns_decls) == 1 and ns_decls[0][0][:-1] == ast.GLOBAL_NAMESPACE:
             if not self._visit_is_stack.count(name):
                 return "Main."
@@ -214,17 +215,19 @@ class JavaTranslator(BaseTranslator):
         res = ""
         template = "interface Function{}<{}> {{\n{}public {} apply({});\n}}\n\n"
         for number in self._function_interfaces:
-            type_params = ", ".join(
-                ["A" + str(i + 1) if i < number else "R"
-                 for i in range(0, number + 1)]
-            )
+            type_params = ", ".join([
+                "A" + str(i + 1) if i < number else "R"
+                for i in range(0, number + 1)
+            ])
             res += template.format(
                 number,
                 type_params,
                 2 * self.ident_value,
                 "R",
-                ", ".join(["A" + str(i + 1) + " a" + str(i + 1)
-                           for i in range(0, number)]),
+                ", ".join([
+                    "A" + str(i + 1) + " a" + str(i + 1)
+                    for i in range(0, number)
+                ]),
             )
         res = "\n\n" + res if res != "" else ""
         return res
@@ -242,8 +245,8 @@ class JavaTranslator(BaseTranslator):
 
     def _parent_is_function(self):
         # The second node is the parent node
-        return isinstance(self._nodes_stack[-2], (ast.Lambda,
-                                                  ast.FunctionDeclaration))
+        return isinstance(self._nodes_stack[-2],
+                          (ast.Lambda, ast.FunctionDeclaration))
 
     def _parent_is_func_ref(self):
         # The second node is the parent node
@@ -262,21 +265,20 @@ class JavaTranslator(BaseTranslator):
         self.ident = 2
         main_decls = [
             self.get_ident() + "static " + d.lstrip()
-            for d in self._main_children]
+            for d in self._main_children
+        ]
         main_method = self.get_ident() + "static " + \
                       self._main_method.lstrip() if self._main_method else None
         main_cls = "class Main {{\n{main_decls}{main_method}{todo_fun}\n}}".format(
             main_decls="\n\n".join(main_decls),
             main_method="\n\n" + main_method if main_method else "",
-            todo_fun=self._get_todo_fun()
-        )
+            todo_fun=self._get_todo_fun())
         other_classes = "\n\n".join(self.pop_children_res(children))
         self.program = "{package}{main}{f_interfaces}{other_classes}".format(
             package=package_str,
             main=main_cls,
             f_interfaces=self._get_functional_interfaces(),
-            other_classes="\n\n" + other_classes if other_classes else ''
-        )
+            other_classes="\n\n" + other_classes if other_classes else '')
         self._reset_state()
 
     @append_to
@@ -308,14 +310,13 @@ class JavaTranslator(BaseTranslator):
         if not self._parent_is_function():
             if not children:
                 return_stmt += "return null;"
-            elif isinstance(tu.get_type_hint(children[-1],
-                                             self.context,
-                                             self._namespace,
-                                             jt.JavaBuiltinFactory(),
-                                             self.types), jt.VoidType):
+            elif isinstance(
+                    tu.get_type_hint(children[-1],
+                                     self.context, self._namespace,
+                                     jt.JavaBuiltinFactory(), self.types),
+                    jt.VoidType):
                 if not isinstance(children[-1],
-                                  (ast.VariableDeclaration,
-                                   ast.FunctionCall,
+                                  (ast.VariableDeclaration, ast.FunctionCall,
                                    ast.Assignment)):
                     sugar = "Object x_{x} = ".format(x=self._x_counter)
                     self._x_counter += 1
@@ -336,10 +337,9 @@ class JavaTranslator(BaseTranslator):
             # If return type is void, then we assign the last statement (except
             # var decl calls) in a variable x and then we use return_stmt.
             if (children and
-                not isinstance(children[-1],
-                               (ast.VariableDeclaration,
-                                ast.FunctionCall,
-                                ast.Assignment, ast.LoopExpr))):
+                    not isinstance(children[-1],
+                                   (ast.VariableDeclaration, ast.FunctionCall,
+                                    ast.Assignment, ast.LoopExpr))):
                 is_bottom = children[-1].is_bottom()
                 type_hint = tu.get_type_hint(children[-1],
                                              self.context,
@@ -347,8 +347,8 @@ class JavaTranslator(BaseTranslator):
                                              jt.JavaBuiltinFactory(),
                                              self.types,
                                              smart_casts=self.smart_casts)
-                is_lambda = (getattr(
-                    type_hint, 'is_function_type', lambda: False)())
+                is_lambda = (getattr(type_hint, 'is_function_type',
+                                     lambda: False)())
 
                 if is_bottom:
                     var_prefix = 'Object'
@@ -358,17 +358,21 @@ class JavaTranslator(BaseTranslator):
                         sugar_semi = ";"
                 elif isinstance(children[-1], ast.FunctionReference):
                     sig = tu.get_function_reference_type(
-                        children[-1], self.context, self._namespace,
-                        jt.JavaBuiltinFactory(), self.types,
-                        smart_casts=self.smart_casts
-                    )
+                        children[-1],
+                        self.context,
+                        self._namespace,
+                        jt.JavaBuiltinFactory(),
+                        self.types,
+                        smart_casts=self.smart_casts)
                     sig = self.get_type_name(sig, True, True)
                     var_prefix = sig if sig else 'var'
                 else:
                     var_prefix = 'Object'
                 if not isinstance(children[-1], ast.Conditional) or (
-                    isinstance(children[-1], ast.Conditional) and self.sugar_cond):
-                    sugar = "{p} x_{x} = ".format(p=var_prefix, x=self._x_counter)
+                        isinstance(children[-1], ast.Conditional)
+                        and self.sugar_cond):
+                    sugar = "{p} x_{x} = ".format(p=var_prefix,
+                                                  x=self._x_counter)
                     return_stmt += ';' if is_lambda and not return_stmt.strip() \
                         else ''
                     self._x_counter += 1
@@ -376,30 +380,24 @@ class JavaTranslator(BaseTranslator):
         # A block could be the body of a function or the body of an if statement
         if len(children_res) == 0:  # empty block
             res = "{{ {ret}{old_ident}}}".format(
-                ret=return_stmt,
-                old_ident=self.get_ident(extra=-2)
-            )
+                ret=return_stmt, old_ident=self.get_ident(extra=-2))
         elif len(children_res) == 1:  # single statement
             children_res[0] = ut.add_string_at(
-                children_res[0],
-                sugar,
-                ut.leading_spaces(children_res[0])) + sugar_semi
+                children_res[0], sugar, ut.leading_spaces(
+                    children_res[0])) + sugar_semi
             res = "{{\n{ident}{stmt}{ret}\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 stmt=children_res[0].strip(),
                 ret=return_stmt,
-                old_ident=self.get_ident(extra=-2)
-            )
+                old_ident=self.get_ident(extra=-2))
         else:
             children_res[-1] = ut.add_string_at(
-                children_res[-1],
-                sugar,
-                ut.leading_spaces(children_res[-1])) + sugar_semi
+                children_res[-1], sugar, ut.leading_spaces(
+                    children_res[-1])) + sugar_semi
             res = "{{\n{stmts}{ret}\n{old_ident}}}".format(
                 stmts="\n".join(children_res),
                 ret=return_stmt,
-                old_ident=self.get_ident(extra=-2)
-            )
+                old_ident=self.get_ident(extra=-2))
         if not self._parent_is_function():
             etype = jt.Void
             if len(children) > 0:
@@ -412,9 +410,7 @@ class JavaTranslator(BaseTranslator):
             etype_str = self.get_type_name(etype, get_boxed_void=True)
             etype_str = PRIMITIVES_TO_BOXED.get(etype_str, etype_str)
             res = "((Function0<{etype}>) (() -> {res})).apply();".format(
-                etype=etype_str,
-                res=res
-            )
+                etype=etype_str, res=res)
         return res
 
     @append_to
@@ -437,14 +433,9 @@ class JavaTranslator(BaseTranslator):
     def visit_bottom_constant(self, node):
         return self.get_ident() + "{}{}Main.todo(){}{}".format(
             '(' if self._parent_is_func_ref() else '',
-            (
-                '(' + self.get_type_name(node.t) + ') '
-                if node.t and node.t != tp.Nothing
-                else ''
-            ),
-            ')' if self._parent_is_func_ref() else '',
-            ';' if self._parent_is_block() else ''
-        )
+            ('(' + self.get_type_name(node.t) + ') ' if node.t and node.t
+             != tp.Nothing else ''), ')' if self._parent_is_func_ref() else '',
+            ';' if self._parent_is_block() else '')
 
     @append_to
     def visit_super_instantiation(self, node):
@@ -453,6 +444,7 @@ class JavaTranslator(BaseTranslator):
     @append_to
     @change_namespace
     def visit_class_decl(self, node):
+
         def get_superclasses_interfaces():
             # In correct programs len(superclasses) must be at most 1.
             superclasses = []
@@ -460,8 +452,8 @@ class JavaTranslator(BaseTranslator):
             for cls_inst in node.superclasses:
                 cls_name = cls_inst.class_type.name
                 cls_inst = self.get_type_name(cls_inst.class_type)
-                cls_decl = self.context.get_classes(
-                    self._namespace, glob=True)[cls_name]
+                cls_decl = self.context.get_classes(self._namespace,
+                                                    glob=True)[cls_name]
                 if cls_decl.class_type == ast.ClassDeclaration.INTERFACE:
                     interfaces.append(cls_inst)
                 else:
@@ -476,13 +468,15 @@ class JavaTranslator(BaseTranslator):
             return constructor_fields
 
         def construct_constructor():
-            params = [tname + ' ' + name
-                      for name, tname in
-                      get_constructor_params().items()]
+            params = [
+                tname + ' ' + name
+                for name, tname in get_constructor_params().items()
+            ]
             constructor_params = ",".join(params)
 
-            fields = ["this." + f.name + ' = ' + f.name + ";"
-                      for f in node.fields]
+            fields = [
+                "this." + f.name + ' = ' + f.name + ";" for f in node.fields
+            ]
             constructor_fields = "\n" + self.get_ident(extra=2) if fields \
                 else ""
             constructor_fields += ("\n" + self.get_ident(extra=2)).join(fields)
@@ -504,22 +498,20 @@ class JavaTranslator(BaseTranslator):
                             if isinstance(expr, ast.Lambda):
                                 res[i] = "({cast}) {lmd}".format(
                                     cast=self.get_type_name(expr.signature),
-                                    lmd=r
-                                )
+                                    lmd=r)
                         res = ", ".join(res)
                         res = re.sub(r'\s+', ' ', res)
                     super_call = "\n" + self.get_ident(extra=2) + 'super(' + \
                                  res + ");"
             return ("{ident}public {name}({params}) {{{super_call}{fields}"
                     "{new_line}{close_ident}}}").format(
-                ident=self.get_ident(),
-                name=node.name,
-                params=constructor_params,
-                super_call=super_call,
-                fields=constructor_fields,
-                new_line="\n",
-                close_ident=self.get_ident() if fields else ""
-            )
+                        ident=self.get_ident(),
+                        name=node.name,
+                        params=constructor_params,
+                        super_call=super_call,
+                        fields=constructor_fields,
+                        new_line="\n",
+                        close_ident=self.get_ident() if fields else "")
 
         old_ident = self.ident
         self.ident += 2
@@ -527,20 +519,18 @@ class JavaTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        field_res = [children_res[i]
-                     for i, _ in enumerate(node.fields)]
+        field_res = [children_res[i] for i, _ in enumerate(node.fields)]
         len_fields = len(field_res)
         len_supercls = len(node.superclasses)
-        function_res = [children_res[i + len_fields + len_supercls]
-                        for i, _ in enumerate(node.functions)]
+        function_res = [
+            children_res[i + len_fields + len_supercls]
+            for i, _ in enumerate(node.functions)
+        ]
         len_functions = len(function_res)
         type_parameters_res = ", ".join(
             children_res[len_fields + len_supercls + len_functions:])
         prefix = " " * old_ident
-        prefix += (
-            "final "
-            if node.is_final else ""
-        )
+        prefix += ("final " if node.is_final else "")
         res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
         if type_parameters_res:
             res = "{}<{}>".format(res, type_parameters_res)
@@ -580,10 +570,7 @@ class JavaTranslator(BaseTranslator):
         if bound:
             bound_str = self.get_type_name(bound)
             bound = ' extends ' + PRIMITIVES_TO_BOXED.get(bound_str, bound_str)
-        return "{name}{bound}".format(
-            name=node.name,
-            bound=bound
-        )
+        return "{name}{bound}".format(name=node.name, bound=bound)
 
     @append_to
     def visit_var_decl(self, node):
@@ -620,8 +607,7 @@ class JavaTranslator(BaseTranslator):
             var_type=var_type,
             main_prefix=main_prefix,
             name=node.name,
-            expr=expr
-        )
+            expr=expr)
         self._cast_number = prev_cast_number
         return res
 
@@ -630,24 +616,23 @@ class JavaTranslator(BaseTranslator):
         return "public {final}{field_type} {name};".format(
             final="final " if node.is_final else "",
             field_type=self.get_type_name(node.field_type),
-            name=node.name
-        )
+            name=node.name)
 
     @append_to
     def visit_param_decl(self, node):
         vararg_str = '...' if node.vararg else ''
         # Recall that varargs ara actually arrays in the signature of
         # the corresponding parameters.
-        param_type = (
-            node.param_type.type_args[0]
-            if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
-            else node.param_type)
+        param_type = (node.param_type.type_args[0] if node.vararg
+                      and isinstance(node.param_type, tp.ParameterizedType)
+                      else node.param_type)
         res = self.get_type_name(param_type) + vararg_str + " " + node.name
         return res
 
     @append_to
     @change_namespace
     def visit_func_decl(self, node):
+
         def is_nested_func():
             parent_namespace = self._namespace[:-2]
             parent_name = self._namespace[-2]
@@ -655,15 +640,15 @@ class JavaTranslator(BaseTranslator):
             if parent_decl is None:
                 parent_decl = self.context.get_lambda(parent_namespace,
                                                       parent_name)
-            is_func = isinstance(parent_decl, (ast.Lambda,
-                                               ast.FunctionDeclaration))
+            is_func = isinstance(parent_decl,
+                                 (ast.Lambda, ast.FunctionDeclaration))
             return is_func or (parent_name in ['true_block', 'false_block'])
 
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
             self._inside_is_function = True
         old_ident = self.ident
-        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+        if (self._namespace[-2], ) == ast.GLOBAL_NAMESPACE:
             old_ident += 2
             self.ident += 2
         self.ident += 2
@@ -689,12 +674,10 @@ class JavaTranslator(BaseTranslator):
         if body_res:
             if is_expression:
                 if node.get_type() != jt.Void:
-                    body_res = ut.add_string_at(
-                        body_res, "return ", ut.leading_spaces(body_res))
+                    body_res = ut.add_string_at(body_res, "return ",
+                                                ut.leading_spaces(body_res))
                 body = "{{\n{body};\n{ident}}}".format(
-                    body=body_res,
-                    ident=self.get_ident(old_ident=old_ident)
-                )
+                    body=body_res, ident=self.get_ident(old_ident=old_ident))
             else:
                 body = body_res
         if is_nested_func():
@@ -702,37 +685,32 @@ class JavaTranslator(BaseTranslator):
             # Convert vararg to array
             types = list(map(lambda x: x.replace('...', '[]'), types))
             types.append(self.get_type_name(node.inferred_type, True))
-            types = list(map(
-                lambda x: PRIMITIVES_TO_BOXED.get(x, x), types))
+            types = list(map(lambda x: PRIMITIVES_TO_BOXED.get(x, x), types))
             params = list(map(lambda x: x.split()[-1], param_res))
             self._function_interfaces.add(len(params))
             res_t = "{ident}Function{n}<{tp}> {name} = ({params}) -> {body};"
-            res = res_t.format(
-                ident=self.get_ident(old_ident=old_ident),
-                n=len(params),
-                tp=", ".join(types),
-                name=node.name,
-                params=", ".join(params),
-                body=body
-            )
+            res = res_t.format(ident=self.get_ident(old_ident=old_ident),
+                               n=len(params),
+                               tp=", ".join(types),
+                               name=node.name,
+                               params=", ".join(params),
+                               body=body)
         else:
             res = ("{ident}{public}{final}{abstract}{type_params}{ret_type} "
                    "{name}({params}) {body}{semicolon}").format(
-                ident=self.get_ident(old_ident=old_ident),
-                public="public ",
-                final="final " if node.is_final else "",
-                abstract="abstract " if body == "" else "",
-                type_params=(
-                    "<" + type_parameters_res + "> "
-                    if type_parameters_res else ""
-                ),
-                ret_type=self.get_type_name(node.inferred_type),
-                name=node.name,
-                params=", ".join(param_res),
-                body=body,
-                semicolon=";" if body == "" else ""
-            )
-            if len(node.params) != 0 and all(param.default is not None for param in node.params):
+                       ident=self.get_ident(old_ident=old_ident),
+                       public="public ",
+                       final="final " if node.is_final else "",
+                       abstract="abstract " if body == "" else "",
+                       type_params=("<" + type_parameters_res +
+                                    "> " if type_parameters_res else ""),
+                       ret_type=self.get_type_name(node.inferred_type),
+                       name=node.name,
+                       params=", ".join(param_res),
+                       body=body,
+                       semicolon=";" if body == "" else "")
+            if len(node.params) != 0 and all(param.default is not None
+                                             for param in node.params):
                 old_cast_number = self._cast_number
                 old_cast_lambda = self._cast_labmda
                 self._cast_number = True
@@ -744,30 +722,28 @@ class JavaTranslator(BaseTranslator):
                 default_param_res = self.pop_children_res(node.params)
                 body_call_with_defaults = '{\n' + "{start_indent}{return_word}{name}({default_params});\n{indent}".format(
                     start_indent=self.get_ident(),
-                    return_word="return " if node.get_type() != jt.Void else "",
+                    return_word="return "
+                    if node.get_type() != jt.Void else "",
                     name=node.name,
                     default_params=", ".join(default_param_res),
-                    indent=self.get_ident(old_ident=old_ident)
-                ) + "}"
-                overload = ("{ident}{public}{final}{abstract}{type_params}{ret_type} "
-                            "{name}() {body}{semicolon}").format(
-                    ident=self.get_ident(old_ident=old_ident),
-                    public="public ",
-                    final="final " if node.is_final else "",
-                    abstract="",
-                    type_params=(
-                        "<" + type_parameters_res + "> "
-                        if type_parameters_res else ""
-                    ),
-                    ret_type=self.get_type_name(node.inferred_type),
-                    name=node.name,
-                    body=body_call_with_defaults,
-                    semicolon=";" if body_call_with_defaults == "" else ""
-                )
-                if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+                    indent=self.get_ident(old_ident=old_ident)) + "}"
+                overload = (
+                    "{ident}{public}{final}{abstract}{type_params}{ret_type} "
+                    "{name}() {body}{semicolon}").format(
+                        ident=self.get_ident(old_ident=old_ident),
+                        public="public ",
+                        final="final " if node.is_final else "",
+                        abstract="",
+                        type_params=("<" + type_parameters_res +
+                                     "> " if type_parameters_res else ""),
+                        ret_type=self.get_type_name(node.inferred_type),
+                        name=node.name,
+                        body=body_call_with_defaults,
+                        semicolon=";" if body_call_with_defaults == "" else "")
+                if (self._namespace[-2], ) == ast.GLOBAL_NAMESPACE:
                     overload = "static " + overload
                 res = res + "\n" + overload
-        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+        if (self._namespace[-2], ) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
         self.ident = old_ident
         self.is_func_non_void_block = is_func_non_void_block
@@ -784,7 +760,7 @@ class JavaTranslator(BaseTranslator):
             prev_inside_is_function = self._inside_is_function
             self._inside_is_function = True
         old_ident = self.ident
-        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+        if (self._namespace[-2], ) == ast.GLOBAL_NAMESPACE:
             old_ident += 2
             self.ident += 2
         self.ident += 2
@@ -808,26 +784,22 @@ class JavaTranslator(BaseTranslator):
         if body_res:
             if is_expression:
                 if node.get_type() != jt.Void:
-                    body_res = ut.add_string_at(
-                        body_res, "return ", ut.leading_spaces(body_res))
+                    body_res = ut.add_string_at(body_res, "return ",
+                                                ut.leading_spaces(body_res))
                 body = "{{{body};}}{semicolon}".format(
                     body=body_res,
-                    semicolon=";" if self._parent_is_block() else ""
-                )
+                    semicolon=";" if self._parent_is_block() else "")
             else:
                 body = body_res
 
-        res = "({params}) -> {body}".format(
-            params=", ".join(param_res),
-            body=body
-        )
+        res = "({params}) -> {body}".format(params=", ".join(param_res),
+                                            body=body)
         if self._cast_labmda:
-            res = "({cast}) {lmd}".format(
-                cast=self.get_type_name(node.signature),
-                lmd=res
-            )
+            res = "({cast}) {lmd}".format(cast=self.get_type_name(
+                node.signature),
+                                          lmd=res)
 
-        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+        if (self._namespace[-2], ) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
         self.ident = old_ident
         self.is_func_non_void_block = is_func_non_void_block
@@ -838,6 +810,7 @@ class JavaTranslator(BaseTranslator):
 
     @append_to
     def visit_integer_constant(self, node):
+
         def get_cast_literal(integer_type, literal):
             if integer_type == jt.Long:
                 return "(long)" + str(literal)
@@ -853,16 +826,15 @@ class JavaTranslator(BaseTranslator):
             return "{ident}{literal}{semicolon}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal),
-                semicolon=";" if self._parent_is_block() else ""
-            )
+                semicolon=";" if self._parent_is_block() else "")
         return "{ident}{cast_literal}{semicolon}".format(
             ident=self.get_ident(),
             cast_literal=get_cast_literal(node.integer_type, node.literal),
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_real_constant(self, node):
+
         def get_cast_literal(real_type, literal):
             if real_type == jt.Float:
                 return "(float)" + str(literal)
@@ -874,54 +846,46 @@ class JavaTranslator(BaseTranslator):
             return "{ident}{literal}{semicolon}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal),
-                semicolon=";" if self._parent_is_block() else ""
-            )
+                semicolon=";" if self._parent_is_block() else "")
         return "{ident}{cast_literal}{semicolon}".format(
             ident=self.get_ident(),
             cast_literal=get_cast_literal(node.real_type, node.literal),
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_char_constant(self, node):
         return "{ident} '{literal}'{semicolon}".format(
             ident=self.get_ident(),
             literal=node.literal,
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_string_constant(self, node):
         return "{ident}\"{literal}\"{semicolon}".format(
             ident=self.get_ident(),
             literal=node.literal,
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_boolean_constant(self, node):
         return "{ident}{literal}{semicolon}".format(
             ident=self.get_ident(),
             literal=str(node.literal),
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_array_expr(self, node):
         if not node.length:
             new_stmt = "new {etype}".format(
-                etype=self.get_type_name(node.array_type.type_args[0])
-            )
+                etype=self.get_type_name(node.array_type.type_args[0]))
             if isinstance(node.array_type.type_args[0], tp.ParameterizedType):
                 new_stmt = "({etype}[]) new Object".format(
-                    etype=self.get_type_name(node.array_type.type_args[0])
-                )
+                    etype=self.get_type_name(node.array_type.type_args[0]))
 
             return "{ident}{new}[0]{semicolon}".format(
                 ident=self.get_ident(),
                 new=new_stmt,
-                semicolon=";" if self._parent_is_block() else ""
-            )
+                semicolon=";" if self._parent_is_block() else "")
         old_ident = self.ident
         prev_cast_number = self._cast_number
         self._cast_number = True
@@ -931,15 +895,13 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
 
-        if False and (isinstance(node.array_type, tp.ParameterizedType) and
-                      not node.array_type.type_args[0].is_primitive()):
+        if False and (isinstance(node.array_type, tp.ParameterizedType)
+                      and not node.array_type.type_args[0].is_primitive()):
             new_stmt = "({etype}) new Object[]".format(
-                etype=self.get_type_name(node.array_type)
-            )
+                etype=self.get_type_name(node.array_type))
         else:
             new_stmt = "new {etype}".format(
-                etype=self.get_type_name(node.array_type)
-            )
+                etype=self.get_type_name(node.array_type))
 
         self._cast_number = prev_cast_number
         self.ident = old_ident
@@ -947,16 +909,14 @@ class JavaTranslator(BaseTranslator):
             ident=self.get_ident(),
             exprs=", ".join(children_res),
             new=new_stmt,
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_array_list_expr(self, node):
         if not node.length:
             res = "new java.util.ArrayList<{etype}>(){semicolon}".format(
                 etype=self.get_type_name(node.array_type.type_args[0]),
-                semicolon=";" if self._parent_is_block() else ""
-            )
+                semicolon=";" if self._parent_is_block() else "")
             return res
         old_ident = self.ident
         prev_cast_number = self._cast_number
@@ -969,8 +929,7 @@ class JavaTranslator(BaseTranslator):
         res = "new java.util.ArrayList<{etype}>(java.util.Arrays.asList({exprs})){semicolon}".format(
             etype=self.get_type_name(node.array_type.type_args[0]),
             exprs=", ".join(children_res),
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
         self._cast_number = prev_cast_number
         self.ident = old_ident
         return res
@@ -982,8 +941,7 @@ class JavaTranslator(BaseTranslator):
             main_prefix=self._get_main_prefix('vars', node.name),
             name=node.name,
             is_prefix=self._visit_is_stack.count(node.name) * "_is",
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_binary_op(self, node):
@@ -998,8 +956,7 @@ class JavaTranslator(BaseTranslator):
             left=children_res[0],
             operator=node.operator,
             right=children_res[1],
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
         self.ident = old_ident
         return res
 
@@ -1011,7 +968,9 @@ class JavaTranslator(BaseTranslator):
 
     def visit_comparison_expr(self, node):
         if node.etype is not None and node.etype.name in ('Boolean', 'String'):
-            node.lexpr = ast.FunctionCall('compareTo', [ast.CallArgument(node.rexpr)], node.lexpr)
+            node.lexpr = ast.FunctionCall('compareTo',
+                                          [ast.CallArgument(node.rexpr)],
+                                          node.lexpr)
             node.rexpr = ast.IntegerConstant(0, None)
         self.visit_binary_op(node)
 
@@ -1036,19 +995,19 @@ class JavaTranslator(BaseTranslator):
         if isinstance(cond, ast.Is):
             # true branch smart cast
             if not cond.operator.is_not:
-                self._namespace = prev_namespace + ('true_block',)
+                self._namespace = prev_namespace + ('true_block', )
                 self.smart_casts.append((cond.lexpr, cond.rexpr))
                 true_branch.accept(self)
                 self.smart_casts.pop()
                 self._visit_is_stack.pop()
-                self._namespace = prev_namespace + ('false_block',)
+                self._namespace = prev_namespace + ('false_block', )
                 false_branch.accept(self)
             # false branch smart cast
             else:
-                self._namespace = prev_namespace + ('true_block',)
+                self._namespace = prev_namespace + ('true_block', )
                 self._visit_is_stack.pop()
                 true_branch.accept(self)
-                self._namespace = prev_namespace + ('false_block',)
+                self._namespace = prev_namespace + ('false_block', )
                 self.smart_casts.append((cond.lexpr, cond.rexpr))
                 false_branch.accept(self)
                 self.smart_casts.pop()
@@ -1062,14 +1021,14 @@ class JavaTranslator(BaseTranslator):
             if_condition=children_res[0].lstrip(),
             body=children_res[1],
             else_body=children_res[2],
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
         if self._parent_is_block():
             block = self._nodes_stack[-2]
             parent_for_block = self._nodes_stack[-3]
             if isinstance(parent_for_block, ast.FunctionDeclaration):
                 if parent_for_block.inferred_type != node.inferred_type:
-                    if node.inferred_type != jt.Void and block.children()[-1] == node:
+                    if node.inferred_type != jt.Void and block.children(
+                    )[-1] == node:
                         self.sugar_cond = True
                     else:
                         self.sugar_cond = False
@@ -1078,8 +1037,7 @@ class JavaTranslator(BaseTranslator):
                             ident=self.get_ident(old_ident=old_ident),
                             if_condition=children_res[0].lstrip(),
                             body=children_res[1],
-                            else_body=children_res[2]
-                        )
+                            else_body=children_res[2])
         self.ident = old_ident
         self._inside_is = prev_inside_is
         self._namespace = prev_namespace
@@ -1106,8 +1064,8 @@ class JavaTranslator(BaseTranslator):
         not_2 = ")" if node.operator.is_not else ""
         new_var = " {name}{suffix}".format(
             name=node.lexpr.name,
-            suffix=self._visit_is_stack.count(node.lexpr.name) * "_is"
-        ) if is_variable else ""
+            suffix=self._visit_is_stack.count(node.lexpr.name) *
+            "_is") if is_variable else ""
         res = "{ident}{not_1}{expr} instanceof {type_to_check}{new}{not_2}".format(
             ident=self.get_ident(old_ident=old_ident),
             not_1=not_1,
@@ -1130,8 +1088,7 @@ class JavaTranslator(BaseTranslator):
             ident=self.get_ident(old_ident=old_ident),
             left=children_res[0],
             operator=node.operator,
-            semicolon=";"
-        )
+            semicolon=";")
         self.ident = old_ident
         return res
 
@@ -1155,8 +1112,7 @@ class JavaTranslator(BaseTranslator):
             ident=self.get_ident(),
             cls=cls,
             args=", ".join(children_res),
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
         self._cast_number = prev_cast_number
         return res
 
@@ -1169,13 +1125,11 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        receiver = (
-            '({})'.format(children_res[0])
-            if isinstance(node.expr, ast.BottomConstant)
-            else children_res[0]
-        )
+        receiver = ('({})'.format(children_res[0]) if isinstance(
+            node.expr, ast.BottomConstant) else children_res[0])
         sugar = ""
-        if self._parent_is_block() and self._nodes_stack[-2].children()[-1] != node:
+        if self._parent_is_block() and self._nodes_stack[-2].children(
+        )[-1] != node:
             sugar = "Object x_{x} = ".format(x=self._x_counter)
             self._x_counter += 1
         return "{ident}{sugar}{expr}.{field}{semicolon}".format(
@@ -1183,8 +1137,7 @@ class JavaTranslator(BaseTranslator):
             sugar=sugar,
             expr=receiver,
             field=node.field,
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
 
     @append_to
     def visit_func_ref(self, node):
@@ -1208,8 +1161,8 @@ class JavaTranslator(BaseTranslator):
             # Use `this` if its a method within current class
             parent_cls = self.context.get_parent_class(self._namespace)
             if parent_cls:
-                class_decls = self.context.get_classes(
-                    ('global',), glob=True).values()
+                class_decls = self.context.get_classes(('global', ),
+                                                       glob=True).values()
                 parent_methods = parent_cls.get_callable_functions(class_decls)
                 if node.func in {m.name for m in parent_methods}:
                     receiver = "this"
@@ -1218,7 +1171,7 @@ class JavaTranslator(BaseTranslator):
             if decl:
                 namespace, decl = decl
                 if namespace == ast.GLOBAL_NAMESPACE and isinstance(
-                    decl, ast.FunctionDeclaration):
+                        decl, ast.FunctionDeclaration):
                     receiver = "Main"
 
         receiver += "::" if receiver != "" else ""
@@ -1228,15 +1181,16 @@ class JavaTranslator(BaseTranslator):
             signature=self.get_type_name(node.signature),
             receiver=receiver,
             name=node.func,
-            semicolon=";" if self._parent_is_block() else ""
-        )
+            semicolon=";" if self._parent_is_block() else "")
         return res
 
     @append_to
     def visit_func_call(self, node):
+
         def is_nested_func():
             # fdecl[0][-1] is the parent.
-            if fdecl and all(fdecl) and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
+            if fdecl and all(fdecl) and fdecl[0][-1] != 'global' and fdecl[0][
+                    -1][0].islower():
                 return True
             return False
 
@@ -1255,12 +1209,16 @@ class JavaTranslator(BaseTranslator):
         # with the same name.
         var_decl = None
         try:
-            fdecl = self.context.get_funcs(self._namespace, glob=True)[node.func]
+            fdecl = self.context.get_funcs(self._namespace,
+                                           glob=True)[node.func]
         except KeyError:
             try:
-                fdecl = self.context.get_funcs(self._namespace, only_current=True)[node.func]
+                fdecl = self.context.get_funcs(self._namespace,
+                                               only_current=True)[node.func]
             except KeyError:
-                var_decl = self.context.get_vars(self._namespace, only_current=True).get(node.func, None)
+                var_decl = self.context.get_vars(self._namespace,
+                                                 only_current=True).get(
+                                                     node.func, None)
                 fdecl = None
         if var_decl is None:
             if fdecl and not isinstance(fdecl, ast.FunctionDeclaration):
@@ -1274,29 +1232,22 @@ class JavaTranslator(BaseTranslator):
         args = children_res[1:] if node.receiver else children_res
         # In case of a nested class with vararg as the last parameter,
         # we have to create an array with the vararg arguments.
-        if (is_nested_func() and len(fdecl[1].params) > 0 and
-            fdecl[1].params[-1].vararg):
+        if (is_nested_func() and len(fdecl[1].params) > 0
+                and fdecl[1].params[-1].vararg):
             varargs = args[len(fdecl[1].params) - 1:]
             varargs_type = fdecl[1].params[-1].param_type
             if not varargs_type.type_args[0].is_primitive():
                 new_stmt = "({etype}) new Object[]".format(
-                    etype=self.get_type_name(varargs_type)
-                )
+                    etype=self.get_type_name(varargs_type))
             else:
                 new_stmt = "new {etype}".format(
-                    etype=self.get_type_name(varargs_type)
-                )
-            varargs = "{new}{{{args}}}".format(
-                new=new_stmt,
-                args=", ".join(varargs)
-            )
+                    etype=self.get_type_name(varargs_type))
+            varargs = "{new}{{{args}}}".format(new=new_stmt,
+                                               args=", ".join(varargs))
             args = args[:len(fdecl[1].params) - 1] + [varargs]
         if receiver:
-            receiver_expr = (
-                '({}).'.format(children_res[0])
-                if isinstance(node.receiver, ast.BottomConstant)
-                else children_res[0] + '.'
-            )
+            receiver_expr = ('({}).'.format(children_res[0]) if isinstance(
+                node.receiver, ast.BottomConstant) else children_res[0] + '.')
         else:
             receiver_expr = ''
         res = "{ident}{main}{receiver}{name}{apply}({args}){semicolon}".format(
@@ -1327,19 +1278,15 @@ class JavaTranslator(BaseTranslator):
         receiver = children_res[0] if node.receiver else None
         expr = children_res[1] if node.receiver else children_res[0]
         if receiver:
-            receiver_expr = (
-                '({}).'.format(children_res[0])
-                if isinstance(node.receiver, ast.BottomConstant)
-                else children_res[0] + '.'
-            )
+            receiver_expr = ('({}).'.format(children_res[0]) if isinstance(
+                node.receiver, ast.BottomConstant) else children_res[0] + '.')
         else:
             receiver_expr = ''
         res = "{ident}{receiver}{name} = {expr};".format(
             ident=self.get_ident(old_ident=old_ident),
             receiver=receiver_expr,
             name=name,
-            expr=expr
-        )
+            expr=expr)
         self.ident = old_ident
         self._cast_number = prev_cast_number
         return res
@@ -1358,11 +1305,16 @@ class JavaTranslator(BaseTranslator):
             loop_expr_res = self._visit_loop_expr(loop_expr)
         children_res = [loop_expr_res, children_res]
         if isinstance(node, ast.ForExpr):
-            res = "{}for ({})\n{}".format(" " * old_ident, children_res[0], children_res[1])
+            res = "{}for ({})\n{}".format(" " * old_ident, children_res[0],
+                                          children_res[1])
         elif isinstance(node, ast.WhileExpr):
-            res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+            res = "{}while ({})\n{}".format(" " * old_ident,
+                                            children_res[0][self.ident:],
+                                            children_res[1])
         elif isinstance(node, ast.DoWhileExpr):
-            res = "{}do\n{}\n{}while({});".format(" " * old_ident, children_res[1], " " * old_ident,
+            res = "{}do\n{}\n{}while({});".format(" " * old_ident,
+                                                  children_res[1],
+                                                  " " * old_ident,
                                                   children_res[0][self.ident:])
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
@@ -1375,16 +1327,17 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if isinstance(node, ast.ForExpr.IterableExpr):
-            res = "{type} {var}: {array}".format(
-                type=self.get_type_name(node.arrayExpr.array_type.type_args[0]),
-                var=str(children_res[0]),
-                array=str(children_res[1])
-            )
+            res = "{type} {var}: {array}".format(type=self.get_type_name(
+                node.arrayExpr.array_type.type_args[0]),
+                                                 var=str(children_res[0]),
+                                                 array=str(children_res[1]))
         elif isinstance(node, ast.ForExpr.RangeExpr):
             var = str(children_res[0])
             start = str(children_res[1])
             end = str(children_res[2])
-            res = "{} = {}; {} <= {}; {}++".format(_handle_range_expression(var, children[1]), start, var, end, var)
+            res = "{} = {}; {} <= {}; {}++".format(
+                _handle_range_expression(var, children[1]), start, var, end,
+                var)
         elif isinstance(node, ast.ComparisonExpr):
             self.visit_binary_op(node)
             res = self.pop_children_res([node])[0]
@@ -1406,8 +1359,7 @@ class JavaTranslator(BaseTranslator):
 
         res = "{{\n{stmts}\n{old_ident}}}".format(
             stmts=";\n".join(children_res) + ";",
-            old_ident=self.get_ident(extra=-2)
-        )
+            old_ident=self.get_ident(extra=-2))
         return res
 
     @append_to
@@ -1419,7 +1371,9 @@ class JavaTranslator(BaseTranslator):
         if isinstance(node, ast.ForExpr.IterableExpr):
             res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
         elif isinstance(node, ast.ForExpr.RangeExpr):
-            res = "{} in {}..{}".format(str(children_res[0]), str(children_res[1]), str(children_res[2]))
+            res = "{} in {}..{}".format(str(children_res[0]),
+                                        str(children_res[1]),
+                                        str(children_res[2]))
         elif isinstance(node, ast.ComparisonExpr):
             self.visit_binary_op(node)
             res = self.pop_children_res([node])
@@ -1433,5 +1387,6 @@ class JavaTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "(({cast}) ({expr}))".format(expr=children_res[0], cast=node.cast_type.name)
+        res = "(({cast}) ({expr}))".format(expr=children_res[0],
+                                           cast=node.cast_type.name)
         return res

@@ -8,7 +8,6 @@ from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
 
-
 RET = "__RET__"
 
 
@@ -127,13 +126,9 @@ class Edge(NamedTuple):
     DECLARED = 0
     INFERRED = 1
 
-    target: Union[
-        TypeVarNode,
-        TypeNode,
-        DeclarationNode,
-        TypeConstructorInstantiationCallNode,
-        TypeConstructorInstantiationDeclNode
-    ]
+    target: Union[TypeVarNode, TypeNode, DeclarationNode,
+                  TypeConstructorInstantiationCallNode,
+                  TypeConstructorInstantiationDeclNode]
     label: int
 
     def label2str(self):
@@ -180,11 +175,7 @@ def _handle_declaration_node(type_graph, node):
 def _handle_type_inst_call_node(type_graph, node):
     for type_var in type_graph[node]:
         edges = type_graph[type_var.target]
-        edges = [
-            e
-            for e in edges
-            if not e.is_declared()
-        ]
+        edges = [e for e in edges if not e.is_declared()]
         type_graph[type_var.target] = edges
 
 
@@ -211,8 +202,7 @@ def is_combination_feasible(type_graph, combination):
             continue
         reachable = gu.dfs(type_graph, node)
         for n in reachable:
-            if isinstance(n, (TypeNode,
-                              TypeConstructorInstantiationCallNode,
+            if isinstance(n, (TypeNode, TypeConstructorInstantiationCallNode,
                               TypeConstructorInstantiationDeclNode)):
                 if n.t != node.decl.get_type():
                     return False
@@ -247,18 +237,13 @@ def _is_recursive_call(func_name, func_body):
 
 
 class TypeDependencyAnalysis(DefaultVisitor):
+
     def __init__(self, program, namespace=None, type_graph=None):
         self._bt_factory = program.bt_factory
-        self.type_graph: Dict[
-            Union[
-                TypeNode,
-                TypeVarNode,
-                DeclarationNode,
-                TypeConstructorInstantiationCallNode,
-                TypeConstructorInstantiationDeclNode
-            ],
-            List[Edge]
-        ] = type_graph or {}
+        self.type_graph: Dict[Union[TypeNode, TypeVarNode, DeclarationNode,
+                                    TypeConstructorInstantiationCallNode,
+                                    TypeConstructorInstantiationDeclNode],
+                              List[Edge]] = type_graph or {}
         self.program = program
         self._context = self.program.context
         self._namespace = namespace or ast.GLOBAL_NAMESPACE
@@ -341,8 +326,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # are instantiated.
             construct_edge(self.type_graph, source, target, Edge.DECLARED)
             # We connect type constructor with the type parameters.
-            construct_edge(self.type_graph, main_node, source,
-                           Edge.DECLARED)
+            construct_edge(self.type_graph, main_node, source, Edge.DECLARED)
 
             # Here, the TypeConstructorInstantiationCallNode and
             # the TypeConstructorInstantiationDeclNode correspond to the same
@@ -452,16 +436,14 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._inferred_nodes[node_id].append(TypeNode(node.array_type, None))
 
     def visit_variable(self, node):
-        decl = get_decl(self.program.context,
-                        self._namespace, node.name)
+        decl = get_decl(self.program.context, self._namespace, node.name)
         if not decl:
             # If we cannot find declaration in context, then abort.
             return
         namespace, decl = decl
         node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
-            DeclarationNode("/".join(namespace), decl)
-        )
+            DeclarationNode("/".join(namespace), decl))
 
     def _visit_assign_with_receiver(self, node):
         prev_expt = self._exp_type
@@ -485,9 +467,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             receiver_t = receiver_t.get_bound_rec(self._bt_factory)
 
         f = tu.get_decl_from_inheritance(receiver_t, node.name, self._context)
-        assert f is not None, (
-            "Field " + node.name + " was not found in class " +
-            receiver_t.name)
+        assert f is not None, ("Field " + node.name +
+                               " was not found in class " + receiver_t.name)
         f, _ = f
         # Substitute field type
         field_type = tp.substitute_type(f.get_type(), type_var_map)
@@ -495,8 +476,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         field_decl.field_type = field_type
         parent_id, nu = self._get_node_id()
         node_id = parent_id + ("/" + nu if nu else "") + "/" + receiver_t.name
-        self._handle_declaration(node_id, field_decl, node.expr,
-                                 "field_type")
+        self._handle_declaration(node_id, field_decl, node.expr, "field_type")
 
     def visit_assign(self, node):
         attribute_names = {
@@ -505,8 +485,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             ast.VariableDeclaration: "var_type"
         }
         if node.receiver is None:
-            decl = get_decl(self._context,
-                            self._namespace, node.name)
+            decl = get_decl(self._context, self._namespace, node.name)
             if not decl:
                 return node
             namespace, decl = decl
@@ -528,14 +507,17 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
         namespace = self._namespace
 
-        self._namespace = namespace + ("true_block",)
+        self._namespace = namespace + ("true_block", )
         self.visit(node.true_branch)
-        self._namespace = namespace + ("false_block",)
+        self._namespace = namespace + ("false_block", )
         self.visit(node.false_branch)
         self._namespace = namespace
 
-    def _handle_declaration(self, parent_node_id: str, node: ast.Node,
-                            expr: ast.Expr, type_attr: str,
+    def _handle_declaration(self,
+                            parent_node_id: str,
+                            node: ast.Node,
+                            expr: ast.Expr,
+                            type_attr: str,
                             propagate_decl_nodes=False):
         node_id = parent_node_id + "/" + node.name
         self._stack.append(node_id)
@@ -553,11 +535,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             if isinstance(n, TypeConstructorInstantiationDeclNode) and \
                     propagate_decl_nodes:
                 self._inferred_nodes[node_id].append(n)
-            edge_label = (
-                Edge.DECLARED
-                if isinstance(n, TypeConstructorInstantiationDeclNode)
-                else Edge.INFERRED
-            )
+            edge_label = (Edge.DECLARED if isinstance(
+                n, TypeConstructorInstantiationDeclNode) else Edge.INFERRED)
             construct_edge(self.type_graph, source, n, edge_label)
 
         added_declared = any(e.is_declared()
@@ -584,14 +563,15 @@ class TypeDependencyAnalysis(DefaultVisitor):
         # return value of the function.
         parent_id, _ = self._get_node_id()
         ret_decl = ast.VariableDeclaration(
-            RET, ret_expr, is_final=True,
+            RET,
+            ret_expr,
+            is_final=True,
             var_type=self._func_non_void_block_type)
-        self._handle_declaration(parent_id, ret_decl, ret_expr,
-                                 'var_type')
+        self._handle_declaration(parent_id, ret_decl, ret_expr, 'var_type')
 
     def visit_var_decl(self, node):
-        self._handle_declaration("/".join(self._namespace),
-                                 node, node.expr, 'var_type')
+        self._handle_declaration("/".join(self._namespace), node, node.expr,
+                                 'var_type')
 
     def visit_field_decl(self, node):
         source = DeclarationNode("/".join(self._namespace), node)
@@ -601,8 +581,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def visit_param_decl(self, node):
         parent = "/".join(self._namespace)
         if node.default is not None:
-            self._handle_declaration(parent, node, node.default,
-                                     "param_type")
+            self._handle_declaration(parent, node, node.default, "param_type")
         else:
             source = DeclarationNode("/".join(self._namespace), node)
             target = TypeNode(node.get_type(), None)
@@ -635,11 +614,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
         node_id = "/".join(self._namespace)
         self._stack.append(node_id)
         func_non_void_block_type = self._func_non_void_block_type
-        self._func_non_void_block_type = (
-            None
-            if node.get_type() == self._bt_factory.get_void_type()
-            else node.get_type()
-        )
+        self._func_non_void_block_type = (None if node.get_type()
+                                          == self._bt_factory.get_void_type()
+                                          else node.get_type())
         if isinstance(node.body, ast.Block) or _is_recursive_call(
                 node.name, node.body):
             # If the corresponding function contains a block or makes a
@@ -648,8 +625,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         else:
             # We create a "virtual" variable declaration representing the
             # return value of the function.
-            self._handle_declaration(node_id, node, node.body,
-                                     'ret_type')
+            self._handle_declaration(node_id, node, node.body, 'ret_type')
         self._stack.pop()
         self._func_non_void_block_type = func_non_void_block_type
 
@@ -667,12 +643,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack.pop()
         self._exp_type = prev
         self._inferred_nodes[parent_node_id].append(
-            TypeNode(tu.get_type_hint(node, self._context, self._namespace,
-                                      self._bt_factory, self._types), None)
-        )
+            TypeNode(
+                tu.get_type_hint(node, self._context, self._namespace,
+                                 self._bt_factory, self._types), None))
 
-    def _handle_parameterized_func_call(self, fun_call, fun_decl,
-                                        parent_id, node_id):
+    def _handle_parameterized_func_call(self, fun_call, fun_decl, parent_id,
+                                        node_id):
         fun_call.type_parameters = fun_decl.type_parameters
         main_node = TypeConstructorInstantiationCallNode(
             parent_id, fun_call, fun_decl)
@@ -688,15 +664,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
             construct_edge(self.type_graph, source, target, Edge.DECLARED)
         return main_node, type_var_nodes
 
-    def _infer_type_variables_parameterized_by_ret(self, parent_id,
-                                                   node_id, ret_type,
+    def _infer_type_variables_parameterized_by_ret(self, parent_id, node_id,
+                                                   ret_type,
                                                    func_type_parameters,
                                                    type_var_nodes):
-        target = (
-            self._parameterized_type2node(node_id, self._exp_type)
-            if self._exp_type.is_parameterized()
-            else TypeNode(self._exp_type, parent_id)
-        )
+        target = (self._parameterized_type2node(node_id, self._exp_type)
+                  if self._exp_type.is_parameterized() else TypeNode(
+                      self._exp_type, parent_id))
         for t_var, assigned_t in ret_type.\
                 get_type_variable_assignments().items():
             if assigned_t not in func_type_parameters:
@@ -728,11 +702,10 @@ class TypeDependencyAnalysis(DefaultVisitor):
                     type_var_id = node_id + "/" + k.replace(".", "/")
                     target_var = self._find_target_type_variable(type_var_id)
                     if target_var:
-                        construct_edge(self.type_graph, source,
-                                       target_var, Edge.INFERRED)
+                        construct_edge(self.type_graph, source, target_var,
+                                       Edge.INFERRED)
             else:
-                construct_edge(self.type_graph, source, target,
-                               Edge.INFERRED)
+                construct_edge(self.type_graph, source, target, Edge.INFERRED)
         self._inferred_nodes[parent_id].append(target)
 
     def _infer_type_variable_by_ret(self, parent_id, node_id, ret_type,
@@ -759,8 +732,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # This means that the ret type is a type variable corresponding
             # to a type parameter of the class.
             if decl_ret_type.is_type_var():
-                self._inferred_nodes[parent_id].append(
-                    TypeNode(ret_type, None))
+                self._inferred_nodes[parent_id].append(TypeNode(
+                    ret_type, None))
                 return
             self._infer_type_variables_parameterized_by_ret(
                 parent_id, node_id, decl_ret_type, func_type_parameters,
@@ -770,8 +743,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         parent_node_id, nu = self._get_node_id()
         node_id = parent_node_id + ("/" + nu if nu else "") + "/" + node.func
         if node.receiver is None:
-            fun_decl = get_decl(self._context, self._namespace,
-                                node.func)
+            fun_decl = get_decl(self._context, self._namespace, node.func)
         else:
             # If the function call involves a receiver, we need to look up
             # this function in the inheritance chain of the receiver.
@@ -783,8 +755,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
             if receiver_t.is_type_var():
                 receiver_t = receiver_t.get_bound_rec(self._bt_factory)
-            fun_decl = tu.get_decl_from_inheritance(receiver_t,
-                                                    node.func, self._context)
+            fun_decl = tu.get_decl_from_inheritance(receiver_t, node.func,
+                                                    self._context)
             if fun_decl is None:
                 return
             # We compute the namespace where the function declaration was
@@ -835,8 +807,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             inferred_params.append((param, p.get_type()))
         _, type_var_nodes = self._handle_parameterized_func_call(
             node, fun_decl, parent_node_id, node_id)
-        self._infer_type_variables_by_call_arguments(node_id,
-                                                     type_var_nodes,
+        self._infer_type_variables_by_call_arguments(node_id, type_var_nodes,
                                                      inferred_params)
         ret_type = tp.substitute_type(fun_decl.get_type(), type_var_map)
         if ret_type != self._bt_factory.get_void_type():
@@ -859,8 +830,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                                call_type_var_node, Edge.INFERRED)
             elif v.is_parameterized():
                 nid = "/".join([node_id, t.name, k.name])
-                self._infer_reciprocal_type_var_deps(
-                    nid, v, type_var_node)
+                self._infer_reciprocal_type_var_deps(nid, v, type_var_node)
             else:
                 pass
 
@@ -874,7 +844,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 # Compute how the type variables at declaration point are
                 # instantiated based on the type of passed in the corresponding
                 # argument.
-                type_assignments = tu.unify_types(n.target.get_type(), t,
+                type_assignments = tu.unify_types(n.target.get_type(),
+                                                  t,
                                                   self._bt_factory,
                                                   same_type=False)
             # We know now that that the argument corresponds to a
@@ -899,12 +870,10 @@ class TypeDependencyAnalysis(DefaultVisitor):
                     # add the new one.
                     if n.is_declared():
                         self.type_graph[source] = [
-                            e
-                            for e in self.type_graph.get(source, [])
+                            e for e in self.type_graph.get(source, [])
                             if not e.is_declared()
                         ]
-                    construct_edge(self.type_graph, source, n.target,
-                                   n.label)
+                    construct_edge(self.type_graph, source, n.target, n.label)
             # In this case we have a scenario like the following.
             # class A<T> (val f: B<T>)
             # class C: B<String>()
@@ -951,16 +920,14 @@ class TypeDependencyAnalysis(DefaultVisitor):
             type_arg = t.type_args[i]
             if type_arg.is_parameterized():
 
-                target = self._parameterized_type2node(t_var.node_id,
-                                                       type_arg)
+                target = self._parameterized_type2node(t_var.node_id, type_arg)
                 construct_edge(self.type_graph, t_var, target, Edge.DECLARED)
             else:
                 construct_edge(self.type_graph, t_var,
                                TypeNode(type_arg, None), Edge.DECLARED)
         return main_node
 
-    def _handle_type_constructor_instantiation(self, node,
-                                               parent_node_id):
+    def _handle_type_constructor_instantiation(self, node, parent_node_id):
         # If we initialize a type constructor, then create a node for
         # representing the type constructor instantiatiation (at use-site).
         main_node = TypeConstructorInstantiationCallNode(
@@ -1013,17 +980,14 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 node = k
                 break
         if node is not None:
-            edges = [
-                e
-                for e in self.type_graph[node]
-                if not e.is_declared()
-            ]
+            edges = [e for e in self.type_graph[node] if not e.is_declared()]
             self.type_graph[node] = edges
 
     def visit_new(self, node):
         parent_node_id, nu = self._get_node_id()
         if node.class_type == self._bt_factory.get_any_type() or (
-              node.class_type.name == self._bt_factory.get_array_type().name):
+                node.class_type.name
+                == self._bt_factory.get_array_type().name):
             self._inferred_nodes[parent_node_id].append(
                 TypeNode(node.class_type, None))
             return
@@ -1035,7 +999,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         assert class_decl is not None
         namespace, class_decl = class_decl
 
-        node_id = parent_node_id + ("/" + nu if nu else "") + "/" + class_decl.name
+        node_id = parent_node_id + ("/" +
+                                    nu if nu else "") + "/" + class_decl.name
         # First we visit the children of this node (i.e., its arguments),
         # and handle them as declarations.
         inferred_fields = []
@@ -1048,8 +1013,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 # which are also used for inferring the type arguments of
                 # the corresponding type constructor instantiation.
                 inferred_fields.append((f, class_decl.fields[i].get_type()))
-            self._handle_declaration(node_id, f, c,
-                                     'field_type')
+            self._handle_declaration(node_id, f, c, 'field_type')
 
         if not node.class_type.is_parameterized():
             # We initialize a simple class, so there's nothing special to
@@ -1059,10 +1023,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             return
 
         main_node, type_var_nodes = (
-            self._handle_type_constructor_instantiation(node, parent_node_id)
-        )
-        self._infer_type_variables_by_call_arguments(node_id,
-                                                     type_var_nodes,
+            self._handle_type_constructor_instantiation(node, parent_node_id))
+        self._infer_type_variables_by_call_arguments(node_id, type_var_nodes,
                                                      inferred_fields)
         if self._exp_type:
             target = self._convert_type_to_node(self._exp_type, main_node,
