@@ -1,38 +1,28 @@
+import logging
 import os
 
-from src.utils import mkdir
+from src.args import args
+
+FORMAT = "%(asctime)s [%(module)s] %(levelname)s  %(message)s"
+filename = os.path.join(args.test_directory, "codeGenerator.log")
+logging.basicConfig(filename=filename, format=FORMAT, datefmt='%Y-%m-%d %H:%M:%S', level="INFO")
 
 
-class Logger():
-    def __init__(self, session, test_directory, name, number,
-                 stdout=False):
-        self.session = session
-        self.test_directory = test_directory
-        self.transformation_name = name
-        self.transformation_number = number
+class Logger:
+    def __init__(self, name, stdout=False):
+        self.name = name
         self.stdout = stdout
         if not self.stdout:
-            self.directory = os.path.join(self.test_directory, "logs")
-            mkdir(self.directory)
-            self.filename = os.path.join(self.directory, "codeGenerator.log")
-
-    def log_info(self):
-        msg = "\n{}\nTransformation name:{}\nTransformation No: {}\n\n".format(
-            10*"=",
-            self.transformation_name,
-            self.transformation_number
-        )
-        self.log(msg)
+            self.logger_ = logging.getLogger(self.name)
 
     def log(self, msg):
+        log_message = f"{self.name} - {msg}"
         if self.stdout:
-            print(msg)
+            print(log_message)
         else:
-            with open(self.filename, 'a') as out:
-                out.write(str(msg))
-                out.write('\n')
+            self.logger_.info(log_message)
 
 
-def log(logger: Logger, msg: str):
-    if logger is not None:
-        logger.log(msg)
+def log(logger_: Logger, msg: str):
+    if logger_ is not None:
+        logger_.log(msg)

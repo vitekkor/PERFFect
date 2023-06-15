@@ -74,8 +74,6 @@ class Transformation(DefaultVisitorUpdate):
         self.logger = logger
         self.options = options
         self.timeout = options.get("timeout", 600)
-        if self.logger:
-            self.logger.log_info()
 
     def transform(self):
         self.program = self.visit(self.program)
