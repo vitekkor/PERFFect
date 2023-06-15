@@ -163,7 +163,7 @@ java {
 tasks["clean"].finalizedBy(cleanUpStdLib).finalizedBy(cleanKotlinVersion)
 
 tasks.jar {
-    manifest.attributes["Main-Class"] = "com.vitekkor.TestOracleKt"
+    manifest.attributes["Main-Class"] = "com.vitekkor.perffect.TestOracleKt"
     val dependencies = configurations
         .runtimeClasspath
         .get()
