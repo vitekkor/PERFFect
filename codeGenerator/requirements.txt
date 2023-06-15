@@ -1,3 +1,4 @@
 ordered-set==4.1.0
 grpcio-tools==1.51.1
 grpcio==1.51.1
+yapf==0.40.0

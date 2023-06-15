@@ -10,7 +10,7 @@ from src import utils
 from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
 
-GLOBAL_NAMESPACE = ('global',)
+GLOBAL_NAMESPACE = ('global', )
 
 
 def check_list_eq(first, second):
@@ -28,6 +28,7 @@ def check_default_eq(first, second):
 
 # noinspection PyAbstractClass
 class Expr(Node):
+
     def is_equal(self, other):
         pass
 
@@ -59,8 +60,9 @@ class Program(Node):
                                              only_current=True)
 
     def get_types(self):
-        usr_types = [d for d in self.declarations
-                     if isinstance(d, ClassDeclaration)]
+        usr_types = [
+            d for d in self.declarations if isinstance(d, ClassDeclaration)
+        ]
         ttypes = usr_types + self.bt_factory.get_non_nothing_types()
         new_types = []
         for t in ttypes:
@@ -75,7 +77,7 @@ class Program(Node):
 
     def _add_function(self, namespace, func):
         self.context.add_func(namespace, func.name, func)
-        namespace = namespace + (func.name,)
+        namespace = namespace + (func.name, )
         for p in func.params:
             self.context.add_var(namespace, p.name, p)
         if not func.body or not isinstance(func.body, Block):
@@ -97,7 +99,7 @@ class Program(Node):
                 stack.extend(s.body)
 
     def _add_class(self, namespace, class_decl):
-        namespace = namespace + (class_decl.name,)
+        namespace = namespace + (class_decl.name, )
         for f in class_decl.fields:
             self.context.add_var(namespace, f.name, f)
         for f in class_decl.functions:
@@ -129,6 +131,7 @@ class Program(Node):
 
 
 class Block(Node):
+
     def __init__(self, body: List[Node], is_func_block=True):
         self.body = body
         self.is_func_block = is_func_block
@@ -156,6 +159,7 @@ class Block(Node):
 
 # noinspection PyAbstractClass
 class Declaration(Node):
+
     def get_type(self):
         raise NotImplementedError('get_type() must be implemented')
 
@@ -167,7 +171,9 @@ class Declaration(Node):
 
 
 class VariableDeclaration(Declaration):
-    def __init__(self, name: str,
+
+    def __init__(self,
+                 name: str,
                  expr: Expr,
                  is_final: bool = True,
                  var_type: types.Type = None,
@@ -201,22 +207,26 @@ class VariableDeclaration(Declaration):
         prefix = "val " if self.is_final else "var "
         if self.var_type is None:
             return prefix + self.name + " = " + str(self.expr)
-        return "{}{}: {} = {}".format(
-            prefix, self.name, str(self.var_type), str(self.expr))
+        return "{}{}: {} = {}".format(prefix, self.name, str(self.var_type),
+                                      str(self.expr))
 
     def is_equal(self, other):
         if isinstance(other, VariableDeclaration):
-            return (self.name == other.name and
-                    self.expr.is_equal(other.expr) and
-                    self.is_final == other.is_final and
-                    self.var_type == other.var_type and
-                    self.inferred_type == other.inferred_type)
+            return (self.name == other.name and self.expr.is_equal(other.expr)
+                    and self.is_final == other.is_final
+                    and self.var_type == other.var_type
+                    and self.inferred_type == other.inferred_type)
         return False
 
 
 class FieldDeclaration(Declaration):
-    def __init__(self, name: str, field_type: types.Type, is_final=True,
-                 can_override=False, override=False):
+
+    def __init__(self,
+                 name: str,
+                 field_type: types.Type,
+                 is_final=True,
+                 can_override=False,
+                 override=False):
         self.name = name
         self.field_type = field_type
         self.is_final = is_final
@@ -241,16 +251,17 @@ class FieldDeclaration(Declaration):
 
     def is_equal(self, other):
         if isinstance(other, FieldDeclaration):
-            return (self.name == other.name and
-                    self.field_type == other.field_type and
-                    self.is_final == other.is_final and
-                    self.can_override == other.can_override and
-                    self.override == other.override)
+            return (self.name == other.name
+                    and self.field_type == other.field_type
+                    and self.is_final == other.is_final
+                    and self.can_override == other.can_override
+                    and self.override == other.override)
         return False
 
 
 # noinspection PyAbstractClass
 class ObjectDecleration(Declaration):
+
     def __init__(self, name: str):
         self.name = name
 
@@ -270,6 +281,7 @@ class ObjectDecleration(Declaration):
 
 
 class SuperClassInstantiation(Node):
+
     def __init__(self, class_type: types.Type, args: List[Expr] = None):
         if args is None:
             args = []
@@ -288,13 +300,13 @@ class SuperClassInstantiation(Node):
     def __str__(self):
         if self.args is None:
             return self.class_type.name
-        return "{}({})".format(
-            self.class_type.name, ", ".join(map(str, self.args)))
+        return "{}({})".format(self.class_type.name,
+                               ", ".join(map(str, self.args)))
 
     def is_equal(self, other):
         if isinstance(other, SuperClassInstantiation):
-            return (self.class_type == other.class_type and
-                    check_list_eq(self.args, other.args))
+            return (self.class_type == other.class_type
+                    and check_list_eq(self.args, other.args))
         return False
 
 
@@ -324,13 +336,15 @@ class CallArgument(Node):
 
     def is_equal(self, other):
         if isinstance(other, CallArgument):
-            return (self.name == other.name and
-                    self.expr.is_equal(other.is_equal))
+            return (self.name == other.name
+                    and self.expr.is_equal(other.is_equal))
         return False
 
 
 class ParameterDeclaration(Declaration):
-    def __init__(self, name: str,
+
+    def __init__(self,
+                 name: str,
                  param_type: types.Type,
                  vararg: bool = False,
                  default: Expr = None):
@@ -360,15 +374,15 @@ class ParameterDeclaration(Declaration):
         prefix = 'vararg ' if self.vararg else ''
         if self.default is None:
             return prefix + self.name + ": " + str(self.param_type)
-        return "{}{}: {} = {}".format(
-            prefix, self.name, str(self.param_type), str(self.default))
+        return "{}{}: {} = {}".format(prefix, self.name, str(self.param_type),
+                                      str(self.default))
 
     def is_equal(self, other):
         if isinstance(other, ParameterDeclaration):
-            return (self.name == other.name and
-                    self.param_type == other.param_type and
-                    self.vararg == other.vararg and
-                    check_default_eq(self.default, other.default))
+            return (self.name == other.name
+                    and self.param_type == other.param_type
+                    and self.vararg == other.vararg
+                    and check_default_eq(self.default, other.default))
         return False
 
 
@@ -397,8 +411,8 @@ class FunctionDeclaration(Declaration):
         self.is_final = is_final
         self.override = override
         self.type_parameters = type_parameters
-        self.inferred_type = (
-            self.ret_type if inferred_type is None else inferred_type)
+        self.inferred_type = (self.ret_type
+                              if inferred_type is None else inferred_type)
         assert self.inferred_type, ("The inferred_type of a function must"
                                     " not be None")
 
@@ -410,6 +424,7 @@ class FunctionDeclaration(Declaration):
         return children + [self.body]
 
     def update_children(self, children):
+
         def get_lst(start, end):
             return children[start:end]
 
@@ -442,11 +457,8 @@ class FunctionDeclaration(Declaration):
         return types.ParameterizedType(function_type, type_args)
 
     def __str__(self):
-        type_params_str = (
-            "<" + ", ".join(map(str, self.type_parameters)) + "> "
-            if self.type_parameters
-            else ""
-        )
+        type_params_str = ("<" + ", ".join(map(str, self.type_parameters)) +
+                           "> " if self.type_parameters else "")
         if self.ret_type is None:
             return "{}fun {}({}) =\n  {}".format(
                 type_params_str, self.name, ",".join(map(str, self.params)),
@@ -457,19 +469,14 @@ class FunctionDeclaration(Declaration):
 
     def is_equal(self, other):
         if isinstance(other, FunctionDeclaration):
-            return (self.name == other.name and
-                    self.ret_type == other.ret_type and
-                    (
-                        self.body == other.body
-                        if self.body is None
-                        else self.body.is_equal(other.body)
-                    ) and
-                    self.func_type == other.func_type and
-                    self.is_final == other.is_final and
-                    check_list_eq(self.params, other.params) and
-                    check_list_eq(self.type_parameters,
-                                  other.type_parameters) and
-                    self.inferred_type == other.inferred_type)
+            return (self.name == other.name and self.ret_type == other.ret_type
+                    and (self.body == other.body if self.body is None else
+                         self.body.is_equal(other.body))
+                    and self.func_type == other.func_type
+                    and self.is_final == other.is_final
+                    and check_list_eq(self.params, other.params) and
+                    check_list_eq(self.type_parameters, other.type_parameters)
+                    and self.inferred_type == other.inferred_type)
         return False
 
 
@@ -480,19 +487,20 @@ def _instantiate_type_param_rec(t_param: types.TypeParameter,
         return new_t_param
     if new_t_param.bound is not None:
         new_bound = types.substitute_type(new_t_param.bound, type_var_map)
-        new_t_param.bound = _instantiate_type_param_rec(new_bound,
-                                                        type_var_map)
+        new_t_param.bound = _instantiate_type_param_rec(
+            new_bound, type_var_map)
     return new_t_param
 
 
 class Lambda(Expr):
     # body can be Block or Expr
-    def __init__(self,
-                 shadow_name: str,  # we use it in namespace
-                 params: List[ParameterDeclaration],
-                 ret_type: types.Type,
-                 body: Node,
-                 signature: types.ParameterizedType):
+    def __init__(
+            self,
+            shadow_name: str,  # we use it in namespace
+            params: List[ParameterDeclaration],
+            ret_type: types.Type,
+            body: Node,
+            signature: types.ParameterizedType):
         self.name = shadow_name
         self.params = params
         self.ret_type = ret_type
@@ -531,13 +539,10 @@ class Lambda(Expr):
 
     def is_equal(self, other):
         if isinstance(other, Lambda):
-            return (self.ret_type == other.ret_type and
-                    (
-                        self.body == other.body
-                        if self.body is None
-                        else self.body.is_equal(other.body)
-                    ) and
-                    check_list_eq(self.params, other.params))
+            return (self.ret_type == other.ret_type
+                    and (self.body == other.body if self.body is None else
+                         self.body.is_equal(other.body))
+                    and check_list_eq(self.params, other.params))
         return False
 
 
@@ -546,7 +551,8 @@ class ClassDeclaration(Declaration):
     INTERFACE = 1
     ABSTRACT = 2
 
-    def __init__(self, name: str,
+    def __init__(self,
+                 name: str,
                  superclasses: List[SuperClassInstantiation],
                  class_type: int = None,
                  fields: List[FieldDeclaration] = None,
@@ -572,6 +578,7 @@ class ClassDeclaration(Declaration):
             self.type_parameters
 
     def update_children(self, children):
+
         def get_lst(start, end):
             return children[start:end]
 
@@ -599,11 +606,9 @@ class ClassDeclaration(Declaration):
 
     def get_type(self):
         if self.type_parameters:
-            return types.TypeConstructor(
-                self.name, self.type_parameters,
-                self.supertypes)
-        return types.SimpleClassifier(
-            self.name, self.supertypes)
+            return types.TypeConstructor(self.name, self.type_parameters,
+                                         self.supertypes)
+        return types.SimpleClassifier(self.name, self.supertypes)
 
     def get_class_prefix(self):
         if self.class_type == self.REGULAR:
@@ -631,20 +636,13 @@ class ClassDeclaration(Declaration):
         return None
 
     def get_overridable_functions(self):
-        return [
-            f
-            for f in self.functions
-            if not f.is_final
-        ]
+        return [f for f in self.functions if not f.is_final]
 
     def get_overridable_fields(self):
-        return [
-            f
-            for f in self.fields
-            if f.can_override
-        ]
+        return [f for f in self.fields if f.can_override]
 
-    def get_callable_functions(self, class_decls) -> OrderedSet[FunctionDeclaration]:
+    def get_callable_functions(self,
+                               class_decls) -> OrderedSet[FunctionDeclaration]:
         """All functions that can be called in instantiations of this class
         """
         # Get functions that are implemented in the current class
@@ -670,18 +668,17 @@ class ClassDeclaration(Declaration):
             params = []
             for p in f.params:
                 new_p = deepcopy(p)
-                new_p.param_type = types.substitute_type(p.get_type(),
-                                                         type_var_map)
+                new_p.param_type = types.substitute_type(
+                    p.get_type(), type_var_map)
                 params.append(new_p)
             type_params = []
             for t_param in f.type_parameters:
                 new_tparam = deepcopy(t_param)
                 if new_tparam.bound:
-                    new_tparam.bound = types.substitute_type(t_param.bound,
-                                                             type_var_map)
+                    new_tparam.bound = types.substitute_type(
+                        t_param.bound, type_var_map)
                 type_params.append(new_tparam)
-            ret_type = types.substitute_type(f.get_type(),
-                                             type_var_map)
+            ret_type = types.substitute_type(f.get_type(), type_var_map)
             new_f.type_parameters = type_params
             new_f.params = params
             new_f.inferred_type = ret_type
@@ -724,7 +721,9 @@ class ClassDeclaration(Declaration):
 
         return fields
 
-    def get_all_attributes(self, class_decls) -> OrderedSet[Union[FunctionDeclaration, FieldDeclaration]]:
+    def get_all_attributes(
+        self, class_decls
+    ) -> OrderedSet[Union[FunctionDeclaration, FieldDeclaration]]:
         """
         Get all attributes (fields + functions) from the inheritance chain
         """
@@ -735,11 +734,7 @@ class ClassDeclaration(Declaration):
 
     def get_abstract_functions(self, class_decls) -> List[FunctionDeclaration]:
         # Get the abstract functions that are declared in the current class.
-        functions = [
-            f
-            for f in self.functions
-            if f.body is None
-        ]
+        functions = [f for f in self.functions if f.body is None]
         if not self.superclasses:
             return functions
 
@@ -753,8 +748,10 @@ class ClassDeclaration(Declaration):
         type_var_map = tu.get_superclass_type_var_map(super_cls, class_decl)
 
         funcs = class_decl.get_abstract_functions(class_decls)
-        implemented_funcs = {f.name for f in self.functions
-                             if f.body is not None}
+        implemented_funcs = {
+            f.name
+            for f in self.functions if f.body is not None
+        }
         for f in funcs:
             if f.name in implemented_funcs:
                 continue
@@ -762,13 +759,12 @@ class ClassDeclaration(Declaration):
             params = []
             for p in f.params:
                 new_p = deepcopy(p)
-                new_p.param_type = types.substitute_type(new_p.get_type(),
-                                                         type_var_map)
-                if new_p.param_type.is_type_var() and (
-                    new_p.param_type.bound is not None):
+                new_p.param_type = types.substitute_type(
+                    new_p.get_type(), type_var_map)
+                if new_p.param_type.is_type_var() and (new_p.param_type.bound
+                                                       is not None):
                     new_p.param_type.bound = _instantiate_type_param_rec(
-                        new_p.param_type.bound, type_var_map
-                    )
+                        new_p.param_type.bound, type_var_map)
                 params.append(new_p)
             type_params = [
                 _instantiate_type_param_rec(t, type_var_map)
@@ -777,8 +773,8 @@ class ClassDeclaration(Declaration):
             ret_type = types.substitute_type(deepcopy(f.get_type()),
                                              type_var_map)
             if ret_type.is_type_var() and ret_type.bound is not None:
-                ret_type.bound = _instantiate_type_param_rec(ret_type.bound,
-                                                             type_var_map)
+                ret_type.bound = _instantiate_type_param_rec(
+                    ret_type.bound, type_var_map)
             new_f.params = params
             new_f.inferred_type = ret_type
             new_f.ret_type = ret_type
@@ -794,8 +790,8 @@ class ClassDeclaration(Declaration):
         supertypes = self.get_type().supertypes
         if not cls.is_parameterized():
             return other_t in supertypes
-        return any(getattr(st, 't_constructor', None) == other_t
-                   for st in supertypes)
+        return any(
+            getattr(st, 't_constructor', None) == other_t for st in supertypes)
 
     def all_type_params_in_fields(self):
         """Check if all type parameters are used in fields
@@ -816,31 +812,28 @@ class ClassDeclaration(Declaration):
         if self.type_parameters:
             return "{} {}<{}>{} {{\n  {}\n  {} }}".format(
                 self.get_class_prefix(), self.name,
-                ", ".join(map(str, self.type_parameters)),
-                superclasses,
+                ", ".join(map(str, self.type_parameters)), superclasses,
                 "\n  ".join(map(str, self.fields)),
-                "\n  ".join(map(str, self.functions))
-            )
+                "\n  ".join(map(str, self.functions)))
         return "{} {}{} {{\n  {}\n  {} }}".format(
-            self.get_class_prefix(), self.name,
-            superclasses,
+            self.get_class_prefix(), self.name, superclasses,
             "\n  ".join(map(str, self.fields)),
-            "\n  ".join(map(str, self.functions))
-        )
+            "\n  ".join(map(str, self.functions)))
 
     def is_equal(self, other):
         if isinstance(other, ClassDeclaration):
-            return (self.name == other.name and
-                    check_list_eq(self.superclasses, other.superclasses) and
-                    self.class_type == other.class_type and
-                    check_list_eq(self.functions, other.functions) and
-                    self.is_final == other.is_final and
-                    check_list_eq(self.type_parameters, other.type_parameters)
+            return (self.name == other.name
+                    and check_list_eq(self.superclasses, other.superclasses)
+                    and self.class_type == other.class_type
+                    and check_list_eq(self.functions, other.functions)
+                    and self.is_final == other.is_final and check_list_eq(
+                        self.type_parameters, other.type_parameters)
                     and self.supertypes == other.supertypes)
         return False
 
 
 class Constant(Expr):
+
     def __init__(self, literal: str):
         self.literal = literal
 
@@ -862,6 +855,7 @@ class Constant(Expr):
 # This is a constant representing a value whose type is the Bottom type,
 # meaning that it's subtype of any other type.
 class BottomConstant(Constant):
+
     def __init__(self, t: types.Type):
         super().__init__("_B_")
         self.t = t
@@ -884,8 +878,8 @@ class IntegerConstant(Constant):
 
     def is_equal(self, other):
         if isinstance(other, IntegerConstant):
-            return (self.literal == other.literal and
-                    self.integer_type == other.integer_type)
+            return (self.literal == other.literal
+                    and self.integer_type == other.integer_type)
         return False
 
 
@@ -899,12 +893,13 @@ class RealConstant(Constant):
 
     def is_equal(self, other):
         if isinstance(other, RealConstant):
-            return (self.literal == other.literal and
-                    self.real_type == other.real_type)
+            return (self.literal == other.literal
+                    and self.real_type == other.real_type)
         return False
 
 
 class BooleanConstant(Constant):
+
     def __init__(self, literal: str):
         assert literal in ('true', 'false'), (
             'Boolean literal is not "true" or "false"')
@@ -912,6 +907,7 @@ class BooleanConstant(Constant):
 
 
 class CharConstant(Constant):
+
     def __init__(self, literal: str):
         assert len(literal) == 1, (
             'Character literal must be a single character')
@@ -928,6 +924,7 @@ class StringConstant(Constant):
 
 
 class ArrayExpr(Expr):
+
     def __init__(self, array_type: types.Type, length: int, exprs: List[Expr]):
         self.length = length
         self.array_type = array_type
@@ -945,13 +942,14 @@ class ArrayExpr(Expr):
 
     def is_equal(self, other):
         if isinstance(other, ArrayExpr):
-            return (self.array_type == other.array_type and
-                    self.length == other.length and
-                    self.exprs == other.exprs)
+            return (self.array_type == other.array_type
+                    and self.length == other.length
+                    and self.exprs == other.exprs)
         return False
 
 
 class ArrayListExpr(Expr):
+
     def __init__(self, array_type: types.Type, length: int, exprs: List[Expr]):
         self.length = length
         self.array_type = array_type
@@ -969,13 +967,14 @@ class ArrayListExpr(Expr):
 
     def is_equal(self, other):
         if isinstance(other, ArrayListExpr):
-            return (self.array_type == other.array_type and
-                    self.length == other.length and
-                    self.exprs == other.exprs)
+            return (self.array_type == other.array_type
+                    and self.length == other.length
+                    and self.exprs == other.exprs)
         return False
 
 
 class Variable(Expr):
+
     def __init__(self, name: str):
         self.name = name
 
@@ -998,6 +997,7 @@ class Variable(Expr):
 
 
 class Conditional(Expr):
+
     def __init__(self, cond: Expr, true_branch: Block, false_branch: Block,
                  inferred_type: types.Type):
         self.cond = cond
@@ -1021,19 +1021,21 @@ class Conditional(Expr):
         return self.inferred_type
 
     def __str__(self):
-        return "if ({})\n  {}\nelse\n  {}".format(
-            str(self.cond), str(self.true_branch), str(self.false_branch))
+        return "if ({})\n  {}\nelse\n  {}".format(str(self.cond),
+                                                  str(self.true_branch),
+                                                  str(self.false_branch))
 
     def is_equal(self, other):
         if isinstance(other, Conditional):
-            return (self.cond.is_equal(other.cond) and
-                    self.true_branch.is_equal(other.true_branch) and
-                    self.false_branch.is_equal(other.false_branch) and
-                    self.inferred_type == other.inferred_type)
+            return (self.cond.is_equal(other.cond)
+                    and self.true_branch.is_equal(other.true_branch)
+                    and self.false_branch.is_equal(other.false_branch)
+                    and self.inferred_type == other.inferred_type)
         return False
 
 
 class Operator(Node):
+
     def __init__(self, name: str, is_not=False):
         self.name = name
         self.is_not = is_not
@@ -1045,9 +1047,8 @@ class Operator(Node):
         pass
 
     def __eq__(self, other):
-        return (self.__class__ == other.__class__ and
-                self.name == other.name and
-                self.is_not == other.is_not)
+        return (self.__class__ == other.__class__ and self.name == other.name
+                and self.is_not == other.is_not)
 
     def __hash__(self):
         hash(str(self.__class__) + str(self.name) + str(self.is_not))
@@ -1058,9 +1059,8 @@ class Operator(Node):
         return self.name
 
     def is_equal(self, other):
-        return (self.__class__ == other.__class__ and
-                self.name == other.name and
-                self.is_not == other.is_not)
+        return (self.__class__ == other.__class__ and self.name == other.name
+                and self.is_not == other.is_not)
 
 
 class BinaryOp(Expr):
@@ -1072,8 +1072,9 @@ class BinaryOp(Expr):
             # pylint: disable=unsupported-membership-test
             # @theosotr should we keep this check? If we ant to keep it we may
             # want to check if the operator is valid for a given language
-            assert operator in self.ALL_OPERATORS, (
-                'Binary operator ' + str(operator) + ' is not valid')
+            assert operator in self.ALL_OPERATORS, ('Binary operator ' +
+                                                    str(operator) +
+                                                    ' is not valid')
         self.lexpr = lexpr
         self.rexpr = rexpr
         self.operator = operator
@@ -1087,31 +1088,22 @@ class BinaryOp(Expr):
         self.rexpr = children[1]
 
     def __str__(self):
-        return "{} {} {}".format(
-            str(self.lexpr), str(self.operator), str(self.rexpr))
+        return "{} {} {}".format(str(self.lexpr), str(self.operator),
+                                 str(self.rexpr))
 
     def is_equal(self, other):
         if isinstance(other, BinaryOp):
-            return (self.lexpr.is_equal(other.lexpr) and
-                    self.rexpr.is_equal(other.rexpr) and
-                    self.operator == other.operator)
+            return (self.lexpr.is_equal(other.lexpr)
+                    and self.rexpr.is_equal(other.rexpr)
+                    and self.operator == other.operator)
         return False
 
 
 class LogicalExpr(BinaryOp):
-    ALL_OPERATORS = [
-        Operator('&&'),
-        Operator('||')
-    ]
+    ALL_OPERATORS = [Operator('&&'), Operator('||')]
     VALID_OPERATORS = {
-        "kotlin": [
-            Operator('&&'),
-            Operator('||')
-        ],
-        "java": [
-            Operator('&&'),
-            Operator('||')
-        ]
+        "kotlin": [Operator('&&'), Operator('||')],
+        "java": [Operator('&&'), Operator('||')]
     }
 
 
@@ -1129,10 +1121,7 @@ class EqualityExpr(BinaryOp):
             Operator('=', is_not=True),
             # Operator('==', is_not=True)
         ],
-        "java": [
-            Operator('=='),
-            Operator('=', is_not=True)
-        ]
+        "java": [Operator('=='), Operator('=', is_not=True)]
     }
 
 
@@ -1144,21 +1133,22 @@ class ComparisonExpr(BinaryOp):
         Operator('<=')
     ]
     VALID_OPERATORS = {
-        "kotlin": [
-            Operator('>'),
-            Operator('>='),
-            Operator('<'),
-            Operator('<=')
-        ],
-        "java": [
-            Operator('>'),
-            Operator('>='),
-            Operator('<'),
-            Operator('<=')
-        ]
+        "kotlin":
+        [Operator('>'),
+         Operator('>='),
+         Operator('<'),
+         Operator('<=')],
+        "java": [Operator('>'),
+                 Operator('>='),
+                 Operator('<'),
+                 Operator('<=')]
     }
 
-    def __init__(self, lexpr: Expr, rexpr: Expr, operator: Operator, etype: types.Type = None):
+    def __init__(self,
+                 lexpr: Expr,
+                 rexpr: Expr,
+                 operator: Operator,
+                 etype: types.Type = None):
         super().__init__(lexpr, rexpr, operator)
         self.etype = etype
 
@@ -1171,35 +1161,22 @@ class ArithExpr(BinaryOp):
         Operator('*')
     ]
     VALID_OPERATORS = {
-        "kotlin": [
-            Operator('+'),
-            Operator('-'),
-            Operator('/'),
-            Operator('*')
-        ],
-        "java": [
-            Operator('+'),
-            Operator('-'),
-            Operator('/'),
-            Operator('*')
-        ]
+        "kotlin": [Operator('+'),
+                   Operator('-'),
+                   Operator('/'),
+                   Operator('*')],
+        "java": [Operator('+'),
+                 Operator('-'),
+                 Operator('/'),
+                 Operator('*')]
     }
 
 
 class IncDecExpr(BinaryOp):
-    ALL_OPERATORS = [
-        Operator('++'),
-        Operator('--')
-    ]
+    ALL_OPERATORS = [Operator('++'), Operator('--')]
     VALID_OPERATORS = {
-        "kotlin": [
-            Operator('++'),
-            Operator('--')
-        ],
-        "java": [
-            Operator('++'),
-            Operator('--')
-        ]
+        "kotlin": [Operator('++'), Operator('--')],
+        "java": [Operator('++'), Operator('--')]
     }
 
     def __init__(self, lexpr: Expr, operator: Operator, prefix: bool = False):
@@ -1209,14 +1186,13 @@ class IncDecExpr(BinaryOp):
 
     def __str__(self):
         if self.prefix:
-            return "{}{}".format(
-                str(self.operator), str(self.lexpr))
+            return "{}{}".format(str(self.operator), str(self.lexpr))
         else:
-            return "{}{}".format(
-                str(self.lexpr), str(self.operator))
+            return "{}{}".format(str(self.lexpr), str(self.operator))
 
 
 class Is(BinaryOp):
+
     def __init__(self, expr: Expr, etype: types.Type, is_not=False):
         operator = Operator('is', is_not=is_not)
         # noinspection PyTypeChecker
@@ -1233,6 +1209,7 @@ class Is(BinaryOp):
 
 
 class New(Expr):
+
     def __init__(self, class_type: types.Type, args: List[Expr]):
         self.class_type = class_type
         self.args = args
@@ -1250,20 +1227,20 @@ class New(Expr):
             return " new {}<{}> ({})".format(
                 str(self.class_type.name),
                 ", ".join(map(str, self.class_type.type_args)) + ")",
-                ", ".join(map(str, self.args)) + ")"
-            )
+                ", ".join(map(str, self.args)) + ")")
 
         return "new " + self.class_type.name + "(" + \
             ", ".join(map(str, self.args)) + ")"
 
     def is_equal(self, other):
         if isinstance(other, New):
-            return (self.class_type == other.class_type and
-                    check_list_eq(self.args, other.args))
+            return (self.class_type == other.class_type
+                    and check_list_eq(self.args, other.args))
         return False
 
 
 class FieldAccess(Expr):
+
     def __init__(self, expr: Expr, field: str):
         self.expr = expr
         self.field = field
@@ -1280,13 +1257,16 @@ class FieldAccess(Expr):
 
     def is_equal(self, other):
         if isinstance(other, FieldAccess):
-            return (self.expr.is_equal(other.expr) and
-                    self.field == other.field)
+            return (self.expr.is_equal(other.expr)
+                    and self.field == other.field)
         return False
 
 
 class FunctionCall(Expr):
-    def __init__(self, func: str, args: List[CallArgument],
+
+    def __init__(self,
+                 func: str,
+                 args: List[CallArgument],
                  receiver: Expr = None,
                  type_args: List[types.Type] = None,
                  is_ref_call: bool = False):
@@ -1333,30 +1313,27 @@ class FunctionCall(Expr):
         self._can_infer_type_args = value
 
     def __str__(self):
-        type_args_str = (
-            "<" + ", ".join(map(str, self.type_args)) + ">"
-            if self.type_args
-            else ""
-        )
+        type_args_str = ("<" + ", ".join(map(str, self.type_args)) +
+                         ">" if self.type_args else "")
         if self.receiver is None:
-            return "{}{}({})".format(self.func,
-                                     type_args_str,
+            return "{}{}({})".format(self.func, type_args_str,
                                      ", ".join(map(str, self.args)))
-        return "{}.{}{}({})".format(
-            str(self.receiver), self.func, type_args_str,
-            ", ".join(map(str, self.args)))
+        return "{}.{}{}({})".format(str(self.receiver), self.func,
+                                    type_args_str,
+                                    ", ".join(map(str, self.args)))
 
     def is_equal(self, other):
         if isinstance(other, FunctionCall):
-            return (self.func == other.func and
-                    check_list_eq(self.args, other.args) and
-                    check_list_eq(self.type_args, other.type_args) and
-                    check_default_eq(self.receiver, other.receiver) and
-                    self.is_ref_call == other.is_ref_call)
+            return (self.func == other.func
+                    and check_list_eq(self.args, other.args)
+                    and check_list_eq(self.type_args, other.type_args)
+                    and check_default_eq(self.receiver, other.receiver)
+                    and self.is_ref_call == other.is_ref_call)
         return False
 
 
 class FunctionReference(Expr):
+
     def __init__(self, func: str, receiver: Expr, signature: types.Type):
         self.func = func
         self.receiver = receiver
@@ -1380,12 +1357,13 @@ class FunctionReference(Expr):
 
     def is_equal(self, other):
         if isinstance(other, FunctionReference):
-            return (self.func == other.func and
-                    check_default_eq(self.receiver, other.receiver))
+            return (self.func == other.func
+                    and check_default_eq(self.receiver, other.receiver))
         return False
 
 
 class Assignment(Expr):
+
     def __init__(self, name: str, expr: Expr, receiver: Expr = None):
         self.name = name
         self.expr = expr
@@ -1412,9 +1390,8 @@ class Assignment(Expr):
 
     def is_equal(self, other):
         if isinstance(other, Assignment):
-            return (self.name == other.name and
-                    self.expr.is_equal(other.expr) and
-                    check_default_eq(self.receiver, other.receiver))
+            return (self.name == other.name and self.expr.is_equal(other.expr)
+                    and check_default_eq(self.receiver, other.receiver))
         return False
 
 
@@ -1426,7 +1403,9 @@ class LoopExpr(Expr):
 
 
 class ForExpr(LoopExpr):
+
     class IterableExpr(Expr):
+
         def __init__(self, array: ArrayExpr, variable: Variable):
             self.arrayExpr = array
             self.parameter = variable
@@ -1438,13 +1417,17 @@ class ForExpr(LoopExpr):
             return [self.parameter, self.arrayExpr]
 
     class RangeExpr(Expr):
-        def __init__(self, variable: Variable, left_bound: Node, right_bound: Node):
+
+        def __init__(self, variable: Variable, left_bound: Node,
+                     right_bound: Node):
             self.parameter = variable
             self.left_bound = left_bound
             self.right_bound = right_bound
 
         def __str__(self):
-            return "{} in {}..{}".format(str(self.parameter), str(self.left_bound), str(self.right_bound))
+            return "{} in {}..{}".format(str(self.parameter),
+                                         str(self.left_bound),
+                                         str(self.right_bound))
 
         def children(self):
             return [self.parameter, self.left_bound, self.right_bound]
@@ -1496,7 +1479,8 @@ class ClassCast(Node):
         self.cast_type = cast_type
 
     def __str__(self):
-        return "{expr} as {cast}".format(expr=str(self.expr), cast=str(self.cast_type))
+        return "{expr} as {cast}".format(expr=str(self.expr),
+                                         cast=str(self.cast_type))
 
     def children(self):
         return [self.expr]

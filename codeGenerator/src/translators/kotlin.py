@@ -3,6 +3,7 @@ from src.translators.base import BaseTranslator
 
 
 def append_to(visit):
+
     def inner(self, node):
         self._nodes_stack.append(node)
         res = visit(self, node)
@@ -66,13 +67,14 @@ class KotlinTranslator(BaseTranslator):
         if not t_constructor:
             return t.get_name()
         if isinstance(t_constructor, kt.SpecializedArrayType):
-            return "{}Array".format(self.get_type_name(
-                t.type_args[0]))
+            return "{}Array".format(self.get_type_name(t.type_args[0]))
         if isinstance(t_constructor, kt.ArrayType):
-            return "{}<out {}>".format(t.name,
-                                       ", ".join([self.type_arg2str(ta) for ta in t.type_args]).replace('out ', ''))
-        return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
-                                                  for ta in t.type_args]))
+            return "{}<out {}>".format(
+                t.name,
+                ", ".join([self.type_arg2str(ta)
+                           for ta in t.type_args]).replace('out ', ''))
+        return "{}<{}>".format(
+            t.name, ", ".join([self.type_arg2str(ta) for ta in t.type_args]))
 
     def pop_children_res(self, children):
         len_c = len(children)
@@ -138,12 +140,12 @@ class KotlinTranslator(BaseTranslator):
         if node.args is None:
             self._children_res.append(self.get_type_name(node.class_type))
             return
-        class_decl = self.context.get_classes(('global',), glob=True)[node.class_type.name]
+        class_decl = self.context.get_classes(('global', ),
+                                              glob=True)[node.class_type.name]
         res = "{class_type}{children}".format(
             class_type=self.get_type_name(node.class_type),
-            children=("(" + ", ".join(
-                children_res) + ")") if class_decl.class_type != ast.ClassDeclaration.INTERFACE else ""
-        )
+            children=("(" + ", ".join(children_res) + ")")
+            if class_decl.class_type != ast.ClassDeclaration.INTERFACE else "")
         self._children_res.append(res)
 
     @append_to
@@ -154,14 +156,17 @@ class KotlinTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        field_res = [children_res[i]
-                     for i, _ in enumerate(node.fields)]
+        field_res = [children_res[i] for i, _ in enumerate(node.fields)]
         len_fields = len(field_res)
-        superclasses_res = [children_res[i + len_fields]
-                            for i, _ in enumerate(node.superclasses)]
+        superclasses_res = [
+            children_res[i + len_fields]
+            for i, _ in enumerate(node.superclasses)
+        ]
         len_supercls = len(superclasses_res)
-        function_res = [children_res[i + len_fields + len_supercls]
-                        for i, _ in enumerate(node.functions)]
+        function_res = [
+            children_res[i + len_fields + len_supercls]
+            for i, _ in enumerate(node.functions)
+        ]
         len_functions = len(function_res)
         type_parameters_res = ", ".join(
             children_res[len_fields + len_supercls + len_functions:])
@@ -172,28 +177,25 @@ class KotlinTranslator(BaseTranslator):
         if function_res:
             body = " {{\n{function_res}\n{old_ident}}}".format(
                 function_res="\n\n".join(function_res),
-                old_ident=" " * old_ident
-            )
+                old_ident=" " * old_ident)
 
         res = "{ident}{f}{o}{p} {n}".format(
             ident=" " * old_ident,
             f="fun " if is_sam else "",
-            o="open " if (not node.is_final and
-                          node.class_type != ast.ClassDeclaration.INTERFACE and
-                          not is_sam) else "",
+            o="open " if (not node.is_final
+                          and node.class_type != ast.ClassDeclaration.INTERFACE
+                          and not is_sam) else "",
             p=class_prefix,
             n=node.name,
             tps="<" + type_parameters_res + ">" if type_parameters_res else "",
             fields="(" + ", ".join(field_res) + ")" if field_res else "",
             s=": " + ", ".join(superclasses_res) if superclasses_res else "",
-            body=body
-        )
+            body=body)
 
         if type_parameters_res:
             res = "{}<{}>".format(res, type_parameters_res)
         if field_res:
-            res = "{}({})".format(
-                res, ", ".join(field_res))
+            res = "{}({})".format(res, ", ".join(field_res))
         if superclasses_res:
             res += ": " + ", ".join(superclasses_res)
         if function_res:
@@ -206,14 +208,9 @@ class KotlinTranslator(BaseTranslator):
     def visit_type_param(self, node):
         self._children_res.append("{}{}{}{}".format(
             node.variance_to_string(),
-            ' ' if node.variance != tp.Invariant else '',
-            node.name,
-            ': ' + (
-                self.get_type_name(node.bound)
-                if node.bound is not None
-                else kt.Any.name
-            )
-        ))
+            ' ' if node.variance != tp.Invariant else '', node.name,
+            ': ' + (self.get_type_name(node.bound)
+                    if node.bound is not None else kt.Any.name)))
 
     @append_to
     def visit_var_decl(self, node):
@@ -269,11 +266,9 @@ class KotlinTranslator(BaseTranslator):
         vararg_str = 'vararg ' if node.vararg else ''
         # Recall that varargs ara actually arrays in the signature of
         # the corresponding parameters.
-        param_type = (
-            node.param_type.type_args[0]
-            if node.vararg and isinstance(node.param_type,
-                                          tp.ParameterizedType)
-            else node.param_type)
+        param_type = (node.param_type.type_args[0] if node.vararg
+                      and isinstance(node.param_type, tp.ParameterizedType)
+                      else node.param_type)
         res = vararg_str + node.name + ": " + self.get_type_name(param_type)
         if len(children):
             children_res = self.pop_children_res(children)
@@ -304,8 +299,8 @@ class KotlinTranslator(BaseTranslator):
         prefix += "" if node.is_final else "open "
         prefix += "" if not node.override else "override "
         prefix += "" if node.body is not None else "abstract "
-        type_params = (
-            "<" + type_parameters_res + ">" if type_parameters_res else "")
+        type_params = ("<" + type_parameters_res +
+                       ">" if type_parameters_res else "")
         res = prefix + "fun " + type_params + node.name + "(" + ", ".join(
             param_res) + ")"
         if node.ret_type:
@@ -320,11 +315,12 @@ class KotlinTranslator(BaseTranslator):
 
     @append_to
     def visit_lambda(self, node):
+
         def inside_block_unit_function():
-            if (isinstance(self._nodes_stack[-2], ast.Block) and
-                isinstance(self._nodes_stack[-3], (ast.Lambda,
-                                                   ast.FunctionDeclaration)) and
-                self._nodes_stack[-3].ret_type == kt.Unit):
+            if (isinstance(self._nodes_stack[-2], ast.Block)
+                    and isinstance(self._nodes_stack[-3],
+                                   (ast.Lambda, ast.FunctionDeclaration))
+                    and self._nodes_stack[-3].ret_type == kt.Unit):
                 return True
             return False
 
@@ -336,7 +332,8 @@ class KotlinTranslator(BaseTranslator):
         prev_is_unit = self.is_unit
         prev_is_lambda = self.is_lambda
         self.is_unit = node.get_type() == kt.Unit
-        use_lambda = (isinstance(self._nodes_stack[-2], ast.VariableDeclaration)
+        use_lambda = (isinstance(self._nodes_stack[-2],
+                                 ast.VariableDeclaration)
                       and tu.is_sam(self.context,
                                     etype=self._nodes_stack[-2].inferred_type))
         self.is_lambda = use_lambda
@@ -363,8 +360,7 @@ class KotlinTranslator(BaseTranslator):
                 var="" if not inside_block_unit_function() else "var y = ",
                 sam_name=sam_name if use_lambda else "",
                 params=", ".join(param_res),
-                body=body_res
-            )
+                body=body_res)
         else:
             # Use the fun syntax : fun (params): ret_type { ... }
             res = "{ident}fun ({params}){ret_type} {body}".format(
@@ -384,8 +380,7 @@ class KotlinTranslator(BaseTranslator):
     def visit_bottom_constant(self, node):
         bottom = "{}(todo()){}".format(
             "(" if node.t else "",
-            " as " + self.get_type_name(node.t) + ")" if node.t else ""
-        )
+            " as " + self.get_type_name(node.t) + ")" if node.t else "")
         self._children_res.append((self.ident * " ") + bottom)
 
     @append_to
@@ -402,31 +397,26 @@ class KotlinTranslator(BaseTranslator):
         }
         suffix = integer_types.get(node.integer_type, "")
         literal = str(node.literal)
-        literal = (
-            "(" + literal + ")"
-            if suffix and literal[0] == '-'
-            else literal
-        )
+        literal = ("(" + literal +
+                   ")" if suffix and literal[0] == '-' else literal)
         self._children_res.append(" " * self.ident + literal + suffix)
 
     @append_to
     def visit_real_constant(self, node):
-        real_types = {
-            kt.Float: "f"
-        }
+        real_types = {kt.Float: "f"}
         suffix = real_types.get(node.real_type, "")
-        self._children_res.append(
-            " " * self.ident + str(node.literal) + suffix)
+        self._children_res.append(" " * self.ident + str(node.literal) +
+                                  suffix)
 
     @append_to
     def visit_char_constant(self, node):
-        self._children_res.append("{}'{}'".format(
-            " " * self.ident, node.literal))
+        self._children_res.append("{}'{}'".format(" " * self.ident,
+                                                  node.literal))
 
     @append_to
     def visit_string_constant(self, node):
-        self._children_res.append('{}"{}"'.format(
-            " " * self.ident, node.literal))
+        self._children_res.append('{}"{}"'.format(" " * self.ident,
+                                                  node.literal))
 
     @append_to
     def visit_boolean_constant(self, node):
@@ -434,8 +424,8 @@ class KotlinTranslator(BaseTranslator):
 
     @append_to
     def visit_array_expr(self, node):
-        is_specialized = isinstance(
-            node.array_type.t_constructor, kt.SpecializedArrayType)
+        is_specialized = isinstance(node.array_type.t_constructor,
+                                    kt.SpecializedArrayType)
         if not node.length:
             if not is_specialized:
                 self._children_res.append("{}emptyArray<{}>()".format(
@@ -455,18 +445,13 @@ class KotlinTranslator(BaseTranslator):
         children_res = self.pop_children_res(children)
         self.ident = old_ident
 
-        template = (
-            "{}arrayOf<{}>({})"
-            if not is_specialized
-            else "{}{}ArrayOf({})"
-        )
+        template = ("{}arrayOf<{}>({})"
+                    if not is_specialized else "{}{}ArrayOf({})")
         t_arg = self.get_type_name(node.array_type.type_args[0])
         if is_specialized:
             t_arg = t_arg.lower()
-        return self._children_res.append(template.format(
-            " " * self.ident,
-            t_arg,
-            ", ".join(children_res)))
+        return self._children_res.append(
+            template.format(" " * self.ident, t_arg, ", ".join(children_res)))
 
     @append_to
     def visit_array_list_expr(self, node):
@@ -485,10 +470,8 @@ class KotlinTranslator(BaseTranslator):
 
         template = "{}arrayListOf<{}>({})"
         t_arg = self.get_type_name(node.array_type.type_args[0])
-        return self._children_res.append(template.format(
-            " " * self.ident,
-            t_arg,
-            ", ".join(children_res)))
+        return self._children_res.append(
+            template.format(" " * self.ident, t_arg, ", ".join(children_res)))
 
     @append_to
     def visit_variable(self, node):
@@ -502,9 +485,8 @@ class KotlinTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}({} {} {})".format(
-            " " * old_ident, children_res[0], node.operator,
-            children_res[1])
+        res = "{}({} {} {})".format(" " * old_ident, children_res[0],
+                                    node.operator, children_res[1])
         self.ident = old_ident
         self._children_res.append(res)
 
@@ -553,9 +535,8 @@ class KotlinTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}{} {} {}".format(
-            " " * old_ident, children_res[0], str(node.operator),
-            node.rexpr.name)
+        res = "{}{} {} {}".format(" " * old_ident, children_res[0],
+                                  str(node.operator), node.rexpr.name)
         self.ident = old_ident
         self._children_res.append(res)
 
@@ -567,7 +548,8 @@ class KotlinTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}({}{})".format(" " * old_ident, children_res[0], node.operator)
+        res = "{}({}{})".format(" " * old_ident, children_res[0],
+                                node.operator)
         self.ident = old_ident
         self._children_res.append(res)
 
@@ -599,11 +581,8 @@ class KotlinTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        receiver_expr = (
-            '({})'.format(children_res[0])
-            if isinstance(node.expr, ast.BottomConstant)
-            else children_res[0]
-        )
+        receiver_expr = ('({})'.format(children_res[0]) if isinstance(
+            node.expr, ast.BottomConstant) else children_res[0])
         res = "{}{}.{}".format(" " * self.ident, receiver_expr, node.field)
         self._children_res.append(res)
 
@@ -622,11 +601,9 @@ class KotlinTranslator(BaseTranslator):
         # TODO handle lambdas
         receiver = children_res[0] if children_res else ""
         receiver += "::"
-        res = "{ident}{receiver}{name}".format(
-            ident=" " * self.ident,
-            receiver=receiver,
-            name=node.func
-        )
+        res = "{ident}{receiver}{name}".format(ident=" " * self.ident,
+                                               receiver=receiver,
+                                               name=node.func)
         self._children_res.append(res)
 
     @append_to
@@ -638,26 +615,19 @@ class KotlinTranslator(BaseTranslator):
             c.accept(self)
         self.ident = old_ident
         children_res = self.pop_children_res(children)
-        type_args = (
-            "<" + ",".join(
-                [self.get_type_name(t) for t in node.type_args]) + ">"
-            if not node.can_infer_type_args and node.type_args
-            else ""
-        )
+        type_args = ("<" +
+                     ",".join([self.get_type_name(t)
+                               for t in node.type_args]) + ">" if
+                     not node.can_infer_type_args and node.type_args else "")
         if node.receiver:
-            receiver_expr = (
-                '({})'.format(children_res[0])
-                if isinstance(node.receiver, ast.BottomConstant)
-                else children_res[0]
-            )
-            res = "{}{}.{}{}({})".format(
-                " " * self.ident, receiver_expr, node.func,
-                type_args,
-                ", ".join(children_res[1:]))
+            receiver_expr = ('({})'.format(children_res[0]) if isinstance(
+                node.receiver, ast.BottomConstant) else children_res[0])
+            res = "{}{}.{}{}({})".format(" " * self.ident, receiver_expr,
+                                         node.func, type_args,
+                                         ", ".join(children_res[1:]))
         else:
-            res = "{}{}{}({})".format(
-                " " * self.ident, node.func, type_args,
-                ", ".join(children_res))
+            res = "{}{}{}({})".format(" " * self.ident, node.func, type_args,
+                                      ", ".join(children_res))
         self._children_res.append(res)
 
     @append_to
@@ -672,11 +642,8 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         if node.receiver:
-            receiver_expr = (
-                '({})'.format(children_res[0])
-                if isinstance(node.receiver, ast.BottomConstant)
-                else children_res[0]
-            )
+            receiver_expr = ('({})'.format(children_res[0]) if isinstance(
+                node.receiver, ast.BottomConstant) else children_res[0])
             res = "{}{}.{} = {}".format(" " * old_ident, receiver_expr,
                                         node.name, children_res[1])
         else:
@@ -697,11 +664,17 @@ class KotlinTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if isinstance(node, ast.ForExpr):
-            res = "{}for ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+            res = "{}for ({})\n{}".format(" " * old_ident,
+                                          children_res[0][self.ident:],
+                                          children_res[1])
         elif isinstance(node, ast.WhileExpr):
-            res = "{}while ({})\n{}".format(" " * old_ident, children_res[0][self.ident:], children_res[1])
+            res = "{}while ({})\n{}".format(" " * old_ident,
+                                            children_res[0][self.ident:],
+                                            children_res[1])
         elif isinstance(node, ast.DoWhileExpr):
-            res = "{}do\n{}\n{}while({})".format(" " * old_ident, children_res[0], " " * old_ident,
+            res = "{}do\n{}\n{}while({})".format(" " * old_ident,
+                                                 children_res[0],
+                                                 " " * old_ident,
                                                  children_res[1][self.ident:])
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
@@ -718,7 +691,9 @@ class KotlinTranslator(BaseTranslator):
         if isinstance(node, ast.ForExpr.IterableExpr):
             res = "{} in {}".format(str(children_res[0]), str(children_res[1]))
         elif isinstance(node, ast.ForExpr.RangeExpr):
-            res = "{} in {}..{}".format(str(children_res[0]), str(children_res[1]), str(children_res[2]))
+            res = "{} in {}..{}".format(str(children_res[0]),
+                                        str(children_res[1]),
+                                        str(children_res[2]))
         else:
             raise Exception("{} not supported".format(str(node.__class__)))
         self._children_res.append(res)
@@ -729,5 +704,6 @@ class KotlinTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "(({expr}) as {cast})".format(expr=children_res[0], cast=node.cast_type.name)
+        res = "(({expr}) as {cast})".format(expr=children_res[0],
+                                            cast=node.cast_type.name)
         self._children_res.append(res)

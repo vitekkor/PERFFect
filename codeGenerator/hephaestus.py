@@ -38,7 +38,7 @@ def gen_program(pid, packages):
     translator = TRANSLATORS[cli_args.language]('src.' + packages[0],
                                                 cli_args.options['Translator'])
     if cli_args.log:
-        logger = Logger(cli_args.name, cli_args.args.test_directory, "Generator", pid)
+        logger = Logger("Generator")
     else:
         logger = None
     generator = Generator(language=cli_args.language, logger=logger)
@@ -88,13 +88,21 @@ async def serve():
     server_pb2_grpc.add_GeneratorServicer_to_server(GeneratorImpl(), server)
     listen_addr = '[::]:50051'
     server.add_insecure_port(listen_addr)
-    logging.info("Starting server on %s", listen_addr)
+    logger.log("Starting server on {}".format(listen_addr))
     await server.start()
     await server.wait_for_termination()
 
+logger = Logger("Hephaestus")
 
 if __name__ == "__main__":
+    logger.log("Run Hephaestus")
     if cli_args.debug:
+        logger.log("Debug mode on")
         main()
     else:
-        asyncio.run(serve())
+        try:
+            asyncio.run(serve())
+        except KeyboardInterrupt:
+            exit(0)
+        except RuntimeError:
+            exit(0)

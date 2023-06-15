@@ -15,7 +15,7 @@ class GNode(NamedTuple):
     def __str__(self):
         if self.name is None:
             return "NONE"
-        return "/".join(self.namespace + (self.name,))
+        return "/".join(self.namespace + (self.name, ))
 
     def is_none(self):
         return self.name is None
@@ -37,6 +37,7 @@ class UseAnalysis(DefaultVisitor):
     analysis.visit(node)
     use_graph = analysis.result()
     """
+
     def __init__(self, program):
         # The type of each node is: GNode
         self._use_graph = defaultdict(set)  # node => [node]
@@ -54,21 +55,22 @@ class UseAnalysis(DefaultVisitor):
         return self._use_graph
 
     def _flow_ret_to_callee(self, expr: ast.FunctionCall, target_node: GNode):
-        fun_nsdecl = get_decl(
-            self.program.context, self._namespace, expr.func,
-            limit=self._selected_namespace)
+        fun_nsdecl = get_decl(self.program.context,
+                              self._namespace,
+                              expr.func,
+                              limit=self._selected_namespace)
         if not fun_nsdecl:
             self._use_graph[target_node].add(NONE_NODE)
             return
-        callee_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
-                            FUNC_RET)
+        callee_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name, ), FUNC_RET)
         if target_node:
             self._use_graph[target_node]
             self._use_graph[callee_node].add(target_node)
 
     def _flow_var_to_ref(self, expr: ast.Variable, target_node: GNode):
         var_node = get_decl(self.program.context,
-                            self._namespace, expr.name,
+                            self._namespace,
+                            expr.name,
                             limit=self._selected_namespace)
         if not var_node:
             # If node is None, this means that we referring to a variable
@@ -95,7 +97,8 @@ class UseAnalysis(DefaultVisitor):
 
     def visit_variable(self, node):
         gnode = get_decl(self.program.context,
-                         self._namespace, node.name,
+                         self._namespace,
+                         node.name,
                          limit=self._selected_namespace)
         if not gnode:
             return
@@ -168,9 +171,10 @@ class UseAnalysis(DefaultVisitor):
         """
         # Find the namespace and the declaration of the functions that is
         # being called.
-        fun_nsdecl = get_decl(
-            self.program.context, self._namespace, node.func,
-            limit=self._selected_namespace)
+        fun_nsdecl = get_decl(self.program.context,
+                              self._namespace,
+                              node.func,
+                              limit=self._selected_namespace)
         add_none = False
         if not fun_nsdecl:
             # The function is outer, so, if we pass a variable to this function
@@ -190,7 +194,7 @@ class UseAnalysis(DefaultVisitor):
                     param_index = len_p - 1
                     assert fun_nsdecl[1].params[param_index].vararg
 
-                param_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
+                param_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name, ),
                                    fun_nsdecl[1].params[param_index].name)
             if isinstance(arg, ast.Variable):
                 # The argument is a variable reference. So add edge from the
@@ -224,7 +228,7 @@ class UseAnalysis(DefaultVisitor):
             #       We add the edge callee_ret -> NONE
             # * return callee(x) => We don't add any edge.
             namespace, fun_decl = fun_nsdecl
-            gnode = GNode(namespace + (fun_decl.name,), FUNC_RET)
+            gnode = GNode(namespace + (fun_decl.name, ), FUNC_RET)
             ret_node = GNode(self._namespace, FUNC_RET)
             nodes = self._use_graph[gnode]
             if ret_node not in nodes and self.add_none_to_call:

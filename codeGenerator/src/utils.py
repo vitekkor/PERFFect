@@ -15,14 +15,13 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs)
+            cls._instances[cls] = super(Singleton,
+                                        cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
 def prefix_lst(prefix, lst):
-    return any(prefix == lst[:i]
-               for i in range(1, len(prefix) + 1))
+    return any(prefix == lst[:i] for i in range(1, len(prefix) + 1))
 
 
 def is_number(string_var):
@@ -101,10 +100,7 @@ def save_text(path, text):
 def path2set(path):
     if os.path.isfile(path):
         with open(path, 'r') as f:
-            return OrderedSet([
-                line.strip()
-                for line in f.readlines()
-            ])
+            return OrderedSet([line.strip() for line in f.readlines()])
     else:
         return OrderedSet()
 
@@ -117,6 +113,7 @@ def get_reserved_words(resource_path, language):
 
 # for debugging purposes
 def random_inspect(random_fun):
+
     def inner(*args, **kwargs):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
@@ -125,9 +122,8 @@ def random_inspect(random_fun):
         caller = calframe[1][3]
         callings = calframe[1][4]
         result = random_fun(*args, **kwargs)
-        str_ = "caller - {}:{}:{}; method - {}; args - {}, kwargs - {}, result - {}".format(from_, line, caller,
-                                                                                            callings, args[1:], kwargs,
-                                                                                            result)
+        str_ = "caller - {}:{}:{}; method - {}; args - {}, kwargs - {}, result - {}".format(
+            from_, line, caller, callings, args[1:], kwargs, result)
         # print(str_)
         return result
 
@@ -150,8 +146,9 @@ class RandomUtils():
     def __init__(self):
         self.seed = -8778892910913690087  # rnd.randrange(sys.maxsize)
         self.r = rnd.Random(self.seed)
-        self.WORDS = OrderedSet(self.sample(
-            read_lines(os.path.join(self.resource_path, 'words')), self.WORD_POOL_LEN))
+        self.WORDS = OrderedSet(
+            self.sample(read_lines(os.path.join(self.resource_path, 'words')),
+                        self.WORD_POOL_LEN))
         self.INITIAL_WORDS = OrderedSet(self.WORDS)
 
     def reset_random(self, seed=None):
@@ -222,8 +219,8 @@ class RandomUtils():
     def str(self, length=5):
         self.previous_result = self.result
         self.previous_call = self.call
-        self.result = ''.join(self.r.sample(
-            string.ascii_letters + string.digits, length))
+        self.result = ''.join(
+            self.r.sample(string.ascii_letters + string.digits, length))
         self.call = "str {}".format(length)
         return self.result
 
@@ -252,6 +249,7 @@ randomUtil = RandomUtils()
 
 
 class IdGen():
+
     def __init__(self):
         self._cache = defaultdict(lambda: 1)
 
@@ -265,5 +263,6 @@ class IdGen():
 
 
 class Namespace:
+
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)

@@ -4,6 +4,7 @@ from src.analysis.use_analysis import NONE_NODE
 
 
 class Node():
+
     def is_none(self):
         raise NotImplementedError("is_none must be implemented")
 
@@ -39,19 +40,19 @@ def dfs(graph, source):
         for e in graph.get(n, []):
             if not visited.get(e.target, False):
                 _dfs(e.target)
+
     _dfs(source)
     return {
         n
-        for n, is_visited in visited.items()
-        if is_visited and n != source
+        for n, is_visited in visited.items() if is_visited and n != source
     }
 
 
 def bi_reachable(graph, start_vertex, dest_vertex):
     """Bidirectional reachable"""
     # pylint: disable=arguments-out-of-order
-    return (reachable(graph, start_vertex, dest_vertex) or
-            reachable(graph, dest_vertex, start_vertex))
+    return (reachable(graph, start_vertex, dest_vertex)
+            or reachable(graph, dest_vertex, start_vertex))
 
 
 def connected(graph, start_vertex, dest_vertex):
@@ -121,9 +122,11 @@ def find_all_paths(graph, start, path=None):
 
 
 def find_longest_paths(graph, vertex):
+
     def exist(x, y):
         """Checks if x is in y with the same order"""
-        return x == y[:len(y)-len(x)+1]
+        return x == y[:len(y) - len(x) + 1]
+
     paths = find_all_paths(graph, vertex)
     if len(paths) == 1:
         return paths

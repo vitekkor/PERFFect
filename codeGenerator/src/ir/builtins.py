@@ -5,6 +5,7 @@ from src.ir.types import Builtin, TypeConstructor, TypeParameter
 
 
 class BuiltinFactory(ABC):
+
     @abstractmethod
     def get_language(self):
         pass
@@ -116,18 +117,22 @@ class BuiltinFactory(ABC):
         ]
 
     def get_function_types(self, max_parameters):
-        return [self.get_function_type(i) for i in range(0, max_parameters+1)]
+        return [
+            self.get_function_type(i) for i in range(0, max_parameters + 1)
+        ]
 
     def get_nothing(self):
         raise NotImplementedError
 
 
 class AnyType(Builtin):
+
     def __init__(self, name="Any"):
         super().__init__(name)
 
 
 class NothingType(Builtin):
+
     def __init__(self, name="Nothing"):
         super().__init__(name)
 
@@ -136,90 +141,105 @@ class NothingType(Builtin):
 
 
 class VoidType(AnyType):
+
     def __init__(self, name="Void"):
         super().__init__(name)
         self.supertypes.append(AnyType())
 
 
 class NumberType(AnyType):
+
     def __init__(self, name="Number"):
         super().__init__(name)
         self.supertypes.append(AnyType())
 
 
 class IntegerType(NumberType):
+
     def __init__(self, name="Int"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class BigIntegerType(NumberType):
+
     def __init__(self, name="BigInteger"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class ShortType(NumberType):
+
     def __init__(self, name="Short"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class LongType(NumberType):
+
     def __init__(self, name="Long"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class ByteType(NumberType):
+
     def __init__(self, name="Byte"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class FloatType(NumberType):
+
     def __init__(self, name="Float"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class DoubleType(NumberType):
+
     def __init__(self, name="Double"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class BigDecimalType(NumberType):
+
     def __init__(self, name="BigDecimal"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
 
 class CharType(AnyType):
+
     def __init__(self, name="Char"):
         super().__init__(name)
         self.supertypes.append(AnyType())
 
 
 class StringType(AnyType):
+
     def __init__(self, name="String"):
         super().__init__(name)
         self.supertypes.append(AnyType())
 
 
 class BooleanType(AnyType):
+
     def __init__(self, name="Boolean"):
         super().__init__(name)
         self.supertypes.append(AnyType())
 
 
 class ArrayType(TypeConstructor):
+
     def __init__(self, name="Array"):
         super().__init__(name, [TypeParameter("T")])
         self.supertypes.append(AnyType())
 
 
 class FunctionType(TypeConstructor):
+
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
         type_parameters = [
@@ -248,6 +268,7 @@ Char = CharType()
 String = StringType()
 Boolean = BooleanType()
 Array = ArrayType()
-NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean, BigDecimal, BigInteger,
-                   Array]
+NonNothingTypes = [
+    Any, Number, Integer, Short, Long, Byte, Float, Double, Char, String,
+    Boolean, BigDecimal, BigInteger, Array
+]

@@ -1,4 +1,4 @@
-import random
+import time
 
 import grpc.aio
 
@@ -18,34 +18,46 @@ def generate_package_name():
 
 
 class GeneratorImpl(server_pb2_grpc.GeneratorServicer):
-    TRANSLATORS = {
-        'kotlin': KotlinTranslator,
-        'java': JavaTranslator
-    }
-    _log: Logger = Logger('', ".", "server_class", 42)
+    TRANSLATORS = {'kotlin': KotlinTranslator, 'java': JavaTranslator}
+    _log: Logger = Logger("server_class")
 
-    def generateProgram(self, language, seed):
+    def generate_program(self, language, seed):
         packages = generate_package_name()
         utils.randomUtil.reset_word_pool()
         utils.randomUtil.reset_random(seed)
         translator = self.TRANSLATORS[language]('src.' + packages[0], {})
-        proc_id = random.Random().randint(0, 10000)
-        logger = Logger(packages[0], ".", "Generator", proc_id)
+        logger = Logger("Generator")
         generator = Generator(language=language, logger=logger)
         try:
             program = generator.generate()
             text = utils.translate_program(translator, program)
             return text
-        except Exception as exc:
+        except Exception:
             # This means that we have programming error in transformations
             err = str(traceback.format_exc())
             logger.log(err)
             return None
 
-    async def generateKotlin(self, request: server_pb2.GenerateRequest, context: grpc.aio.ServicerContext):
-        text = self.generateProgram(language="kotlin", seed=request.seed)
+    async def generateKotlin(self, request: server_pb2.GenerateRequest,
+                             context: grpc.aio.ServicerContext):
+        start_time = time.time()
+        self._log.log(
+            f"Incoming request to generate a Kotlin program: seed {request.seed}"
+        )
+        text = self.generate_program(language="kotlin", seed=request.seed)
+        self._log.log(
+            f"Kotlin program generation completed successfully. Elapsed time {time.time() - start_time}ms"
+        )
         return server_pb2.Program(language="kotlin", text=text)
 
-    async def generateJava(self, request: server_pb2.GenerateRequest, context: grpc.aio.ServicerContext):
-        text = self.generateProgram(language="java", seed=request.seed)
+    async def generateJava(self, request: server_pb2.GenerateRequest,
+                           context: grpc.aio.ServicerContext):
+        start_time = time.time()
+        self._log.log(
+            f"Incoming request to generate a Java program: seed {request.seed}"
+        )
+        text = self.generate_program(language="java", seed=request.seed)
+        self._log.log(
+            f"Java program generation completed successfully. Elapsed time {time.time() - start_time}ms"
+        )
         return server_pb2.Program(language="java", text=text)

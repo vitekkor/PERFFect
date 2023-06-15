@@ -50,8 +50,8 @@ class ASTVisitor():
         }
         visitor = visitors.get(node.__class__)
         if visitor is None:
-            raise Exception(
-                "Cannot find visitor for instance node " + str(node.__class__))
+            raise Exception("Cannot find visitor for instance node " +
+                            str(node.__class__))
         return visitor(node)
 
     def visit_program(self, node):
@@ -92,7 +92,8 @@ class ASTVisitor():
         raise NotImplementedError('visit_func_ref() must be implemented')
 
     def visit_bottom_constant(self, node):
-        raise NotImplementedError("visit_bottom_constant() must be implemented")
+        raise NotImplementedError(
+            "visit_bottom_constant() must be implemented")
 
     def visit_integer_constant(self, node):
         raise NotImplementedError(
@@ -109,12 +110,10 @@ class ASTVisitor():
             'visit_string_constant() must be implemented')
 
     def visit_array_expr(self, node):
-        raise NotImplementedError(
-            'visit_array_expr() must be implemented')
+        raise NotImplementedError('visit_array_expr() must be implemented')
 
     def visit_array_list_expr(self, node):
-        raise NotImplementedError(
-            'visit_array_expr() must be implemented')
+        raise NotImplementedError('visit_array_expr() must be implemented')
 
     def visit_boolean_constant(self, node):
         raise NotImplementedError(
